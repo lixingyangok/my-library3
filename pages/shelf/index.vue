@@ -1,10 +1,3 @@
-<!--
- * @Author: 李星阳
- * @Date: 2021-12-02 20:27:04
- * @LastEditors: Merlin
- * @LastEditTime: 2024-01-01 17:17:53
- * @Description: 
--->
 
 <template>
     <section class="outer" >
@@ -223,16 +216,12 @@ import { set, get } from 'idb-keyval';
 // import oMethods from './js/shelf.js';
 
 
-
-
 export default {
     name: "shelf",
+    components: {
+    },
     data(){
-        set('abc', {a:1,b:2});
-        set('abc', {a:1,b:2, c:3});
-        get('abc').then(res=>{
-            console.log("got it", res);
-        });
+ 
         if (process.client){
             window.oConfig = (function(){
                 const aMedia = [

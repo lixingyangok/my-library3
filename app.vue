@@ -1,10 +1,3 @@
-<!--
- * @Author: Merlin
- * @Date: 2023-12-30 10:38:50
- * @LastEditors: Merlin
- * @LastEditTime: 2024-01-01 16:29:15
- * @Description: 
--->
 <template>
     <Navigation class="nav" ></Navigation>
     <main class="main-part">
@@ -24,12 +17,18 @@ useHead({
         rel: 'stylesheet',
         type: 'text/css',
         href: 'https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.2/css/all.min.css',
+    }, {
+        rel: 'stylesheet',
+        type: 'text/css',
+        href: '//unpkg.com/element-plus/dist/index.css',
     } ],
+    script: [{
+        // src: '//unpkg.com/element-plus',
+    }]
 });
 if (process.client){
     // var camera = window.FontAwesome.icon({ prefix: 'fas', iconName: 'camera' });
     // console.log("camera", camera);
-
 }
 </script>
 
