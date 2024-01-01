@@ -1,0 +1,63 @@
+.today-bar{
+    opacity: 1;
+    // margin: 5px 0 0;
+}
+
+.cell{
+    margin: 0 15px 0 0;
+    color: #aaa;
+    position: relative;
+    display: inline-block;
+    em{
+        color: blue;
+    }
+    .addition{
+        font-weight: normal;
+        position: absolute;
+        top: 0;
+        right: 0;
+        color: red;
+        animation: go-up 1.5s ease 0.2s 1 normal forwards;
+        z-index: 3;
+        opacity: 1;
+        font-size: 1.2em;
+        font-weight: bold;
+        &::before{
+            content: '+';
+        }
+    }
+}
+
+.lights{
+    display: inline-flex;
+    --size: 12px;
+    background: #e5e8e5;
+    margin: 0 10px 0 0;
+    li{
+        width: var(--size);
+        height: var(--size);
+        // margin: 0 1px 0 0;
+        +li{
+            border-left: solid 1px white;
+        }
+        &[class~=lighting]{
+            background-color: #b7edb7;
+        }
+    }
+}
+
+
+@keyframes go-up {
+    0%{
+        top: 0;
+        opacity: 1;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        top: -25px;
+        opacity: 0;
+    }
+}
+

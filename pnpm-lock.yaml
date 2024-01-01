@@ -4,10 +4,15 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+dependencies:
+  idb-keyval:
+    specifier: ^6.2.1
+    version: 6.2.1
+
 devDependencies:
   nuxt:
     specifier: ^3.9.0
-    version: 3.9.0(sass@1.69.6)(vite@5.0.10)
+    version: 3.9.0(idb-keyval@6.2.1)(sass@1.69.6)(vite@5.0.10)
   sass:
     specifier: ^1.69.6
     version: 1.69.6
@@ -791,7 +796,7 @@ packages:
       '@nuxt/kit': 3.9.0
       '@nuxt/schema': 3.9.0
       execa: 7.2.0
-      nuxt: 3.9.0(sass@1.69.6)(vite@5.0.10)
+      nuxt: 3.9.0(idb-keyval@6.2.1)(sass@1.69.6)(vite@5.0.10)
       vite: 5.0.10(sass@1.69.6)
     transitivePeerDependencies:
       - rollup
@@ -814,7 +819,7 @@ packages:
       semver: 7.5.4
     dev: true
 
-  /@nuxt/devtools@1.0.6(nuxt@3.9.0)(vite@5.0.10):
+  /@nuxt/devtools@1.0.6(idb-keyval@6.2.1)(nuxt@3.9.0)(vite@5.0.10):
     resolution: {integrity: sha512-3P914IHBvKl2aYSrwaCAU9E1ndVNnGJR0Jn0XKUFktsbjU5kGlwLGrtRKXAw4Yz1VNiSZPrapVrFOQWbXRGRvg==, tarball: https://registry.npmmirror.com/@nuxt/devtools/-/devtools-1.0.6.tgz}
     hasBin: true
     peerDependencies:
@@ -840,8 +845,8 @@ packages:
       launch-editor: 2.6.1
       local-pkg: 0.5.0
       magicast: 0.3.2
-      nitropack: 2.8.1
-      nuxt: 3.9.0(sass@1.69.6)(vite@5.0.10)
+      nitropack: 2.8.1(idb-keyval@6.2.1)
+      nuxt: 3.9.0(idb-keyval@6.2.1)(sass@1.69.6)(vite@5.0.10)
       nypm: 0.3.4
       ofetch: 1.3.3
       ohash: 1.1.3
@@ -3069,6 +3074,9 @@ packages:
     dev: true
     optional: true
 
+  /idb-keyval@6.2.1:
+    resolution: {integrity: sha512-8Sb3veuYCyrZL+VBt9LJfZjLUPWVvqn8tG28VqYNFCo43KHcKuq+b4EiXGeuaLAQWL2YmyDgMp2aSpH9JHsEQg==, tarball: https://registry.npmmirror.com/idb-keyval/-/idb-keyval-6.2.1.tgz}
+
   /ignore-walk@6.0.4:
     resolution: {integrity: sha512-t7sv42WkwFkyKbivUCglsQW5YWMskWtbEf4MNKX5u/CCWHKSPzN4FtBQGsQZgCLbxOzpVlcbWVK5KB3auIOjSw==, tarball: https://registry.npmmirror.com/ignore-walk/-/ignore-walk-6.0.4.tgz}
     engines: {node: ^14.17.0 || ^16.13.0 || >=18.0.0}
@@ -3700,7 +3708,7 @@ packages:
     engines: {node: '>= 0.6'}
     dev: true
 
-  /nitropack@2.8.1:
+  /nitropack@2.8.1(idb-keyval@6.2.1):
     resolution: {integrity: sha512-pODv2kEEzZSDQR+1UMXbGyNgMedUDq/qUomtiAnQKQvLy52VGlecXO1xDfH3i0kP1yKEcKTnWsx1TAF5gHM7xQ==, tarball: https://registry.npmmirror.com/nitropack/-/nitropack-2.8.1.tgz}
     engines: {node: ^16.11.0 || >=17.0.0}
     hasBin: true
@@ -3773,7 +3781,7 @@ packages:
       unctx: 2.3.1
       unenv: 1.8.0
       unimport: 3.7.1(rollup@4.9.1)
-      unstorage: 1.10.1
+      unstorage: 1.10.1(idb-keyval@6.2.1)
     transitivePeerDependencies:
       - '@azure/app-configuration'
       - '@azure/cosmos'
@@ -3978,7 +3986,7 @@ packages:
       fsevents: 2.3.3
     dev: true
 
-  /nuxt@3.9.0(sass@1.69.6)(vite@5.0.10):
+  /nuxt@3.9.0(idb-keyval@6.2.1)(sass@1.69.6)(vite@5.0.10):
     resolution: {integrity: sha512-PiUQwJRBlclRrotcQAK95ueeRSiFhZmwNBj9MtIdWF4XK97OjNszUmNjKphqB7BsVcm089l0jZm1N0sYr7tMOg==, tarball: https://registry.npmmirror.com/nuxt/-/nuxt-3.9.0.tgz}
     engines: {node: ^14.18.0 || >=16.10.0}
     hasBin: true
@@ -3992,7 +4000,7 @@ packages:
         optional: true
     dependencies:
       '@nuxt/devalue': 2.0.2
-      '@nuxt/devtools': 1.0.6(nuxt@3.9.0)(vite@5.0.10)
+      '@nuxt/devtools': 1.0.6(idb-keyval@6.2.1)(nuxt@3.9.0)(vite@5.0.10)
       '@nuxt/kit': 3.9.0
       '@nuxt/schema': 3.9.0
       '@nuxt/telemetry': 2.5.3
@@ -4021,7 +4029,7 @@ packages:
       knitwork: 1.0.0
       magic-string: 0.30.5
       mlly: 1.4.2
-      nitropack: 2.8.1
+      nitropack: 2.8.1(idb-keyval@6.2.1)
       nuxi: 3.10.0
       nypm: 0.3.4
       ofetch: 1.3.3
@@ -5413,7 +5421,7 @@ packages:
       webpack-virtual-modules: 0.6.1
     dev: true
 
-  /unstorage@1.10.1:
+  /unstorage@1.10.1(idb-keyval@6.2.1):
     resolution: {integrity: sha512-rWQvLRfZNBpF+x8D3/gda5nUCQL2PgXy2jNG4U7/Rc9BGEv9+CAJd0YyGCROUBKs9v49Hg8huw3aih5Bf5TAVw==, tarball: https://registry.npmmirror.com/unstorage/-/unstorage-1.10.1.tgz}
     peerDependencies:
       '@azure/app-configuration': ^1.4.1
@@ -5458,6 +5466,7 @@ packages:
       chokidar: 3.5.3
       destr: 2.0.2
       h3: 1.9.0
+      idb-keyval: 6.2.1
       ioredis: 5.3.2
       listhen: 1.5.5
       lru-cache: 10.1.0

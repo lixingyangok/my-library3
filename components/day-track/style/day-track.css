@@ -1,0 +1,68 @@
+.day-track-body{
+    /* --height: 80px; */
+    border: solid 1px #ccc;
+    height: var(--height);
+    position: relative;
+}
+
+
+.day-ul{
+    position: relative;
+    width: 100%;
+    height: var(--height);
+    overflow: hidden;
+    & li{
+        position: absolute;
+        top: 50%;
+        background-color: rgb(49,243,49, 0.3);
+        min-width: 1px;
+        transform: translateY(-50%);
+    }
+    & li:nth-child(1){
+        border-left: solid 1px rgba(255, 0, 0, 1);
+    }
+    & li:last-child{
+        border-right: solid 1px rgba(255, 0, 0, 1);
+    }
+}
+
+
+.hours{
+    margin-top: calc(var(--height) * -1);
+    width: 100%;
+    height: var(--height);
+    display: flex;
+    pointer-events: none;
+    /* position: relative; */
+
+    & li{
+        position: relative;
+        list-style: none;
+        width: calc(100% / 24);
+        box-sizing: border-box;
+        color: #bbb;
+        /* text-shadow: 1px 1px 0px rgba(0, 0, 0, 0.5), -1px 0px 0px rgba(0, 0, 0, 0.5); */
+        & span{
+            position: absolute;
+            left: 5px;
+            bottom: 5px;
+        }
+    }
+    /* box-shadow: -1px 0px 1px 0px rgba(255,0,0, 0.1); */
+    & li+li{
+        border-left: dashed 1px #eee;
+    }
+    & li:nth-child(7),
+    & li:nth-child(13),
+    & li:nth-child(19){
+        border-left: solid 1px rgba(0, 0, 255, 0.15);
+    }
+}
+
+
+.middle-line{
+    position: absolute;
+    border-top: solid red 1px;
+    top: 50%;
+    min-width: 1px;
+}

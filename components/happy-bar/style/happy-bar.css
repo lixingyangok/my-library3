@@ -1,0 +1,27 @@
+.happy-bar{
+    margin: 12px 0;
+    /* background: #eee; */
+    position: relative;
+    height: 9px;
+    overflow: hidden;
+}
+
+.insider{
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    border-radius: 99px;
+    background-color: aqua;
+    text-align: right;
+    display: flex;
+    align-items: center;
+    flex-direction: row-reverse;
+    line-height: 1;
+    & .sec{
+        font-size: 10px;
+        transform: translateX(135%);
+    }
+}
+
+
