@@ -15,6 +15,16 @@
                 </el-button> -->
             </li>
         </ul>
+        <section class="block01" >
+            <button @click="chooseFolder">选择文件夹</button>
+            <br/>
+            <ul>
+                <li v-for="cur, idx of aFolders" :key="idx">
+                    {{ cur.name }}__
+                    {{ cur.kind }}
+                </li>
+            </ul>
+        </section>
         <p>
             当前：{{aPath.join('/')}}<br/>
             目标：{{this.$route.query.sPath}}
@@ -212,8 +222,8 @@
 </template>
 
 <script>
-import { set, get } from 'idb-keyval';
 // import oMethods from './js/shelf.js';
+import oMethods01 from './js/folderAbout.js';
 
 
 export default {
@@ -221,7 +231,6 @@ export default {
     components: {
     },
     data(){
- 
         if (process.client){
             window.oConfig = (function(){
                 const aMedia = [
@@ -249,8 +258,8 @@ export default {
                 };
             })();
         }
-        console.log("window.oConfig", window.oConfig);
-        console.log('vm.$route;\n', this.$route);
+        // console.log("window.oConfig", window.oConfig);
+        // console.log('vm.$route;\n', this.$route);
         const {aRoot=[]} = window.oConfig;
         const {sPath=''} = this.$route.query;
         let aPath = [aRoot[0]];
@@ -281,13 +290,14 @@ export default {
                 aLines: [],
                 aWords: [],
             },
+            aFolders: [],
         };
     },
     created(){
         // this.getMediaHomesArr();
+        this.getFolders();
     },
     mounted(){
-        set('test01', {a:1,b:2});
     },
     watch: {
         aPath: {
@@ -299,6 +309,7 @@ export default {
         },
     },
     methods: {
+        ...oMethods01,
         // ...oMethods,
     },
 };
@@ -306,5 +317,11 @@ export default {
 
 <style scoped src="./style/shelf.scss" lang="scss"></style>
 <style scoped src="./style/media-info.css"></style>
+<style scoped lang="scss">
+.block01{
+    padding: 25px 0;
+    background-color: #eee;
+}
+</style>
 
 
