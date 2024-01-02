@@ -20,8 +20,13 @@
             <br/>
             <ul>
                 <li v-for="cur, idx of aFolders" :key="idx">
-                    {{ cur.name }}__
-                    {{ cur.kind }}
+                    {{ cur.sKey }}
+                    <button @click="readFolder(idx)">
+                        读取
+                    </button>
+                    <button @click="delFolder(idx)">
+                        删除
+                    </button>
                 </li>
             </ul>
         </section>
