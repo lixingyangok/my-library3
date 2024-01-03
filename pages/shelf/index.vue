@@ -52,8 +52,17 @@
             <button @click="updateMediaInfo">更新异常文件</button>
         </div>
         <br/>
-        <!-- ▼大列表 -->
         <article class="directory-list">
+            <ul>
+                <li class="one-item"
+                    v-for="(oCur, idx01) of aDirectory" :key="idx01"
+                >
+                    {{ oCur.name }}
+                </li>
+            </ul>
+        </article>
+        <!-- ▼大列表 -->
+        <article  v-if="0">
             <ul v-for="(aColumn, i1) of aTree" :key="i1">
                 <li v-for="(cur, i2) of aColumn" :key="i2"
                     @click="ckickTree(i1, i2, cur)"
@@ -275,7 +284,6 @@ export default {
             aAimTo = sPath.slice(cur.length + 1).split('/');
         }
         return {
-            aFolders: [],
             aFolderMedia: [],
             aDisks: document.body.disks,
             oConfig: window.oConfig,
@@ -295,7 +303,9 @@ export default {
                 aLines: [],
                 aWords: [],
             },
+            // 👇新的
             aFolders: [],
+            aDirectory: [],
         };
     },
     created(){
