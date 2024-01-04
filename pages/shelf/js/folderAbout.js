@@ -41,31 +41,25 @@ const oFn01 = {
         let answer = await handler.requestPermission({ mode: 'readwrite', });
         if (answer != 'granted') return;
         console.log("handler", handler);
-        this.aDirectory = await handler2array(handler);
-        // var aResult02 = aResult.map(cur => {
-        //     return new Promise((fnResolve) => {
-        //         const [fileName, oHandler] = cur;
-        //         const {kind, name} = oHandler;
-        //         if (oHandler.getFile){
-        //             oHandler.getFile().then(fileInfo => {
-        //                 // console.log("fileInfo", fileInfo);
-        //                 fnResolve({
-        //                     fileInfo,
-        //                     kind,
-        //                     name,
-        //                 });
-        //             });
-        //         }else{
-        //             console.log("oHandler", oHandler);
-        //             fnResolve({ kind, name });
-        //         }
-        //     });
-        // });
-        // const aReulst03 = await Promise.all(aResult02);
-        // console.log("aReulst03", aReulst03);
+        const aRoot = await handler2array(handler);
+        this.aDirectory.splice(0, Infinity, aRoot);
     },
-    ckickDirectory(i1, i2, cur){
-``
+    async ckickItem(i1, i2, cur){
+        const oItem = this.aDirectory[i1][i2];
+        console.log("目标");
+        console.log(JSON.parse(JSON.stringify(oItem)));
+        if (oItem.kind === 'directory') { // 👈处理点击文件夹动作
+            // ▼ this.aPath 正在被 watch 监听，操作会触发后续动作
+            // this.aPath.splice(i1 + 1, Infinity, sItem);
+            const arr = await handler2array(oItem.handler);
+            this.aDirectory.splice(i1+1, Infinity, arr);
+            return;
+        }
+        
+        // ▲文件夹，▼文件
+        // const sFilePath = `${this.aPath.join('/')}/${sItem}`;
+        // const isMedia = await checkFile(sFilePath, oConfig.oMedia)
+        // if (!isMedia) return;
     }
 };
 
@@ -79,11 +73,30 @@ async function handler2array(handler){
     if (!directory) return [];
     const aResult = [];
     for await (const oItem of handler.values()){
+        const oFileInfo = await getTheFileObj(oItem);
         aResult.push({
             name: oItem.name,
             kind: oItem.kind,
             handler: oItem,
+            ...oFileInfo,
         });
     }
     return aResult;
 }
+
+async function getTheFileObj(handler){
+    const file = handler.kind === 'file';
+    if (!file) return {};
+    const oInfoObj = await handler.getFile();
+    // console.log("oInfoObj", oInfoObj);
+    const oResult = {
+        lastModified: oInfoObj.lastModified,
+        lastModifiedDate: oInfoObj.lastModifiedDate,
+        size: oInfoObj.size,
+        webkitRelativePath: oInfoObj.webkitRelativePath,
+        type: oInfoObj.type, // "audio/mpeg", "video/mp4"
+        isMedia: !!oInfoObj.type.match(/audio|video/),
+    };
+    return oResult;
+}
+

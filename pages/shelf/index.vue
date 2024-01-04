@@ -53,11 +53,29 @@
         </div>
         <br/>
         <article class="directory-list">
-            <ul>
+            <ul v-for="(aColumn, i1) of aDirectory" :key="i1">
                 <li class="one-item"
-                    v-for="(oCur, idx01) of aDirectory" :key="idx01"
+                    v-for="(cur, i2) of aColumn" :key="i2"
+                    @click="ckickItem(i1, i2, cur)"
                 >
-                    {{ oCur.name }}
+                    <template v-if="cur.kind == 'directory'">
+                        <i class="folder-mark fas fa-folder "
+                            :class="{'has-media': cur.hasMedia}"
+                        />
+                        <i class="fas fa-check fa-xs small-check"
+                            vif="oMediaHomes[cur.sPath]"
+                        />
+                    </template>
+                    <template v-else-if="cur.isMedia">
+                        <i class="fas fa-play-circle"
+                            :class="{
+                                doing: cur.infoAtDb,
+                                done: cur.infoAtDb?.finishedAt,
+                            }"
+                        />
+                    </template>
+                    <i v-else class="fas fa-file-alt"/>
+                    {{ cur.name }}
                 </li>
             </ul>
         </article>
@@ -288,6 +306,7 @@ export default {
             aDisks: document.body.disks,
             oConfig: window.oConfig,
             aPath,
+            aRoute: [],
             aAimTo,
             aTree: [],
             dialogVisible: false, // 用于导入的1级窗口
