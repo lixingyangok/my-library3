@@ -2,6 +2,9 @@
 <template>
     <section class="outer" >
         <h2>{{aDisks}}</h2>
+        <h2 @click="()=> oTest.bb=999">
+            {{oTest}}
+        </h2>
         <ul class="path-list" >
             <li v-for="(cur, idx) of oConfig.aRoot" :key="idx"
                 :class="{active: aPath.join('/').startsWith(cur)}"
@@ -19,11 +22,10 @@
             <button @click="chooseFolder">选择文件夹</button>
             <br/>
             <ul>
-                <li v-for="cur, idx of aFolders" :key="idx">
+                <li v-for="cur, idx of aFolders" :key="idx"
+                @click="readFolder(idx)"
+                >
                     {{ cur.sKey }}
-                    <button @click="readFolder(idx)">
-                        读取
-                    </button>
                     <button @click="delFolder(idx)">
                         删除
                     </button>
@@ -59,22 +61,22 @@
                     @click="ckickItem(i1, i2, cur)"
                 >
                     <template v-if="cur.kind == 'directory'">
-                        <i class="folder-mark fas fa-folder "
+                        <i class="fas fa-fw folder-mark fa-folder "
                             :class="{'has-media': cur.hasMedia}"
                         />
-                        <i class="fas fa-check fa-xs small-check"
+                        <i class="fas fa-fw fa-check fa-xs small-check"
                             vif="oMediaHomes[cur.sPath]"
                         />
                     </template>
                     <template v-else-if="cur.isMedia">
-                        <i class="fas fa-play-circle"
+                        <i class="fas fa-fw fa-play-circle"
                             :class="{
                                 doing: cur.infoAtDb,
                                 done: cur.infoAtDb?.finishedAt,
                             }"
                         />
                     </template>
-                    <i v-else class="fas fa-file-alt"/>
+                    <i v-else class="fas fa-fw fa-file-alt"/>
                     {{ cur.name }}
                 </li>
             </ul>
@@ -302,6 +304,7 @@ export default {
             aAimTo = sPath.slice(cur.length + 1).split('/');
         }
         return {
+            oTest: {aa:1},
             aFolderMedia: [],
             aDisks: document.body.disks,
             oConfig: window.oConfig,

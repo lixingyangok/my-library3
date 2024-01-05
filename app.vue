@@ -23,7 +23,7 @@ useHead({
         href: '//unpkg.com/element-plus/dist/index.css',
     } ],
     script: [{
-        // src: '//unpkg.com/element-plus',
+        src: 'https://cdn.jsdelivr.net/npm/hash-wasm@4/dist/xxhash64.umd.min.js',
     }]
 });
 if (process.client){
