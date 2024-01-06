@@ -2,8 +2,10 @@
 <template>
     <section class="outer" >
         <h2>{{aDisks}}</h2>
-        <h2 @click="()=> oTest.bb=999">
-            {{oTest}}
+        <h2 @click="()=> oTest.bb=999"
+            v-for="(cur,idx) of 3"
+        >
+            {{cur}} - {{oTest}}
         </h2>
         <ul class="path-list" >
             <li v-for="(cur, idx) of oConfig.aRoot" :key="idx"
@@ -64,9 +66,9 @@
                         <i class="fas fa-fw folder-mark fa-folder "
                             :class="{'has-media': cur.hasMedia}"
                         />
-                        <i class="fas fa-fw fa-check fa-xs small-check"
-                            vif="oMediaHomes[cur.sPath]"
-                        />
+                        <!-- <i class="fas fa-fw fa-check fa-xs small-check"
+                            v-if="oMediaHomes[cur.sPath]"
+                        /> -->
                     </template>
                     <template v-else-if="cur.isMedia">
                         <i class="fas fa-fw fa-play-circle"
@@ -81,7 +83,8 @@
                 </li>
             </ul>
         </article>
-        <!-- ▼大列表 -->
+
+        <!-- ▼大列表（旧） -->
         <article  v-if="0">
             <ul v-for="(aColumn, i1) of aTree" :key="i1">
                 <li v-for="(cur, i2) of aColumn" :key="i2"
