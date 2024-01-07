@@ -2,7 +2,7 @@
  * @Author: Merlin
  * @Date: 2023-12-30 10:38:50
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-06 22:33:12
+ * @LastEditTime: 2024-01-07 17:21:22
  * @Description: 
 -->
 <template>
@@ -15,7 +15,7 @@
 <script setup>
 
 useHead({
-    title: 'haha',
+    title: '😄 哈哈学习',
     link: [{
         rel: 'stylesheet',
         type: 'text/css',
@@ -30,8 +30,7 @@ useHead({
         href: '//unpkg.com/element-plus/dist/index.css',
     } ],
     script: [{
-        // idb Dexie
-        // src: 'https://cdn.jsdelivr.net/npm/idb@8/build/umd.js',
+        // Dexie
         src: 'https://unpkg.com/dexie@latest/dist/dexie.js',
     }, {
         // hashwasm.xxhash64

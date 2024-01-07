@@ -12,7 +12,7 @@ export default defineNuxtConfig({
     // ],
     ssr: true,
     devServer: {
-        port: 8889,
+        port: 8899,
     },
     devtools: { enabled: true },
     app: {
@@ -22,5 +22,5 @@ export default defineNuxtConfig({
     },
     build: {
 
-    }
+    },
 });
