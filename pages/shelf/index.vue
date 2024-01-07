@@ -20,10 +20,12 @@
             <button @click="chooseFolder">选择文件夹</button>
             <br/>
             <ul>
-                <li v-for="cur, idx of aFolders" :key="idx"
-                    @click="readFolder(idx)"
-                >
-                    {{ cur.sKey }}
+                <li v-for="cur, idx of aFolders" :key="idx" >
+                    <em @click="setRootFolder(idx)">
+                        {{ cur.name }}__
+                        {{ cur.time }}
+                    </em>
+                    &emsp;
                     <button @click="delFolder(idx)">
                         删除
                     </button>

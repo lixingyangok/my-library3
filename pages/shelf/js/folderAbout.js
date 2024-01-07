@@ -1,60 +1,41 @@
-import { get as getIdb, set as setIdb, keys, del } from 'idb-keyval';
 import {mySort} from '@/common/js/common-fn.js';
-// import * as abs from 'https://cdn.jsdelivr.net/npm/absurd-sql@0.0.54/dist/index.min.js';
 
-
-
-
-async function init() {
-    const {initBackend} = await import('https://cdn.jsdelivr.net/npm/absurd-sql@0.0.54/dist/indexeddb-main-thread.js');
-    let worker = new Worker(new URL('./absurd-sql-worker.js', import.meta.url));
-    // This is only required because Safari doesn't support nested
-    // workers. This installs a handler that will proxy creating web
-    // workers through the main thread
-    initBackend(worker);
-    console.log(worker);
-}
-
-
-
-let aFolders = [];
 const oFn01 = {
     async chooseFolder(){
-        let oHandler = await window.showDirectoryPicker({
-            id: 'id01',
+        let handler = await window.showDirectoryPicker({
+            // id: 'id01',
             mode: 'readwrite',
         }).catch(err => err);
-        if (!oHandler) return;
-        console.log("oHandler", oHandler);
-        const {kind, name} = oHandler;
+        if (!handler) return;
+        console.log("handler", handler);
+        const {kind, name} = handler;
         // (new Date()).toLocaleString()
-        const sTime = (new Date()).toLocaleString();
-        const sKey = `${kind}__${name}__${sTime}`; 
-        console.log(oHandler);
-        const oSaveInfo = await setIdb(sKey, oHandler);
-        console.log(sKey, oSaveInfo);
+        const time = (new Date()).toLocaleString();
+        console.log("name", name);
+        
+        const arr = await handler2List(handler);
+        this.aDirectory.splice(0, 1/0, arr);
+        fillTheList(this.aDirectory[0]);
+        this.aRoutes.splice(0, 1/0);
+        await dxDB.directory.add({
+            name,
+            time,
+            handler
+        });
         this.getFolders();
     },
     async getFolders(){
-        const aKeys = await keys() || [];
-        if (!aKeys.length) return;
-        const arr = [];
-        for (const sCurKey of aKeys){
-            const handler = await getIdb(sCurKey);
-            arr.push({
-                sKey: sCurKey,
-                handler,
-            });
-        }
-        this.aFolders = arr;
+        const aDirectory = await dxDB.directory.toArray();
+        console.log("aDirectory", aDirectory);
+        this.aFolders = aDirectory;
     },
     delFolder(idx){
-        const sKey = this.aFolders[idx].sKey;
+        const {id} = this.aFolders[idx];
         this.aFolders.splice(idx, 1);
-        del(sKey);
+        dxDB.directory.where('id').equals(id).delete();
     },
-    async readFolder(idx){
-        const {sKey, handler} = this.aFolders[idx];
+    async setRootFolder(idx){
+        const {handler} = this.aFolders[idx];
         let answer = await handler.requestPermission({ mode: 'readwrite', });
         if (answer != 'granted') return;
         console.log("handler", handler);
@@ -63,7 +44,7 @@ const oFn01 = {
         this.aDirectory.splice(0, Infinity, aRoot);
         fillTheList(this.aDirectory[0]);
     },
-    async ckickItem(i1, i2, cur){
+    async ckickItem(i1, i2){
         const oItem = this.aDirectory[i1][i2];
         console.log("点击目标：", oItem);
         console.log("点击目标：", JSON.parse(JSON.stringify(oItem)));
@@ -77,7 +58,8 @@ const oFn01 = {
         this.aDirectory.splice(i1+1, Infinity, arr);
         fillTheList(this.aDirectory[i1+1]);
         this.aRoutes.splice(i1, 1/0, oItem.name);
-    }
+    },
+
 };
 
 export default {
@@ -165,3 +147,14 @@ async function handler2FileObj(handler){
 
 
 
+
+
+async function init() {
+    const {initBackend} = await import('https://cdn.jsdelivr.net/npm/absurd-sql@0.0.54/dist/indexeddb-main-thread.js');
+    let worker = new Worker(new URL('./absurd-sql-worker.js', import.meta.url));
+    // This is only required because Safari doesn't support nested
+    // workers. This installs a handler that will proxy creating web
+    // workers through the main thread
+    initBackend(worker);
+    console.log(worker);
+}

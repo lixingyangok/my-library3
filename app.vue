@@ -63,6 +63,9 @@ if (process.client){
 
 <style lang="scss" >
 body > #__nuxt{
+    &{
+        line-height: 1.2;
+    }
     // display: flex;
     --nav-width: 55px;
     // min-height: 100vh;
