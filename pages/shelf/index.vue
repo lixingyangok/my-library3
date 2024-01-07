@@ -2,11 +2,7 @@
 <template>
     <section class="outer" >
         <h2>{{aDisks}}</h2>
-        <h2 @click="()=> oTest.bb=999"
-            v-for="(cur,idx) of 3"
-        >
-            {{cur}} - {{oTest}}
-        </h2>
+
         <ul class="path-list" >
             <li v-for="(cur, idx) of oConfig.aRoot" :key="idx"
                 :class="{active: aPath.join('/').startsWith(cur)}"
@@ -25,7 +21,7 @@
             <br/>
             <ul>
                 <li v-for="cur, idx of aFolders" :key="idx"
-                @click="readFolder(idx)"
+                    @click="readFolder(idx)"
                 >
                     {{ cur.sKey }}
                     <button @click="delFolder(idx)">
@@ -36,6 +32,7 @@
         </section>
         <p>
             当前：{{aPath.join('/')}}<br/>
+            当前：{{aRoutes.join('/')}}<br/>
             目标：{{this.$route.query.sPath}}
         </p>
         <div class="legend" >
@@ -307,7 +304,6 @@ export default {
             aAimTo = sPath.slice(cur.length + 1).split('/');
         }
         return {
-            oTest: {aa:1},
             aFolderMedia: [],
             aDisks: document.body.disks,
             oConfig: window.oConfig,
@@ -329,8 +325,9 @@ export default {
                 aWords: [],
             },
             // 👇新的
-            aFolders: [],
+            aFolders: [], // 选择过的历史记录
             aDirectory: [],
+            aRoutes: [],
         };
     },
     created(){

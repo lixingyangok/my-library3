@@ -67,17 +67,16 @@ const oFn01 = {
         const oItem = this.aDirectory[i1][i2];
         console.log("点击目标：", oItem);
         console.log("点击目标：", JSON.parse(JSON.stringify(oItem)));
-        if (oItem.kind === 'directory') { // 👈处理点击文件夹动作
-            // ▼ this.aPath 正在被 watch 监听，操作会触发后续动作
-            // this.aPath.splice(i1 + 1, Infinity, sItem);
-            const arr = await handler2List(oItem.handler);
-            // mySort(arr, 'name');
-            this.aDirectory.splice(i1+1, Infinity, arr);
-            fillTheList(this.aDirectory[i1+1]);
-            return;
-        }
-        if (!oItem.isMedia) return;
-
+        if (oItem.isMedia) return;
+        if (oItem.kind !== 'directory') return;
+        // 👈处理点击文件夹动作
+        // ▼ this.aPath 正在被 watch 监听，操作会触发后续动作
+        // this.aPath.splice(i1 + 1, Infinity, sItem);
+        const arr = await handler2List(oItem.handler);
+        console.log("目标的子元素\n", arr);
+        this.aDirectory.splice(i1+1, Infinity, arr);
+        fillTheList(this.aDirectory[i1+1]);
+        this.aRoutes.splice(i1, 1/0, oItem.name);
     }
 };
 
@@ -134,9 +133,12 @@ async function handler2List(handler){
             kind,
             handler: oItem,
         };
+        if (isMedia) oThisOne.isMedia = true;
         aResult[iTarget].push(oThisOne);
     }
+    // console.log("aResult", JSON.parse(JSON.stringify(aResult)));
     aResult.forEach(curArr => mySort(curArr, 'name'));
+    // console.log("aResult", JSON.parse(JSON.stringify(aResult)));
     return aResult.flat(1/0);
 }
 
