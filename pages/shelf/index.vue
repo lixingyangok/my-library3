@@ -26,7 +26,7 @@
                         {{ cur.time }}
                     </em>
                     &emsp;
-                    <button @click="delFolder(idx)">
+                    <button @click="delRootFolder(idx)">
                         删除
                     </button>
                 </li>
@@ -334,7 +334,7 @@ export default {
     },
     created(){
         // this.getMediaHomesArr();
-        this.getFolders();
+        this.setRootList();
     },
     mounted(){
     },

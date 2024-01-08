@@ -9,37 +9,38 @@ const oFn01 = {
         if (!handler) return;
         console.log("handler", handler);
         const {kind, name} = handler;
-        // (new Date()).toLocaleString()
-        const time = (new Date()).toLocaleString();
+        const time = dayjs().format('YYYY-MM-DD HH:mm:ss');
+        const path = `${time}`;
         console.log("name", name);
-        
-        const arr = await handler2List(handler);
+        const arr = await handler2List(handler, {path});
         this.aDirectory.splice(0, 1/0, arr);
         fillTheList(this.aDirectory[0]);
         this.aRoutes.splice(0, 1/0);
         await dxDB.directory.add({
             name,
-            time,
+            time, // 当 id 使用
+            path,
             handler
         });
-        this.getFolders();
+        this.setRootList();
     },
-    async getFolders(){
+    async setRootList(){
         const aDirectory = await dxDB.directory.toArray();
         console.log("aDirectory", aDirectory);
         this.aFolders = aDirectory;
     },
-    delFolder(idx){
+    delRootFolder(idx){
         const {id} = this.aFolders[idx];
         this.aFolders.splice(idx, 1);
         dxDB.directory.where('id').equals(id).delete();
     },
     async setRootFolder(idx){
-        const {handler} = this.aFolders[idx];
+        const {handler, path} = this.aFolders[idx];
+        console.log("path", path);
         let answer = await handler.requestPermission({ mode: 'readwrite', });
         if (answer != 'granted') return;
         console.log("handler", handler);
-        const aRoot = await handler2List(handler);
+        const aRoot = await handler2List(handler, {path});
         // mySort(aRoot, 'name');
         this.aDirectory.splice(0, Infinity, aRoot);
         fillTheList(this.aDirectory[0]);
@@ -53,7 +54,7 @@ const oFn01 = {
         // 👈处理点击文件夹动作
         // ▼ this.aPath 正在被 watch 监听，操作会触发后续动作
         // this.aPath.splice(i1 + 1, Infinity, sItem);
-        const arr = await handler2List(oItem.handler);
+        const arr = await handler2List(oItem.handler, {path: oItem.path});
         console.log("目标的子元素\n", arr);
         this.aDirectory.splice(i1+1, Infinity, arr);
         fillTheList(this.aDirectory[i1+1]);
@@ -83,16 +84,18 @@ async function fillOneFile(cur){
     let arrayData = new Uint8Array(arrayBuffer);
     // console.timeEnd('准备计算 hash');
     // console.time('计算 hash');
-    const hash = await hashwasm.xxhash64(arrayData);
+    const hash = ''; //await hashwasm.xxhash64(arrayData);
     // console.timeEnd('计算 hash');
     console.log('hash', hash);
     oFileINfo.hash = hash;
 }
 
 // 从文件夹 handler 返回其子元素列表
-async function handler2List(handler){
+async function handler2List(handler, oConfig={}){
+    let {path} = oConfig;
     const directory = handler.kind == 'directory';
     if (!directory) return [];
+    path &&= `${path}/${handler.name}`;
     const aSkipFormat = ['ecdl'];
     const aMediaList = ['mp4', 'mp3', 'ogg', 'm4a', 'acc', 'aac', 'opus',];
     const aResult = [
@@ -114,6 +117,8 @@ async function handler2List(handler){
             name,
             kind,
             handler: oItem,
+            path,
+            pathFull: `${path}/${name}`,
         };
         if (isMedia) oThisOne.isMedia = true;
         aResult[iTarget].push(oThisOne);

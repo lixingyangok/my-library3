@@ -2,7 +2,7 @@
  * @Author: Merlin
  * @Date: 2023-12-30 10:38:50
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-07 17:21:22
+ * @LastEditTime: 2024-01-08 21:09:15
  * @Description: 
 -->
 <template>
@@ -30,6 +30,9 @@ useHead({
         href: '//unpkg.com/element-plus/dist/index.css',
     } ],
     script: [{
+        // dayjs
+        src: 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/dayjs.min.js',
+    },{
         // Dexie
         src: 'https://unpkg.com/dexie@latest/dist/dexie.js',
     }, {
