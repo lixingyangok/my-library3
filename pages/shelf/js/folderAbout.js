@@ -60,7 +60,6 @@ const oFn01 = {
         fillTheList(this.aDirectory[i1+1]);
         this.aRoutes.splice(i1, 1/0, oItem.name);
     },
-
 };
 
 export default {
@@ -70,25 +69,45 @@ export default {
 // 为文件列表填充文件信息
 async function fillTheList(aList){
     aList.forEach(async (cur, idx) => {
-        if (idx % 3 === 0) await fillOneFile(cur);
+        if (idx % 2) await fillOneFile(cur);
         else fillOneFile(cur);
     });
 }
 
 async function fillOneFile(cur){
-    const oFileINfo = await handler2FileObj(cur.handler);
+    const aPromise = await Promise.all([
+        handler2FileObj(cur.handler),
+        dxDB.file.where({pathFull: cur.pathFull}).first(),
+    ]);
+    let [oFileINfo, oFileInDx] = aPromise;
     Object.assign(cur, oFileINfo);
     if (!oFileINfo.isMedia) return;
-    // console.time('准备计算 hash');
-    let arrayBuffer = await oFileINfo.oFile.arrayBuffer();
-    let arrayData = new Uint8Array(arrayBuffer);
-    // console.timeEnd('准备计算 hash');
-    // console.time('计算 hash');
-    const hash = ''; //await hashwasm.xxhash64(arrayData);
-    // console.timeEnd('计算 hash');
-    console.log('hash', hash);
+    let hash = (()=>{
+        if (!oFileInDx) return '';
+        const aa = cur.size == oFileInDx.size;
+        const bb = cur.lastModified == oFileInDx.lastModified;
+        if (aa && bb) return oFileInDx.hash;
+    })();
+    if (!hash){
+        console.log("从头计算 hash", );
+        let arrayBuffer = await oFileINfo.oFile.arrayBuffer();
+        let arrayData = new Uint8Array(arrayBuffer);
+        hash = await hashwasm.xxhash64(arrayData);
+        console.log("从头计算 hash", hash);
+        dxDB.file.put({
+            hash,
+            size: oFileINfo.size,
+            lastModified: oFileINfo.lastModified,
+            pathFull: cur.pathFull,
+            createdAt: new Date(),
+        },{
+            hash: cur.hash
+        });
+    }
     oFileINfo.hash = hash;
 }
+
+
 
 // 从文件夹 handler 返回其子元素列表
 async function handler2List(handler, oConfig={}){
