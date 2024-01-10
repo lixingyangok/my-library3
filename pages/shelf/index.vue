@@ -23,7 +23,7 @@
                 <li v-for="cur, idx of aFolders" :key="idx" >
                     <em @click="setRootFolder(idx)">
                         {{ cur.name }}__
-                        {{ cur.time }}
+                        {{ cur.createdAt }}
                     </em>
                     &emsp;
                     <button @click="delRootFolder(idx)">
@@ -70,12 +70,14 @@
                         /> -->
                     </template>
                     <template v-else-if="cur.isMedia">
-                        <i class="fas fa-fw fa-play-circle"
+                        <i v-if="cur.hash"
+                            class="fas fa-fw fa-play-circle"
                             :class="{
                                 doing: cur.infoAtDb,
                                 done: cur.infoAtDb?.finishedAt,
                             }"
                         />
+                        <i v-else class="fa-solid fa-fw fa-circle-notch fa-spin" />
                     </template>
                     <i v-else class="fas fa-fw fa-file-alt"/>
                     {{ cur.name }}
@@ -334,7 +336,7 @@ export default {
     },
     created(){
         // this.getMediaHomesArr();
-        this.setRootList();
+        this.showRootList();
     },
     mounted(){
     },

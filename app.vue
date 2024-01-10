@@ -2,7 +2,7 @@
  * @Author: Merlin
  * @Date: 2023-12-30 10:38:50
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-08 21:09:15
+ * @LastEditTime: 2024-01-10 22:18:58
  * @Description: 
 -->
 <template>
@@ -24,12 +24,16 @@ useHead({
         rel: 'stylesheet',
         type: 'text/css',
         href: 'https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.2/css/all.min.css',
+        // href: 'https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/fontawesome.min.css',
     }, {
         rel: 'stylesheet',
         type: 'text/css',
         href: '//unpkg.com/element-plus/dist/index.css',
     } ],
     script: [{
+        // store
+        src: 'https://cdn.jsdelivr.net/npm/store@2.0.12/dist/store.legacy.min.js',
+    },{
         // dayjs
         src: 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/dayjs.min.js',
     },{
