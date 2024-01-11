@@ -1,17 +1,18 @@
 <!--
  * @Author: 李星阳
  * @Date: 2022-01-03 10:09:58
- * @LastEditors: 李星阳
- * @LastEditTime: 2023-08-20 13:30:06
+ * @LastEditors: Merlin
+ * @LastEditTime: 2024-01-11 22:07:03
  * @Description: 
 -->
 <template>
     <article class="wave-coat" >
         <video controls class="player" ref="oAudio"
             id="media-player"
-            v-show="(mediaPath || '').endsWith('.mp4')"
-            :style="{width: '600px'}"
-            :src="mediaPath"
+            v-show="(mediaPath || '').endsWith('.mp4') || 1"
+            :style="{width: '200px'}"
+            :src="mediaSrc"
+            v-if="mediaSrc"
         ></video>
         <section class="my-wave-bar" ref="oMyWaveBar"
             :class="sWaveBarClassName"
@@ -84,6 +85,9 @@ export default {
             default: 0,
         },
         mediaPath: String,
+        oMediaFile: {
+            type: Object,
+        },
         aLineArr: {
             type: Array,
             default: ()=>[],
@@ -101,7 +105,10 @@ export default {
     // ▼ 声明当前组件<example/>可以在行间定义的属性
     emits: ['pipe', 'setTimeTube'],
     setup(props){
+        if (!import.meta.client) return;
         const {oDom, oFn, oData, iFinalDuration} = w01();
+        console.log("oFn", oFn);
+        oFn.initFn(props.oMediaFile);
         // ▼视口范围 [起点秒，终点秒]
         const aGapSeconds = computed(() => {
             const iWidth = oDom?.oViewport?.offsetWidth || window.innerWidth;
@@ -111,6 +118,7 @@ export default {
             return [Math.max(start, 0), end];
         });
         const aGapMarks = computed(() => {
+            return [];
             const [iLeftSec, iRightSec] = aGapSeconds.v;
             const arr = [];
             for(let idx = iLeftSec; idx < iRightSec; idx++ ) {
@@ -119,6 +127,7 @@ export default {
             return arr;
         });
         const aGapRegions = computed(() => {
+            return [];
             const [iLeftSec, iRightSec] = aGapSeconds.v;
             if (!iRightSec) return [];
             const myArr = [];
@@ -148,6 +157,7 @@ export default {
     },
     mounted(){
         // 此处 this === getCurrentInstance()
+        console.log("注册按键", );
         const oFnList = getKeyDownFnMap(this, 'obj');
         registerKeydownFn(oFnList);
     },

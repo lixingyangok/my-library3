@@ -68,3 +68,28 @@ export async function handler2FileObj(handler){
     return oResult;
 }
 
+export async function path2file(sPath){
+    const rootID = sPath.slice(0,19);
+    const aPath = sPath.slice(20).split('/');
+    const oRoot = await dxDB.directory.get({
+        createdAt: rootID,
+    });
+    if (!oRoot) return;
+    let answer = await oRoot.handler.requestPermission({
+        mode: 'readwrite'
+    });
+    if (answer != 'granted') return;
+    console.log('aPath', aPath);
+    let oTargetHandler = oRoot.handler;
+    for await (const [idx, cur] of aPath.entries()){
+        if (idx === 0) continue;
+        const type = (idx === aPath.length-1) ? 'file' : 'directory';
+        oTargetHandler = await handler2List(oTargetHandler, {
+            findingName: cur,
+            findingType: type,
+        });
+        if (!oTargetHandler) break;
+    }
+    const oFile = await oTargetHandler.getFile();
+    return oFile;
+}

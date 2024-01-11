@@ -32,7 +32,9 @@ useHead({
     } ],
     script: [{
         // store
-        src: 'https://cdn.jsdelivr.net/npm/store@2.0.12/dist/store.legacy.min.js',
+        // src: 'https://cdn.jsdelivr.net/npm/store@2.0.12/dist/store.legacy.min.js',
+    },{
+        src: 'https://cdn.jsdelivr.net/npm/store2@2.14.2/dist/store2.min.js',
     },{
         // dayjs
         src: 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/dayjs.min.js',

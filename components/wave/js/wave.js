@@ -1,10 +1,10 @@
 import { reactive, getCurrentInstance, watch, computed, onMounted, } from 'vue';
 import { fileToBuffer, getPeaks, getChannelArr, } from '@/common/js/pure-fn.js';
 import { getTubePath } from '@/common/js/common-fn.js';
-import TheAction from '@/common/js/action.js';
-import {useBarInfo} from '@/store/happy-bar.js';
-const oBarInfo = useBarInfo();
-const oActionFn = new TheAction('playing');
+// import TheAction from '@/common/js/action.js';
+// import {useBarInfo} from '@/store/happy-bar.js';
+// const oBarInfo = useBarInfo();
+// const oActionFn = new TheAction('playing');
 
 
 export default function(){
@@ -18,8 +18,9 @@ export default function(){
         oLongBar: null, // 视口内的横长条
         oAudio: null,
         oPointer: null,
+        mediaSrc: null,
     });
-    const {iWaveHeight = 0.4} = ls.get('oRecent')?.[ls.get('sFilePath')] || {};
+    const {iWaveHeight = 0.4} = store('oRecent')?.[store('sFilePath')] || {};
     const oData = reactive({
         oMediaBuffer: {}, // 媒体buffer，疑似需要向上提交以便显示时长等信息
         playing: false,
@@ -74,8 +75,8 @@ export default function(){
             const {currentTime} = oDom.oAudio;
             setTimeout(() => {
                 // iDuration 是不准确的，因为多次播放只会取到最后一次播放的时间长度
-                const iDuration = oActionFn.saveRecord(currentTime);
-                oBarInfo.setStatus(false, iDuration);
+                // const iDuration = oActionFn.saveRecord(currentTime);
+                // oBarInfo.setStatus(false, iDuration);
             });
         }
         clearInterval(oData.playing);
@@ -84,10 +85,11 @@ export default function(){
     }
     // ▲外部方法 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
     // ▼私有方法 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
-    async function initFn(sPath){
+    async function initFn(oMediaFile){
+        oDom.mediaSrc = URL.createObjectURL(oMediaFile);
         oData.oMediaBuffer = {}; // 清空旧的
         // oDom.oViewport.scrollTo(0, 0); // 横向滚动条归位
-        const oTemp = (ls('aTemp') || []).find(cur=>{
+        const oTemp = (store('aTemp') || []).find(cur=>{
             return cur.mediaPath == sPath;
         });
         console.log('有缓存吗 =', !!oTemp);
@@ -95,7 +97,10 @@ export default function(){
         if (oTemp) {
             oMediaBuffer = await getTempData(oTemp);
         }else{
-            oMediaBuffer = await getAudioData(sPath);
+            // fileToBuffer(oMediaFile).then(res=>{
+            //     console.log("res", res);    
+            // })
+            oMediaBuffer = await fileToBuffer(oMediaFile);
         }
         if (!oMediaBuffer) {
             const sTips = `读取媒体文件未成功, sPath = ${sPath.split('/').pop()}`;
@@ -116,8 +121,11 @@ export default function(){
         return { ...oTemp, aChannelData_ };
     }
     // ▼加载【媒体】数据
-    async function getAudioData(sPath){
+    async function getAudioData(sPath, oFile){
         let err;
+        if (oFile){
+            return await fileToBuffer(oFile);
+        }
         const oMediaBuffer = await fetch(sPath).then(res => {
             return res.blob();
         }).then(res=>{
@@ -198,20 +206,20 @@ export default function(){
             if (iType < 0) return Math.max(start, currentTime - 3); // 快退x秒
             return start;
         })();
-        oActionFn.initRecord({ // 只管启动，程序会按需保存
-            currentTime,
-            playFrom,
-            ongoing: !!oData.playing,
-            mediaId: props.oMediaInfo.id,
-            lineId: oCurLine.value.id || null, // 断句期间可能没有 ID 
-            isSpaceDown: oEv.keyCode === 32, // 记录是否由空格触发
-        });
+        // oActionFn.initRecord({ // 只管启动，程序会按需保存
+        //     currentTime,
+        //     playFrom,
+        //     ongoing: !!oData.playing,
+        //     mediaId: props.oMediaInfo.id,
+        //     lineId: oCurLine.value.id || null, // 断句期间可能没有 ID 
+        //     isSpaceDown: oEv.keyCode === 32, // 记录是否由空格触发
+        // });
 		oDom.oPointer.left = `${playFrom * oData.fPerSecPx}px`;
 		oDom.oAudio.currentTime = playFrom;
 		oDom.oAudio.play();
         // ▼ 每秒执行 x 次，似乎60帧即可
         oData.playing = setInterval(toMovePointer, ~~(1000 / 60));
-        oBarInfo.setStatus(true);
+        // oBarInfo.setStatus(true);
 	}
     // ▼移动光标，
     function toMovePointer(){
@@ -320,9 +328,9 @@ export default function(){
 		if (iHeight < min) iHeight = min;
 		if (iHeight > max) iHeight = max;
 		oData.iHeight = iHeight.toFixed(2) * 1;
-        ls.transact('oRecent', (oldData) => {
-            const old = oldData[ls.get('sFilePath')] || {};
-            oldData[ls.get('sFilePath')] = {
+        store.transact('oRecent', (oldData) => {
+            const old = oldData[store('sFilePath')] || {};
+            oldData[store('sFilePath')] = {
                 ...old,
                 iWaveHeight: iHeight, // 可能取不到值
             };
@@ -415,11 +423,11 @@ export default function(){
         if (!props.aLineArr?.length) return;
         goOneLine(oCurLine.v);
     });
-    watch(() => props.mediaPath, (sNew, sOld)=>{
-        if (sNew == sOld) return;
-        toPause(); // 切换到新之前先关停旧的
-        initFn(sNew);
-    }, {immediate: true});
+    // watch(() => props.mediaPath, (sNew, sOld)=>{
+    //     if (sNew == sOld) return;
+    //     toPause(); // 切换到新之前先关停旧的
+    //     initFn(sNew);
+    // }, {immediate: true});
     watch(() => props.aLineArr, async (aNew, aOld)=>{
         const condition = aNew?.length && !aOld?.length;
         if (!condition) return;
@@ -442,6 +450,7 @@ export default function(){
         goOneLine,
         cleanCanvas,
         toPause,
+        initFn,
     };
     return { oDom, oData, oFn, iFinalDuration };
 }
