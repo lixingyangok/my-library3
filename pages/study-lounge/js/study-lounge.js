@@ -4,12 +4,13 @@ import {SubtitlesStr2Arr, fixTime, copyString, downloadSrt, fileToStrings, getMe
 import {figureOut} from './figure-out-region.js';
 import {getTubePath, getDateDiff} from '@/common/js/common-fn.js';
 import {getFolderChildren, addAllMediaDbInfo} from '@/common/js/fs-fn.js';
+import {path2file} from '@/common/js/fileSystemAPI.js';
 // import {useActionStore} from '@/store/action-store.js';
 
 
 export function mainPart(){
 
-	const fsp = require('node:fs/promises');
+	// const fsp = require('node:fs/promises');
 	// const oActionStore = useActionStore();
 	const sToday = window.dayjs().format('YYYY-MM-DD');
 	let isMediaChanged = false; // 是否加载了一个新的媒体
@@ -59,7 +60,10 @@ export function mainPart(){
 		...oInputMethod,
 		...visiableControl,
 		isReading: false,
-		sMediaSrc: getTubePath(ls('sFilePath')),
+		sMediaSrc: getTubePath(store('sFilePath')), // 将废弃
+		oMediaInLocal: store('media') || {},
+		oMediaFile: null, // 媒体文件
+		
 		sHash: '',
 		oMediaInfo: {}, // 库中媒体信息
 		oMediaBuffer: {}, // 媒体的波形信息
@@ -192,8 +196,11 @@ export function mainPart(){
 	// ▼方法 ====================================================================================
 	async function init(){
 		oDom?.oMyWave?.cleanCanvas(true);
-		const hash = await fnInvoke("getHash", ls('sFilePath'));
+		const hash = oData.oMediaInLocal.hash;
 		if (!hash) throw '没有hash';
+		console.log("oMediaInLocal", oData.oMediaInLocal);
+		oData.oMediaFile = await path2file(oData.oMediaInLocal.pathFull);
+		return;
 		const aRes = await fnInvoke('db', 'getMediaInfo', {hash});
 		console.log('库中媒体信息\n', aRes[0]?.$dc());
 		if (!aRes?.[0]) return vm.$message.error('当前媒体未被收录');
@@ -226,7 +233,7 @@ export function mainPart(){
 		}, {});
 		await vm.$nextTick();
 		// ▼ 没有目标行就跳到0行（防止纵向滚动条没回顶部
-		let {iLineNo=0, sTxtFile} = ls('oRecent')[ls('sFilePath')] || {};
+		let {iLineNo=0, sTxtFile} =store('oRecent')[ls('sFilePath')] || {};
 		// ▼ 只有媒体变更了才重新定位行，即，因保存字幕后重新加载时不要行动
 		if (isMediaChanged){ 
 			console.log(`isMediaChanged ${isMediaChanged}, iLineNo=${iLineNo}`);
@@ -262,7 +269,7 @@ export function mainPart(){
 	}
 	// ▼保存1个媒体信息
 	async function saveMedia(){
-		const arr = ls('sFilePath').split('/');
+		const arr = store('sFilePath').split('/');
 		const obj = {
 			hash: oData.sHash,
 			name: arr.slice(-1)[0],
@@ -300,7 +307,7 @@ export function mainPart(){
 		const {id, duration=0} = oData.oMediaInfo;
 		const iDurDifference = duration && Math.abs(oMediaBuffer.duration - duration);
 		if (!id){
-			alert('不能‘在加载波形之前’加载库中媒体信息');
+			console.log('不能‘在加载波形之前’加载库中媒体信息 ');
 		}else if (iDurDifference > 1){
 			dealMediaTimeGaP(oData.oMediaInfo, oMediaBuffer);
 		}
@@ -419,7 +426,7 @@ export function mainPart(){
 	async function visitSibling(oMedia){
 		oData.iCurLineIdx = 0;
 		oData.aLineArr = [{text:''}];
-		ls('sFilePath', oMedia.sPath);
+		store('sFilePath', oMedia.sPath);
 		oData.sMediaSrc = getTubePath(oMedia.sPath);
 		await vm.$nextTick();
 		init();
@@ -602,7 +609,7 @@ export function mainPart(){
 	async function chooseFile(oTarget){
 		// oData.isShowFileList = false; // 关闭窗口
 		const {sFullPath} = oTarget;
-		ls.transact('oRecent', (oldData) => {
+		store.transact('oRecent', (oldData) => {
             const old = oldData[ls.get('sFilePath')] || {
                 startAt: new Date() * 1, // 记录开始时间
             };

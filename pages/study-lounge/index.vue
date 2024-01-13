@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-13 14:57:14
+ * @LastEditTime: 2024-01-13 15:58:39
  * @Description: 
 -->
 <template>
@@ -99,6 +99,7 @@
                 :i-cur-line-idx="iCurLineIdx"
                 :mediaDuration="oMediaInfo.duration"
                 :oMediaInfo="oMediaInfo"
+                :oMediaFile="oMediaFile"
                 @pipe="bufferReceiver"
                 @setTimeTube="setTime"
             />
@@ -106,11 +107,14 @@
                 :iMediaID="oMediaInfo.id"
             /> -->
             <article class="wave-below">
-                <div class="practice-record" >
+                <!-- <div class="practice-record" >
                     <span>练习次数：{{ (oActionStore.oMediaActionSum.iSecLong / oMediaInfo.duration).toFixed(2)}}次</span>
                     <span>播放次数：{{ oActionStore.oMediaActionSum.iPracticeTimes }}</span>
                     <span>练习时长：{{ oActionStore.oMediaActionSum.sTimeLong }}</span>
-                </div>
+                </div> -->
+                <el-button type="primary" size="small" @click="init">
+                    init
+                </el-button>
                 <el-dropdown split-button type="primary" size="small" @command="handleCommand" >
                     待定功能
                     <!-- <el-button type="primary" size="small">字幕&nbsp;<i class="fas fa-angle-down"/></el-button> -->

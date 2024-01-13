@@ -276,7 +276,7 @@ export function fnAllKeydownFn() {
             return (fResult * 100).toFixed(2) * 1;
         })();
         start_ = start_.slice(0,-3).padStart(8,0);
-        ls.transact('oRecent', (oldData) => {
+        store.transact('oRecent', (oldData) => {
             const old = oldData[ls.get('sFilePath')] || {
                 startAt: new Date() * 1, // 记录开始时间
             };

@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-03 10:09:58
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-11 22:07:03
+ * @LastEditTime: 2024-01-13 15:59:55
  * @Description: 
 -->
 <template>
@@ -84,8 +84,8 @@ export default {
             type: Number,
             default: 0,
         },
-        mediaPath: String,
-        oMediaFile: {
+        mediaPath: String, // 将废弃 
+        oMediaFile: { // 新增
             type: Object,
         },
         aLineArr: {
@@ -107,8 +107,8 @@ export default {
     setup(props){
         if (!import.meta.client) return;
         const {oDom, oFn, oData, iFinalDuration} = w01();
-        console.log("oFn", oFn);
-        oFn.initFn(props.oMediaFile);
+        // console.log("oFn", oFn);
+        // oFn.initFn(props.oMediaFile);
         // ▼视口范围 [起点秒，终点秒]
         const aGapSeconds = computed(() => {
             const iWidth = oDom?.oViewport?.offsetWidth || window.innerWidth;

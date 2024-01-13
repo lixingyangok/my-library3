@@ -57,7 +57,7 @@ function getWaveArr(oMediaBuffer, iPerSecPx, fEndSec, fRightDuration) {
         iPerSecPx * fEndSec,
         iPerSecPx * fRightDuration // 取当前位置往右x秒
     );
-    let {iWaveHeight = 0.5} = ls.get('oRecent')?.[ls.get('sFilePath')] || {};
+    let {iWaveHeight = 0.5} = store.get('oRecent')?.[ls.get('sFilePath')] || {};
     // 👆 从 lg 里取值不是最佳方案，先这样用着，再优化
     // ▼或许应优化为 idx+=2 节省一半的遍历次数，
     const myArr = aPeaks.reduce((result, cur, idx, arr) => {

@@ -428,6 +428,11 @@ export default function(){
     //     toPause(); // 切换到新之前先关停旧的
     //     initFn(sNew);
     // }, {immediate: true});
+    watch(() => props.oMediaFile, (sNew, sOld)=>{
+        if (sNew == sOld) return;
+        toPause(); // 切换到新之前先关停旧的
+        initFn(sNew);
+    }, {immediate: true});
     watch(() => props.aLineArr, async (aNew, aOld)=>{
         const condition = aNew?.length && !aOld?.length;
         if (!condition) return;
