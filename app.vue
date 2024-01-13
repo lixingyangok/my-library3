@@ -2,7 +2,7 @@
  * @Author: Merlin
  * @Date: 2023-12-30 10:38:50
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-10 22:18:58
+ * @LastEditTime: 2024-01-13 19:32:08
  * @Description: 
 -->
 <template>
@@ -31,9 +31,6 @@ useHead({
         href: '//unpkg.com/element-plus/dist/index.css',
     } ],
     script: [{
-        // store
-        // src: 'https://cdn.jsdelivr.net/npm/store@2.0.12/dist/store.legacy.min.js',
-    },{
         src: 'https://cdn.jsdelivr.net/npm/store2@2.14.2/dist/store2.min.js',
     },{
         // dayjs
@@ -47,30 +44,25 @@ useHead({
     }, {
         // initSqlJs
         src: 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.9.0/sql-wasm.js',
-    },{
-        // {SQLiteFS}
-        type: 'module',
-        src: 'https://cdn.jsdelivr.net/npm/absurd-sql@0.0.54/dist/index.min.js',
-    }, {
-        // default: IndexedDBBackend
-        type: 'module',
-        src: 'https://cdn.jsdelivr.net/npm/absurd-sql@0.0.54/dist/indexeddb-backend.js',
-    }, {
-        // { initBackend }
-        type: 'module',
-        src: 'https://cdn.jsdelivr.net/npm/absurd-sql@0.0.54/dist/indexeddb-main-thread.js',
     }]
 });
 
 if (process.client){
     // var camera = window.FontAwesome.icon({ prefix: 'fas', iconName: 'camera' });
     // console.log("camera", camera);
-    
+    store('oRecent') || store('oRecent', {});
+    import('https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/+esm').then(res=>{
+        console.log("pdf-viewer", );
+        console.log(res);
+    });
 }
 
 </script>
 
 <style lang="scss" >
+*{
+    box-sizing: border-box;
+}
 body > #__nuxt{
     &{
         line-height: 1.2;

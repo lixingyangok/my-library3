@@ -1,8 +1,8 @@
 /*
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
- * @LastEditors: 李星阳
- * @LastEditTime: 2023-10-07 11:36:26
+ * @LastEditors: Merlin
+ * @LastEditTime: 2024-01-13 18:29:42
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
@@ -277,10 +277,11 @@ export function fnAllKeydownFn() {
         })();
         start_ = start_.slice(0,-3).padStart(8,0);
         store.transact('oRecent', (oldData) => {
-            const old = oldData[ls.get('sFilePath')] || {
+            const {pathFull} = store('media');
+            const old = oldData[pathFull] || {
                 startAt: new Date() * 1, // 记录开始时间
             };
-            oldData[ls.get('sFilePath')] = {
+            oldData[pathFull] = {
                 ...old,
                 dir,
                 name,

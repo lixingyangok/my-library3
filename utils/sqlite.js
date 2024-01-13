@@ -1,3 +1,10 @@
+/*
+ * @Author: Merlin
+ * @Date: 2024-01-08 09:35:15
+ * @LastEditors: Merlin
+ * @LastEditTime: 2024-01-13 17:57:21
+ * @Description: 
+ */
 import { dxDB } from "./dxDB";
 
 export const useSqlite = (async ()=>{
@@ -16,6 +23,33 @@ export const useSqlite = (async ()=>{
     }
     const Uint8Arr = oldData ? new Uint8Array(oldData) : void 0;
     const sqlite = new SQL.Database(Uint8Arr);
+    Object.assign(sqlite, {
+        select,
+    });
     return sqlite;
 })();
+
+
+function select(sql){
+    // console.log("sql=", sql);
+    const aData = this.exec(sql);
+    const {columns, values} = aData[0] || {};
+    if (!columns) return [];
+    // columns: ['id', 'mediaId', 'start', 'end', 'text', 'trans', 'createdAt', 'updatedAt', 'filledAt']
+    // values: [Array(9), Array(9), Array(9), Array(9), Array(9), Array(9), Array(9), Array(9), Array(9), Array(9), Array(9), Array(9), Array(9), Array(9), Array(9), Array(9), Array(9), Array(9), Array(9), Array(9)]
+    const aRows = values.map(cur=>{
+        const obj = {};
+        columns.forEach((key, idx)=>{
+            obj[key] = cur[idx];
+        });
+        return obj;
+    });
+    return aRows;
+}
+
+
+
+
+
+
 

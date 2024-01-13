@@ -2,14 +2,14 @@
  * @Author: 李星阳
  * @Date: 2022-01-03 10:09:58
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-13 15:59:55
+ * @LastEditTime: 2024-01-13 18:37:36
  * @Description: 
 -->
 <template>
     <article class="wave-coat" >
         <video controls class="player" ref="oAudio"
             id="media-player"
-            v-show="1 || (mediaPath || '').endsWith('.mp4')"
+            v-show="(mediaPath || '').endsWith('.mp4')"
             :style="{width: '200px'}"
             :src="mediaSrc"
             v-if="mediaSrc"
@@ -20,7 +20,8 @@
             <canvas class="canvas" ref="oCanvasDom"/>
             <!-- ▲画布 -->
             <!-- ▼横长条的视口 -->
-            <section class="viewport" ref="oViewport"
+            <section class="viewport"
+                ref="oViewport"
                 @mousewheel="wheelOnWave"
                 @scroll="waveWrapScroll"
                 @contextmenu="clickOnWave"
@@ -118,8 +119,7 @@ export default {
             return [Math.max(start, 0), end];
         });
         const aGapMarks = computed(() => {
-            return [];
-            const [iLeftSec, iRightSec] = aGapSeconds.v;
+            const [iLeftSec, iRightSec] = aGapSeconds.value;
             const arr = [];
             for(let idx = iLeftSec; idx < iRightSec; idx++ ) {
                 arr.push(idx);
@@ -127,8 +127,7 @@ export default {
             return arr;
         });
         const aGapRegions = computed(() => {
-            return [];
-            const [iLeftSec, iRightSec] = aGapSeconds.v;
+            const [iLeftSec, iRightSec] = aGapSeconds.value;
             if (!iRightSec) return [];
             const myArr = [];
             const {length} = props.aLineArr;
@@ -138,8 +137,8 @@ export default {
                 const IsShow = end > iLeftSec || end > iRightSec; // 此处正确无误
                 if (!IsShow) continue;
                 oCur.idx = idx;
-                if (iFinalDuration.v > 100){
-                    oCur.iRate = (oCur.start / iFinalDuration.v * 100).toFixed(1) * 1;
+                if (iFinalDuration.value > 100){
+                    oCur.iRate = (oCur.start / iFinalDuration.value * 100).toFixed(1) * 1;
                 }
                 myArr.push(oCur);
                 if (end > iRightSec) break;

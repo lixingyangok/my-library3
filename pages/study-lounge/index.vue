@@ -2,16 +2,22 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-13 15:58:39
+ * @LastEditTime: 2024-01-13 19:10:31
  * @Description: 
 -->
 <template>
     <div class="outer">
         <section class="left" v-show="isShowLeft" >
             <!-- iframe 内有全局变量 window.pdfjsLib -->
-            <iframe ref="oIframe" v-show="leftType=='pdf'"
-                :src="sPdfViewer"
+            <iframe ref="oIframe"
+                v-if="1"
+                v-show="1 || leftType=='pdf'"
+                :src1="sPdfViewer"
+                src="https://mozilla.github.io/pdf.js/web/viewer.html"
+                data-src="https://www.vanderbilt.edu/olli/class-materials/Franz_Kafka.pdf"
             ></iframe>
+            <!-- data-src123="https://www.vanderbilt.edu/olli/class-materials/Franz_Kafka.pdf"
+            sandbox123="allow-scripts allow-same-origin" -->
             <!--  -->
             <div class="txt-box" ref="oLeftTxtWrap" v-if="leftType == 'txt'">
                 <div v-if="0 && '测试中'">

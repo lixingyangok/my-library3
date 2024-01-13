@@ -6,7 +6,7 @@ import {getTubePath, getDateDiff} from '@/common/js/common-fn.js';
 import {getFolderChildren, addAllMediaDbInfo} from '@/common/js/fs-fn.js';
 import {path2file} from '@/common/js/fileSystemAPI.js';
 // import {useActionStore} from '@/store/action-store.js';
-
+let sqlite = await useSqlite;
 
 export function mainPart(){
 
@@ -200,14 +200,15 @@ export function mainPart(){
 		if (!hash) throw '没有hash';
 		console.log("oMediaInLocal", oData.oMediaInLocal);
 		oData.oMediaFile = await path2file(oData.oMediaInLocal.pathFull);
-		return;
-		const aRes = await fnInvoke('db', 'getMediaInfo', {hash});
-		console.log('库中媒体信息\n', aRes[0]?.$dc());
-		if (!aRes?.[0]) return vm.$message.error('当前媒体未被收录');
+		// const aRes = await fnInvoke('db', 'getMediaInfo', {hash});
+		const aRes = sqlite.select(`select * from media where hash = '${hash}'`);
+		console.log('库中媒体信息\n', aRes[0]);
+		if (!aRes?.[0]) return ElMessage.error('当前媒体未被收录');
 		oData.sHash = hash;
 		isMediaChanged = aRes[0].id != oData.oMediaInfo.id;
 		oData.oMediaInfo = aRes[0];
 		getLinesFromDB();
+		return;
 		await getNeighbors(); // 一定要 await 下方的方法才会正常运行
 		getNewWords();
 		console.log('当前媒体所有行：\n', oData.aLineArr.$dc());
@@ -215,7 +216,8 @@ export function mainPart(){
 	// ▼查询库中的字幕
 	async function getLinesFromDB(aRes=[]){
 		if (!aRes.length){
-			aRes = await fnInvoke('db', 'getLineByMedia', oData.oMediaInfo.id);
+			// aRes = await fnInvoke('db', 'getLineByMedia', oData.oMediaInfo.id);
+			aRes = sqlite.select(`select * from line where mediaId = '${oData.oMediaInfo.id}'`);
 		}
 		if (!aRes?.length) {
 			if (oData.oMediaBuffer) setFirstLine();
@@ -231,16 +233,16 @@ export function mainPart(){
 			oResult[cur.id] = cur;
 			return oResult;
 		}, {});
-		await vm.$nextTick();
+		await oInstance.proxy.$nextTick();
 		// ▼ 没有目标行就跳到0行（防止纵向滚动条没回顶部
-		let {iLineNo=0, sTxtFile} =store('oRecent')[ls('sFilePath')] || {};
-		// ▼ 只有媒体变更了才重新定位行，即，因保存字幕后重新加载时不要行动
-		if (isMediaChanged){ 
-			console.log(`isMediaChanged ${isMediaChanged}, iLineNo=${iLineNo}`);
-			oInstance.proxy.goLine(iLineNo);
-			isMediaChanged = false; // 复位
-		}
-		oData.sReadingFile || showFileAotuly(sTxtFile);
+		// let {iLineNo=0, sTxtFile} = store('oRecent')[store('sFilePath')] || {};
+		// // ▼ 只有媒体变更了才重新定位行，即，因保存字幕后重新加载时不要行动
+		// if (isMediaChanged){ 
+		// 	console.log(`isMediaChanged ${isMediaChanged}, iLineNo=${iLineNo}`);
+		// 	oInstance.proxy.goLine(iLineNo);
+		// 	isMediaChanged = false; // 复位
+		// }
+		// oData.sReadingFile || showFileAotuly(sTxtFile);
 		// oActionStore.getMediaRows(oData.oMediaInfo.id);
 	}
 	// ▼通过文本文件路径读取其中内容（音频的原文文件）
@@ -433,10 +435,10 @@ export function mainPart(){
 	}
 	// ▼切割句子
 	function splitSentence(text, idx){
-		if (!reFullWords.v) return [text];
+		if (!reFullWords.value) return [text];
 		const aResult = [];
 		let iLastEnd = 0;
-		text.replace(reFullWords.v, (abc, sCurMach, iCurIdx) => {
+		text.replace(reFullWords.value, (abc, sCurMach, iCurIdx) => {
 			iCurIdx && aResult.push(text.slice(iLastEnd, iCurIdx));
 			const sClassName = (
 				oData.oKeyWord[sCurMach.toLowerCase()] ? 'red' : 'blue'
@@ -705,7 +707,7 @@ export function mainPart(){
 	// 	});
 	// });
 	// ============================================================================
-	init();
+	// init();
 	const oFn = {
 		chooseFile,
 		init,

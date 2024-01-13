@@ -2,7 +2,7 @@
  * @Author: 
  * @Date: 2024-01-07 18:47:20
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-07 22:20:18
+ * @LastEditTime: 2024-01-13 19:31:17
  * @Description: 
 -->
 <template>
@@ -72,8 +72,8 @@ async function getCount(){
         return cur[0];
     });
     aTables.value = aTableResult;
-    const [lines] = sqlite.exec('select * from line limit 50');
-    console.log("lines", lines);
+    const aRows = sqlite.select('select * from line limit 20', 'select * from line limit 10');
+    console.log("aRows", aRows);
 }
 
 async function insertMany(times){

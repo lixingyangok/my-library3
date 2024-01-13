@@ -9,7 +9,7 @@ import { getTubePath } from '@/common/js/common-fn.js';
 
 export default function(){
     const oInstance = getCurrentInstance();
-    const {props} = oInstance;
+    const {props, proxy} = oInstance;
     let aPeaksData = []; // 波形数据
     const oDom = reactive({ // 从上到下，从外到内
         oMyWaveBar: null, // 最外层
@@ -305,7 +305,7 @@ export default function(){
         oData.iPerSecPx = iPerSecPx;
         oData.fPerSecPx = iPerSecPx;
 		oDom.oPointer.style.left = `${oDom.oAudio.currentTime * fPerSecPx}px`;
-        await vm.$nextTick(); // 重要！等待总宽变长再滚动
+        await proxy.$nextTick(); // 重要！等待总宽变长再滚动
         // ▼在此触发了缩放（没有滚动条时触发不成功，将通过 watch 监听 iPerSecPx 的变化触发后续动作
 		oDom.oViewport.scrollLeft = iNewLeftPx; 
 		if (iNewLeftPx <= 0) { // 滚动条位于左侧原点时收缩波形会触发
@@ -373,11 +373,11 @@ export default function(){
 		}, iTimes);
 	}
     function moveToFirstLine(){
-        const canGo = iFinalDuration.v && props.aLineArr.length;
+        const canGo = iFinalDuration.value && props.aLineArr.length;
         if (!canGo) return;
         setTimeout(()=>{
             // console.log('oDom.oLongBar -', oDom.oLongBar.offsetWidth);
-            goOneLine(oCurLine.v);
+            goOneLine(oCurLine.value);
         }, 200);
     }
     // ▼处理左键点击和拖动
@@ -421,7 +421,7 @@ export default function(){
     watch(() => props.iCurLineIdx, (iNew, iOld)=>{
         if (iNew == iOld) return;
         if (!props.aLineArr?.length) return;
-        goOneLine(oCurLine.v);
+        goOneLine(oCurLine.value);
     });
     // watch(() => props.mediaPath, (sNew, sOld)=>{
     //     if (sNew == sOld) return;
