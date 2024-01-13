@@ -9,7 +9,7 @@
     <article class="wave-coat" >
         <video controls class="player" ref="oAudio"
             id="media-player"
-            v-show="(mediaPath || '').endsWith('.mp4') || 1"
+            v-show="1 || (mediaPath || '').endsWith('.mp4')"
             :style="{width: '200px'}"
             :src="mediaSrc"
             v-if="mediaSrc"

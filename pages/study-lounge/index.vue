@@ -2,7 +2,7 @@
  * @Author: Merlin
  * @Date: 2023-12-30 14:21:39
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-11 21:54:44
+ * @LastEditTime: 2024-01-12 20:01:51
  * @Description: 
 -->
 <template>
@@ -35,14 +35,17 @@ const oMediaFile = ref(null);
 
 
 async function init(){
+    // 应该把文件在 indexedDB 中的 id 记录下来，
+    // 然后在这直接通过 id 取 indexedDB 的那条记录 
     path.value = store.get('path');
-    const oFile = await path2file(path.value);
-    console.log("oFile", oFile);
-    oMediaFile.value = oFile;
-    // sMediaSrc.value = objectURL;
-    // var objectURL = URL.createObjectURL(oFile);
-    // console.log("objectURL", objectURL);
-
+    const [oFileObj, oFileInfo] = await Promise.all([
+        path2file(path.value),
+        dxDB.file.get({ pathFull: path.value, }),
+    ]);
+    
+    console.log("oFileObj", oFileObj);
+    console.log("oFileInfo", oFileInfo);
+    oMediaFile.value = oFileObj;
 }
 
 onMounted(()=>{

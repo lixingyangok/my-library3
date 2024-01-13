@@ -48,9 +48,12 @@ const oFn01 = {
     },
     async ckickItem(i1, i2){
         const oItem = this.aDirectory[i1][i2];
+        const {isMedia, dxID, hash} = oItem;
         console.log(`点击目标：\n`, oItem, '\n', JSON.parse(JSON.stringify(oItem)));
-        if (oItem.isMedia) {
-            store.set('path', oItem.pathFull);
+        if (isMedia) {
+            if (!dxID || !hash){
+                console.log("不可跳转", );
+            } 
             return;
         }
         if (oItem.kind !== 'directory') return;
@@ -87,12 +90,15 @@ async function fillOneFile(oFileInfo){
     let [oFileINfo, oFileInDx] = aPromise;
     Object.assign(oFileInfo, oFileINfo);
     if (!oFileINfo.isMedia) return;
-    let hash = (()=>{
-        if (!oFileInDx) return '';
+    let [hash, id] = (()=>{
+        if (!oFileInDx) return [];
         const aa = oFileInfo.size == oFileInDx.size;
         const bb = oFileInfo.lastModified == oFileInDx.lastModified;
         // console.log("库中 hash", oFileInDx.hash);
-        if (aa && bb) return oFileInDx.hash;
+        if (aa && bb) {
+            return [oFileInDx.hash, oFileInDx.id];
+        }
+        return [];
     })();
     if (!hash){
         console.log("从头计算 hash", );
@@ -108,9 +114,13 @@ async function fillOneFile(oFileInfo){
             ...oPathFull,
             size: oFileINfo.size,
             lastModified: oFileINfo.lastModified,
-        }, oPathFull);
+        }, oPathFull).then(iID => {
+            console.log("已经入库 hash 信息", iID);
+            oFileInfo.dxID = iID;
+        });
     }
     oFileInfo.hash = hash;
+    if(id) oFileInfo.dxID = id;
 }
 
 
