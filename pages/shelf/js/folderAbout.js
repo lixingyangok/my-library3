@@ -11,7 +11,6 @@ const oFn01 = {
         const {kind, name} = handler;
         const createdAt = dayjs().format('YYYY-MM-DD HH:mm:ss');
         const path = `${createdAt}`;
-        console.log("name", name);
         const arr = await handler2List(handler, {path});
         this.aDirectory.splice(0, 1/0, arr);
         fillTheList(this.aDirectory[0]);
@@ -53,6 +52,7 @@ const oFn01 = {
         if (isMedia) {
             if (dxID && hash) {
                 store('media', oItem);
+                useRouter().push('/study-lounge');
             }else{
                 console.log("不可跳转", );
             }
@@ -103,11 +103,9 @@ async function fillOneFile(oFileInfo){
         return [];
     })();
     if (!hash){
-        console.log("从头计算 hash", );
         let arrayBuffer = await oFileINfo.oFile.arrayBuffer();
         let arrayData = new Uint8Array(arrayBuffer);
         hash = await hashwasm.xxhash64(arrayData);
-        console.log("从头计算 hash", hash);
         const createdAt = new Date();
         dxDB.file.put({
             hash,
@@ -117,7 +115,6 @@ async function fillOneFile(oFileInfo){
             size: oFileINfo.size,
             lastModified: oFileINfo.lastModified,
         }, oPathFull).then(iID => {
-            console.log("已经入库 hash 信息", iID);
             oFileInfo.dxID = iID;
         });
     }

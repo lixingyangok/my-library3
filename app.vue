@@ -2,17 +2,21 @@
  * @Author: Merlin
  * @Date: 2023-12-30 10:38:50
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-13 19:32:08
+ * @LastEditTime: 2024-01-13 22:22:25
  * @Description: 
 -->
 <template>
     <Navigation class="nav" ></Navigation>
     <main class="main-part">
-        <NuxtPage />
+        <NuxtPage v-if="showing"/>
     </main>
+    <button class="f5-btn" @click="f5">
+        刷新
+    </button>
 </template>
 
 <script setup>
+
 
 useHead({
     title: '😄 哈哈学习',
@@ -46,15 +50,24 @@ useHead({
         src: 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.9.0/sql-wasm.js',
     }]
 });
+const showing = ref(true);
+const oIns = getCurrentInstance();
+
+function f5(){
+    showing.value = false;
+    oIns.proxy.$nextTick(()=>{
+        showing.value = true;
+    });
+}
 
 if (process.client){
     // var camera = window.FontAwesome.icon({ prefix: 'fas', iconName: 'camera' });
     // console.log("camera", camera);
     store('oRecent') || store('oRecent', {});
-    import('https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/+esm').then(res=>{
-        console.log("pdf-viewer", );
-        console.log(res);
-    });
+    // import('https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/+esm').then(res=>{
+    //     console.log("pdf-viewer", );
+    //     console.log(res);
+    // });
 }
 
 </script>
@@ -67,9 +80,7 @@ body > #__nuxt{
     &{
         line-height: 1.2;
     }
-    // display: flex;
     --nav-width: 55px;
-    // min-height: 100vh;
     position: relative;
     .nav{
         width: var(--nav-width);
@@ -83,4 +94,10 @@ body > #__nuxt{
         overflow-y: auto;
     }
 }
+.f5-btn{
+    position: absolute;
+    left: 5px;
+    top: 380px;
+}
+
 </style>

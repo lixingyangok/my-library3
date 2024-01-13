@@ -194,12 +194,11 @@ export function mainPart(){
 	})();
 	// ▲数据 ====================================================================================
 	// ▼方法 ====================================================================================
-	async function init(){
+	async function init(trying){
 		oDom?.oMyWave?.cleanCanvas(true);
 		const hash = oData.oMediaInLocal.hash;
 		if (!hash) throw '没有hash';
-		console.log("oMediaInLocal", oData.oMediaInLocal);
-		oData.oMediaFile = await path2file(oData.oMediaInLocal.pathFull);
+		oData.oMediaFile = await path2file(oData.oMediaInLocal.pathFull, !trying);
 		// const aRes = await fnInvoke('db', 'getMediaInfo', {hash});
 		const aRes = sqlite.select(`select * from media where hash = '${hash}'`);
 		console.log('库中媒体信息\n', aRes[0]);
@@ -208,8 +207,8 @@ export function mainPart(){
 		isMediaChanged = aRes[0].id != oData.oMediaInfo.id;
 		oData.oMediaInfo = aRes[0];
 		getLinesFromDB();
-		return;
 		await getNeighbors(); // 一定要 await 下方的方法才会正常运行
+		return;
 		getNewWords();
 		console.log('当前媒体所有行：\n', oData.aLineArr.$dc());
 	}
@@ -374,9 +373,10 @@ export function mainPart(){
 	}
 	// ▼ 查询邻居文件列表
 	async function getNeighbors(){
-		let aList = await getFolderChildren(oData.oMediaInfo.dir);
+		const {path} = oData.oMediaInLocal;
+		const aList = await dxDB.file.where('pathFull').startsWith(path).toArray();
+		// let aList = await getFolderChildren(oData.oMediaInfo.dir);
 		if (!aList) return;
-		aList = aList.filter(cur => cur.isMedia);
 		await addAllMediaDbInfo(aList, true);
 		aList.forEach((cur, idx) => {
 			const {finishedAt, id, durationStr} = cur.infoAtDb || {};
@@ -391,7 +391,7 @@ export function mainPart(){
 		oData.aSiblings = aList;
 		recordMediaTimeInfo(); // 检查是否所有的文件都有媒体信息
 	}
-	// ▼统计文件夹音频时长
+	// ▼统计文件夹音频时长（打开邻居窗口调用）
 	async function setFolderInfo(){
 		const {aSiblings} = oData;
 		const aID = [];
@@ -411,8 +411,10 @@ export function mainPart(){
 			iDoneItems,
 			sDoneRate,
 		};
-		const [r01, r02] = await fnInvoke('db', 'doSql', `
-			SELECT *, julianday('now', 'localtime') - julianday(filledAt, 'localtime') as daysAgo
+		const r01 = await sqlite.select(`
+			SELECT
+				*,
+				julianday('now', 'localtime') - julianday(filledAt, 'localtime') as daysAgo
 			FROM "line"
 			where mediaId in (${aID.join(',')}) and filledAt is not null
 			ORDER BY filledAt ASC limit 5
@@ -612,10 +614,10 @@ export function mainPart(){
 		// oData.isShowFileList = false; // 关闭窗口
 		const {sFullPath} = oTarget;
 		store.transact('oRecent', (oldData) => {
-            const old = oldData[ls.get('sFilePath')] || {
+            const old = oldData[store('sFilePath')] || {
                 startAt: new Date() * 1, // 记录开始时间
             };
-            oldData[ls.get('sFilePath')] = {
+            oldData[store('sFilePath')] = {
                 ...old,
 				sTxtFile: sFullPath,
             };
@@ -707,7 +709,8 @@ export function mainPart(){
 	// 	});
 	// });
 	// ============================================================================
-	// init();
+	console.log("init(true);");
+	init(true);
 	const oFn = {
 		chooseFile,
 		init,

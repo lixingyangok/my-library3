@@ -16,3 +16,6 @@ export default defineNuxtPlugin((nuxtApp) => {
     trackRouter(useRouter())
 })
  */
+export default defineNuxtPlugin(() => {
+
+});

@@ -1,8 +1,8 @@
 /*
  * @Author: 李星阳
  * @Date: 2022-01-22 19:31:55
- * @LastEditors: 李星阳
- * @LastEditTime: 2023-12-03 15:17:31
+ * @LastEditors: Merlin
+ * @LastEditTime: 2024-01-13 22:57:57
  * @Description: 与文件夹/文件相关的方法（纯函数）
  */
 // 本包将来可修改为，提供数据查询的包
@@ -100,7 +100,9 @@ export async function getFolderChildren(sPath){
 export async function addAllMediaDbInfo(arr, oneByOne){
     if (!arr) return;
     for (const [idx, oMedia] of arr.entries()) {
-        if (!oMedia.isMedia) continue;
+        if (!oMedia.isMedia && !oMedia.hash) {
+            continue;
+        }
         if ((idx % 4) && !oneByOne) AaddMediaInfoFromDB(oMedia);
         else await AaddMediaInfoFromDB(oMedia);
     }
@@ -108,9 +110,11 @@ export async function addAllMediaDbInfo(arr, oneByOne){
 
 // ▼查询【某1个媒体】在DB中的信息
 export async function AaddMediaInfoFromDB(oMedia){
-    const hash = await fnInvoke('getHash', oMedia.sPath);
-    const res = await fnInvoke('db', 'getMediaInfo', {hash});
-    oMedia.hash = hash;
+    const sqlite = await useSqlite;
+    // const hash = await fnInvoke('getHash', oMedia.sPath);
+    // const res = await fnInvoke('db', 'getMediaInfo', {hash});
+    const {hash} = oMedia;
+    const res = sqlite.select(`select * from media where hash='${hash}'`);
     if (res?.[0]){
         oMedia.infoAtDb = res[0];
         oMedia.bNameRight = oMedia.sPath == ( // 记录文件位置&名称是否与库中记录的一样

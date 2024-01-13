@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-13 19:10:31
+ * @LastEditTime: 2024-01-13 22:43:30
  * @Description: 
 -->
 <template>
@@ -10,7 +10,7 @@
         <section class="left" v-show="isShowLeft" >
             <!-- iframe 内有全局变量 window.pdfjsLib -->
             <iframe ref="oIframe"
-                v-if="1"
+                v-if="0"
                 v-show="1 || leftType=='pdf'"
                 :src1="sPdfViewer"
                 src="https://mozilla.github.io/pdf.js/web/viewer.html"
@@ -118,7 +118,7 @@
                     <span>播放次数：{{ oActionStore.oMediaActionSum.iPracticeTimes }}</span>
                     <span>练习时长：{{ oActionStore.oMediaActionSum.sTimeLong }}</span>
                 </div> -->
-                <el-button type="primary" size="small" @click="init">
+                <el-button type="primary" size="small" @click="init()">
                     init
                 </el-button>
                 <el-dropdown split-button type="primary" size="small" @command="handleCommand" >
@@ -380,7 +380,7 @@
                             <p class="file-name" :class="{'cur-file': scope.row?.infoAtDb?.hash == sHash}"
                                 @click="visitSibling(scope.row)"
                             >
-                                {{scope.row.sItem}}
+                                {{scope.row.pathFull.split('/').pop()}}
                             </p>
                         </template>
                     </el-table-column>
