@@ -9,12 +9,14 @@
 
 import {mySort} from './common-fn.js';
 import {secToStr} from './pure-fn.js';
-const fsp = require('node:fs/promises');
-const path = require('path');
+
+// const fsp = require('node:fs/promises');
+// const path = require('path');
 
 
 // ▼查询：某文件夹内的媒体文件与配对的字幕文件
 export async function getFolderKids(sPath){
+    return;
     const oStat = await fsp.stat(sPath);
     if (!oStat.isDirectory()) return;
     const aKids = await fsp.readdir(sPath);
@@ -44,6 +46,7 @@ export async function getFolderKids(sPath){
 
 // ▼查询：某文件夹内的媒体文件与配对的字幕文件
 export async function getFolderChildren(sPath){
+    return;
     const oStat = await fsp.stat(sPath);
     if (!oStat.isDirectory()) return;
     const aItems = await fsp.readdir(sPath);
@@ -121,6 +124,7 @@ export async function AaddMediaInfoFromDB(oMedia){
 
 // ▼查询是否为媒体文件
 export async function checkFile(sFilePath, oFileType=oConfig.oFileType) {
+    return;
     const sTail = path.extname(sFilePath).toLowerCase();
     if (!oFileType[sTail]) return;
     const oStat = await fsp.stat(sFilePath);
@@ -129,6 +133,7 @@ export async function checkFile(sFilePath, oFileType=oConfig.oFileType) {
 
 // ▼查询目录是否为【媒体文件夹】
 export async function findMedia(sPath, oTarget) {
+    return;
     const oStat = await fsp.stat(sPath);
     if (!oStat.isDirectory()) return 0;
     let iSum = 0;

@@ -1,0 +1,243 @@
+
+
+.type-box{
+	margin: 10px 0 0;
+}
+
+.history-ul{
+	display: flex;
+	margin: 0 0 1px;
+	flex-flow: row nowrap;
+	li{
+		width: calc(100% / var(--max));
+		height: 1px;
+		margin-right: 3px;
+		background: skyblue;
+		&[class~=cur]{
+			background: blue;
+		}
+	}
+}
+
+.textarea{
+	--box-height: 115px;
+	--side-padding: 12px;
+    box-sizing: border-box;
+	display: block;
+    padding: 5px var(--side-padding);
+    width: 100%;
+	height: var(--box-height);
+	font-size: 20px;
+	resize: none;
+    line-height: 1.6;
+	font-family: inherit;
+    color: #000;
+    background-color: #f9f9f9;
+    background-image: none;
+    border: solid 1px #ccc;
+    border-radius: 0;
+	word-break: break-word;
+    white-space: pre-wrap;
+	overflow: hidden;
+	position: relative;
+	.line-info{
+		position: absolute;
+		left: var(--side-padding);
+		right: var(--side-padding);
+		padding: 1px 20px;
+		bottom: 10px;
+		background-color: rgba($color: green, $alpha: 0.08);
+		border-radius: 3px;
+		font-size: 12px;
+		width: 310px;
+		& > *{
+			margin: 0 18px 0 0;
+			&[class~=light]{
+				color: red;
+				font-weight: bold;
+			}
+		}
+		small{
+			font-size: 0.8em;
+			opacity: 0.5;
+			margin: 0 0 0 2px;
+		}
+	}
+}
+
+.textarea-real{
+	color: rgba($color: #fff, $alpha: 0.1);
+	margin-top: calc(-1 * var(--box-height));
+	caret-color: #000;
+	background-color: rgba(0, 0, 0, 0.05);
+	transition: all 0.06s;
+	&:hover{
+		border-color: var(--el-color-primary-light-5);
+	}
+	&:focus{
+		outline: none;
+		border-color: var(--el-color-primary);
+		background-color: transparent;
+	}
+	// &[class~=ten-times]{
+	// 	background-color: rgba($color: green, $alpha: 0.06);
+	// }
+	&[class~=being-wrong]{
+		border-color: red !important;
+		box-shadow: 0px 0px 2px 0px red inset;
+	}
+	&[class~=may-wrong]{
+		border-bottom: solid 2px orange !important;
+	}
+}
+
+.milestone-bar{
+	margin: 3px 0 1px;
+	align-items: center;
+	align-content: center;
+	position: relative;
+	.pointer{
+		position: absolute;
+		display: block;
+		min-width: 50px;
+		height: 100%;
+		background: yellow;
+	}
+}
+
+@keyframes myBreath{
+	0%{
+		opacity: 0.2;
+	}
+	50%{
+		opacity: 1;
+	}
+	100%{
+		opacity: 0.2;
+	}
+}
+
+.milestone-bar{
+	display: flex;
+	--height: 13px;
+	--bg-color: rgba(0, 30, 0, 0.1);
+	height: var(--height);
+	&>*{
+		height: var(--height);
+	}
+	.bright-one{
+		background-color: rgba(0, 200, 0, 0.8) !important;
+	}
+	.blink{
+		animation: myBreath 2.5s linear infinite;
+	}
+}
+
+ul.box-ul{
+	display: flex;
+	height: 100%;
+	li{
+		flex-grow: 1;
+		flex-shrink: 1;
+		height: 100%;
+		box-sizing: border-box;
+		&[class~=done]{
+			background-color: rgba(0, 255, 0, 0.2);
+		}
+	}
+}
+
+.milestone-bar .progress-bar{
+	width: 50%;
+	flex-grow: 1;
+	flex-shrink: 1;
+	position: relative;
+	margin: 0 10px 0 0;
+	background-color: var(--bg-color);
+	li{
+		border-right: solid 1px rgba(255, 255, 255, 1);
+	}
+	aaa.li:not(:last-child){
+		border-right: solid 1px rgba(255, 255, 255, 1);
+	}
+	.info{
+		position: absolute;
+		font-size: 10px;
+		flex-shrink: 0;
+		color: #666;
+		top: -1px;
+		height: 100%;
+		left: 50%;
+		z-index: 2;
+		transform: translateX(-50%);
+		em{
+			color: #333;
+		}
+	}
+	.cursor{
+		display: inline-block;
+		position: absolute;
+		height: 100%;
+		background-color: rgba(0, 255, 0, 0.2);
+	}
+}
+
+
+ul.latern-list{
+	display: flex;
+	flex-shrink: 1;
+	flex-grow: 1;
+	background-color: var(--bg-color);
+	flex-direction: row-reverse;
+	width: 50%;
+	li:not(:last-child){
+		border-left: solid 1px rgba(255, 255, 255, 1);
+	}
+}
+
+// .progress-bar
+// ▼候选词
+
+.candidate-list{
+	min-height: 25px;
+	display: flex;
+	overflow: hidden;
+	.one-word{
+		margin-right: 15px;
+		font-size: 16px;
+		padding: 0;
+		color: #444;
+		display: flex;
+		align-items: center;
+		white-space: nowrap;
+	}
+}
+
+.one-word{
+	.idx{
+		display: inline-block;
+		width: 16px;
+		height: 16px;
+		text-align: center;
+		line-height: 15px;
+		border-radius: 100px;
+		background: blue;
+		margin-right: 5px;
+		color: white;
+		font-size: 14px;
+	}
+	&:nth-child(n+5) .idx{
+		background: deepskyblue;
+	}
+	.new-word,
+	.name{
+		cursor: pointer;
+	}
+
+	.left-word{
+		color: #000;
+	}
+	.right-word{
+		color: #666;
+	}
+}

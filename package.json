@@ -16,6 +16,8 @@
     "vue-router": "^4.2.5"
   },
   "dependencies": {
-    "idb-keyval": "^6.2.1"
+    "@element-plus/nuxt": "^1.0.7",
+    "@pinia/nuxt": "^0.5.1",
+    "element-plus": "^2.5.1"
   }
 }

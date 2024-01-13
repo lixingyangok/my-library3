@@ -2,14 +2,15 @@
  * @Author: Merlin
  * @Date: 2023-12-30 10:38:50
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-06 13:55:57
+ * @LastEditTime: 2024-01-13 14:51:43
  * @Description: 
  */
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-    // modules: [
-    //     ['element-ui/nuxt', { cdn: true, css: false }]
-    // ],
+    modules: [
+        '@pinia/nuxt',
+        '@element-plus/nuxt',
+    ],
     ssr: true,
     devServer: {
         port: 8899,

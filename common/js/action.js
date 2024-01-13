@@ -6,8 +6,8 @@
  * @Description: 
  */
 
-import {useActionStore} from '@/store/action-store.js';
-const oActionStore = useActionStore();
+// import {useActionStore} from '@/store/action-store.js';
+// const oActionStore = useActionStore();
 
 export default class {
     sActionType = '';
@@ -70,8 +70,8 @@ export default class {
         // .then(this.afterSaved);
         if (!oSaved) alert('保存学习记录失败，请注意');
         // ▼保存之后刷新数据
-        oActionStore.init();
-		oActionStore.getMediaRows(useToSave.mediaId);
+        // oActionStore.init();
+		// oActionStore.getMediaRows(useToSave.mediaId);
         // console.log('useToSave', useToSave);
         // console.log('oSaved', oSaved);
     }

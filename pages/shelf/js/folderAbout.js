@@ -51,9 +51,11 @@ const oFn01 = {
         const {isMedia, dxID, hash} = oItem;
         console.log(`点击目标：\n`, oItem, '\n', JSON.parse(JSON.stringify(oItem)));
         if (isMedia) {
-            if (!dxID || !hash){
+            if (dxID && hash) {
+                store('media', oItem);
+            }else{
                 console.log("不可跳转", );
-            } 
+            }
             return;
         }
         if (oItem.kind !== 'directory') return;
@@ -122,7 +124,6 @@ async function fillOneFile(oFileInfo){
     oFileInfo.hash = hash;
     if(id) oFileInfo.dxID = id;
 }
-
 
 
 
