@@ -2,13 +2,14 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-14 11:58:25
+ * @LastEditTime: 2024-01-14 12:15:18
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
 import { fixTime } from '../../../common/js/pure-fn.js';
 import { figureOut } from './figure-out-region.js';
 import TheAction from '@/common/js/action.js';
+import {LineDB} from '@/database/line.js';
 // import {useBarInfo} from '@/store/happy-bar.js';
 // const oBarInfo = useBarInfo();
 const oActionFn = new TheAction('reading');
@@ -691,9 +692,15 @@ export function fnAllKeydownFn() {
         if (!toSaveArr.length && !toDelArr.length) {
             return ElMessage.warning(`没有修改，无法保存`);
         }
-        console.time('保存与查询');
+        // console.time('保存与查询');
         isSavingToDB = true;
         console.log('将保存字幕：\n', toSaveArr, toDelArr);
+        LineDB.updateMediaLines({
+                toSaveArr,
+                toDelArr,
+                mediaId,
+                isReturnAll: true,
+        });
         // const oResult = await fnInvoke('db', 'updateLine', {
         //     toSaveArr,
         //     toDelArr,
@@ -708,7 +715,8 @@ export function fnAllKeydownFn() {
         //     isSavingToDB = false;
         //     return;
         // }
-        // afterSaved(oResult);
+        // afterSaved(oResult); // 在其内执行 isSavingToDB = false;
+        isSavingToDB = false;
     }
     function afterSaved(oResult){
         // ▼ 加载新字幕

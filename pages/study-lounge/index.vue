@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-13 22:43:30
+ * @LastEditTime: 2024-01-14 11:35:08
  * @Description: 
 -->
 <template>
@@ -419,7 +419,6 @@
 import {toRefs, computed, onBeforeUnmount} from 'vue';
 import {mainPart} from './js/study-lounge.js';
 import {getKeyDownFnMap, fnAllKeydownFn} from './js/key-down-fn.js';
-// import  from '../../components/wave/wave.vue';
 import {registerKeydownFn, getTubePath} from '@/common/js/common-fn.js';
 // import dictionaryVue from '../dictionary/dictionary.vue';
 // import TodayHistory from '@/components/today-history/today-history.vue';

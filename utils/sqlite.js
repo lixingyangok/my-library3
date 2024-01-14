@@ -26,13 +26,19 @@ export const useSqlite = (async ()=>{
     Object.assign(sqlite, {
         select,
     });
+    if (globalThis?.alert){
+        console.log("window.db", window.db);
+        window.db = sqlite; // 用于调试
+    }
     return sqlite;
 })();
 
 
 function select(sql){
     // console.log("sql=", sql);
+    console.time(sql);
     const aData = this.exec(sql);
+    console.timeEnd(sql);
     const {columns, values} = aData[0] || {};
     if (!columns) return [];
     // columns: ['id', 'mediaId', 'start', 'end', 'text', 'trans', 'createdAt', 'updatedAt', 'filledAt']
