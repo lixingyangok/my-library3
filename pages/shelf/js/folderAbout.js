@@ -27,6 +27,16 @@ const oFn01 = {
         const aDirectory = await dxDB.directory.toArray();
         console.log("aDirectory", aDirectory);
         this.aFolders = aDirectory;
+        // ↓ 找到有权限的目录，显示出来
+        let hasFound;
+        this.aFolders.forEach(async (cur, idx) => {
+            const answer = await cur.handler.queryPermission();
+            cur.permission = answer; // 记录起来，备用 
+            if (answer == 'granted' && !hasFound){
+                hasFound = true;
+                this.setRootFolder(idx);
+            }
+        });
     },
     delRootFolder(idx){
         const {id, path} = this.aFolders[idx];

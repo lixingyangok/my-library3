@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-13 18:29:42
+ * @LastEditTime: 2024-01-14 11:58:25
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
@@ -14,6 +14,7 @@ import TheAction from '@/common/js/action.js';
 const oActionFn = new TheAction('reading');
 let iSearchingQ = 0;
 let isSavingToDB = false; //保存事件防抖
+let sqlite = await useSqlite;
 
 export function getKeyDownFnMap(This, sType) {
     const { oMyWave } = This;
@@ -219,9 +220,9 @@ export function fnAllKeydownFn() {
         const { oMediaBuffer, aLineArr, iCurLineIdx } = This;
         const iCurLineNew = iCurLineIdx + iDirection;
         if (iCurLineNew < 0) {
-            return This.$message.warning('没有上一行');
+            return ElMessage.warning('没有上一行');
         }else if (!oMediaBuffer.duration && !aLineArr.length){
-            return This.$message.warning('暂无波形数据，请等待');
+            return ElMessage.warning('暂无波形数据，请等待');
         }
         const oNewLine = (() => {
             if (aLineArr[iCurLineNew]) return false; //有数据，不新增
@@ -232,7 +233,7 @@ export function fnAllKeydownFn() {
             return figureOut(oMediaBuffer, end); // 要新增一行，返回下行数据
         })();
         if (oNewLine === null) {
-            return This.$message.warning('后面没有了');
+            return ElMessage.warning('后面没有了');
         }
         goLine(iCurLineNew, oNewLine, true);
     }
@@ -404,7 +405,7 @@ export function fnAllKeydownFn() {
             fNewVal = next.start;
         }
         if (fNewVal > This.oMediaBuffer.duration + 0.5){
-            return This.$message.error('超出太多了');
+            return ElMessage.error('超出太多了');
         }
         setTime(sKey, fNewVal);
         recordHistory();
@@ -460,7 +461,7 @@ export function fnAllKeydownFn() {
     function toDel() {
         let { iCurLineIdx, aLineArr } = This;
         if (aLineArr.length <= 1) {
-            return This.$message.warning(`至少保留一行`);
+            return ElMessage.warning(`至少保留一行`);
         }
         const oDelAim = aLineArr[iCurLineIdx];
         if (oDelAim.id) {
@@ -576,14 +577,14 @@ export function fnAllKeydownFn() {
         if (oExist) return This.changeWordType(oExist);
         const lengthOK = (word.length >= 2) && (word.length <= 30);
         if (!lengthOK) {
-            return This.$message.error(`单词长度应 >= 2 && <= 30`);
+            return ElMessage.error(`单词长度应 >= 2 && <= 30`);
         }
         const res = await fnInvoke('db', 'saveOneNewWord', {
             word, mediaId: This.oMediaInfo.id,
         });
-        if (!res) return This.$message.error('保存未成功');
+        if (!res) return ElMessage.error('保存未成功');
         // console.log('res\n', res);
-        This.$message.success('保存成功');
+        ElMessage.success('保存成功');
         This.getNewWords();
     }
     let inputTimer = null;
@@ -628,12 +629,23 @@ export function fnAllKeydownFn() {
         // console.log('候选词：', aResult.$dc());
         This.aCandidate = aResult;
         if (typeof iCurQs != 'number') return;
-        const aWords = await fnInvoke('db', 'getCandidate', {
-            sWord, limit: 9 - aResult.length,
-        });
+        // const aWords = await fnInvoke('db', 'getCandidate', {
+        //     sWord, limit: 9 - aResult.length,
+        // });
+        console.time('查字典');
+        let aWords = sqlite.select(`
+            select word
+            from dictionary
+            where word like '${sWord}%'
+            limit ${9 - aResult.length}
+        `);
+        console.timeEnd('查字典');
+        aWords &&= aWords.map(cur=>cur.word);
+        console.log("aWords", aWords);
         if (!aWords || iCurQs != iSearchingQ) return;
         This.aCandidate.push(...aWords);
     }
+    
     // ▼插入选中的单词
     async function toInset(idx) {
         const { sTyped, aCandidate, oTextArea } = This;
@@ -677,33 +689,33 @@ export function fnAllKeydownFn() {
         });
         const toDelArr = [...This.deletedSet];
         if (!toSaveArr.length && !toDelArr.length) {
-            return This.$message.warning(`没有修改，无法保存`);
+            return ElMessage.warning(`没有修改，无法保存`);
         }
         console.time('保存与查询');
         isSavingToDB = true;
         console.log('将保存字幕：\n', toSaveArr, toDelArr);
-        const oResult = await fnInvoke('db', 'updateLine', {
-            toSaveArr,
-            toDelArr,
-            isReturnAll: true,
-            mediaId,
-        }).catch(err=>{
-            console.log('保存失败\n', err);
-            alert('保存失败');
-        });
-        console.timeEnd('保存与查询');
-        if (!oResult) {
-            isSavingToDB = false;
-            return;
-        }
-        afterSaved(oResult);
+        // const oResult = await fnInvoke('db', 'updateLine', {
+        //     toSaveArr,
+        //     toDelArr,
+        //     isReturnAll: true,
+        //     mediaId,
+        // }).catch(err=>{
+        //     console.log('保存失败\n', err);
+        //     alert('保存失败');
+        // });
+        // console.timeEnd('保存与查询');
+        // if (!oResult) {
+        //     isSavingToDB = false;
+        //     return;
+        // }
+        // afterSaved(oResult);
     }
     function afterSaved(oResult){
         // ▼ 加载新字幕
         This.getLinesFromDB(oResult.newRows).then(res=>{
             isSavingToDB = false;
         });
-        This.$message.success(`
+        ElMessage.success(`
             成功：已修改 ${oResult.save.length} 条，删除 ${oResult.delete} 条
         `.trim());
         This.deletedSet.clear();
@@ -719,7 +731,7 @@ export function fnAllKeydownFn() {
                 '-1': '没有上一步的数据，无法撤销',
                 '1': '已没有下一步的数据',
             }[iType]);
-            return This.$message.error(actionName);
+            return ElMessage.error(actionName);
         }
         const oHistory = This.aHistory[iCurStep];
         const aLineArr = JSON.parse(oHistory.sLineArr);
