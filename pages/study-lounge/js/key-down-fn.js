@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-14 12:15:18
+ * @LastEditTime: 2024-01-14 23:21:37
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
@@ -695,6 +695,7 @@ export function fnAllKeydownFn() {
         // console.time('保存与查询');
         isSavingToDB = true;
         console.log('将保存字幕：\n', toSaveArr, toDelArr);
+        console.log("LineDB", LineDB);
         LineDB.updateMediaLines({
                 toSaveArr,
                 toDelArr,
