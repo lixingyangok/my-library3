@@ -83,6 +83,7 @@ export function mainPart(){
 		// iLeftTxtSize: 14, // 左侧文本字号
 	});
 	const oInstance = getCurrentInstance();
+	const {proxy} = oInstance;
 	// ▼过滤后的
 	const aFilteredWords = computed(()=>{
 		if (!oData.sNewWordSearch) return oData.aWordsList;
@@ -265,7 +266,7 @@ export function mainPart(){
 			aResult = aResult.map(cur => cur.replace(/，\s{0,2}/g, ', '));
 			return aResult;
 		})();
-		vm.$message.success(`取得文本 ${aArticle.length} 行`);
+		ElMessage.success(`取得文本 ${aArticle.length} 行`);
 		oData.aArticle = Object.freeze(aArticle);
 	}
 	// ▼保存1个媒体信息
@@ -327,7 +328,7 @@ export function mainPart(){
 			// ▼要思考要不要添加这一行（因为当前高亮的单词可能是邻居媒体收藏的）
 			mediaId: oData.oMediaInfo.id,
 		});
-		if (!res) return vm.$message.error('保存未成功');
+		if (!res) return ElMessage.error('保存未成功');
 		console.log('修改反馈', res);
 		getNewWords();
 	}
@@ -338,10 +339,10 @@ export function mainPart(){
 			mediaId: oData.oMediaInfo.id,
 		});
 		if (res) {
-			vm.$message.success('已删除');
+			ElMessage.success('已删除');
 			return getNewWords();
 		}
-		vm.$message.error('删除单词未成功');
+		ElMessage.error('删除单词未成功');
 		console.log('删除单词未成功', res);		
 	}
 	// ▼查询新词
@@ -432,7 +433,7 @@ export function mainPart(){
 		oData.aLineArr = [{text:''}];
 		store('sFilePath', oMedia.sPath);
 		oData.sMediaSrc = getTubePath(oMedia.sPath);
-		await vm.$nextTick();
+		await proxy.$nextTick();
 		init();
 	}
 	// ▼切割句子
@@ -470,7 +471,7 @@ export function mainPart(){
 		const dir = oData.oMediaInfo.dir.replaceAll('/', '\\');
 		console.log(`开始复制文件夹路径 ${dir}`);
 		const bCopy = copyString(dir);
-		bCopy && vm.$message.success('已复制路径');
+		bCopy && ElMessage.success('已复制路径');
 	}
 	// ▼打开PDF
 	function openPDF(){
@@ -527,7 +528,7 @@ export function mainPart(){
 			aResult = aResult.map(cur => cur.replace(/，\s{0,2}/g, ', '));
 			return aResult
 		})();
-		vm.$message.success(`取得文本 ${aArticle.length} 行`);
+		ElMessage.success(`取得文本 ${aArticle.length} 行`);
 		// oData.sArticle = fileTxt; // 好像没用上
 		oData.aArticle = Object.freeze(aArticle);
 	}
@@ -566,7 +567,7 @@ export function mainPart(){
 			id, finishedAt,
 		});
 		if (!res) return;
-		vm.$message.success('状态变更成功');
+		ElMessage.success('状态变更成功');
 		await getNeighbors();
 		setFolderInfo();
 	}
@@ -583,7 +584,7 @@ export function mainPart(){
 		const {dir, name} = oData.oMediaInfo;
 		// console.log(`保存 ${sType}`, dir);
 		const bCopy = copyString(dir);
-		if (bCopy) vm.$message.success('已复制路径');
+		if (bCopy) ElMessage.success('已复制路径');
 		const aName = name.split('.');
 		if (aName.length > 1) aName.pop(); // 不需要后缀
 		const sName = aName.join('.');
@@ -602,12 +603,12 @@ export function mainPart(){
 			if (!cur.active_) continue;
 			const oAim = oData.aSiblings[idx + iType];
 			if (oAim) {
-				vm.$message.success('开始跳转');
+				ElMessage.success('开始跳转');
 				return visitSibling(oAim);;
 			}
 			break;
 		}
-		vm.$message.warning('没有上/下一个');
+		ElMessage.warning('没有上/下一个');
 	}
 	// ▼点击文本文件后打开文件的方法
 	async function chooseFile(oTarget){
@@ -632,7 +633,7 @@ export function mainPart(){
 			👈 默认方案与通过波形解析的音频时长不同，
 			改为以波形结果为准？
 		`.replace(/\s{2,}/g, ' ').trim();
-		const isSure = await vm.$confirm(sMsg, 'Warning', {
+		const isSure = await ElMessageBox.confirm(sMsg, 'Warning', {
 			confirmButtonText: '确认',
 			cancelButtonText: '取消',
 			type: 'warning',
@@ -642,7 +643,7 @@ export function mainPart(){
 			fDuration: oMediaBuffer.duration,
 			sDuration: oMediaBuffer.sDuration_,
 		});
-		vm.$message.success(`时长已经修改为 ${oMediaBuffer.sDuration_}`);
+		ElMessage.success(`时长已经修改为 ${oMediaBuffer.sDuration_}`);
 	}
 	// 保存媒体时长信息
 	async function recordMediaTimeInfo(){
@@ -651,7 +652,7 @@ export function mainPart(){
 		});
 		if (!aTarget.length) return;
 		const sMsg = `发现有 ${aTarget.length} 个文件没有时长信息，是否补充？`;
-		const isSure = await vm.$confirm(sMsg, 'Warning', {
+		const isSure = await ElMessageBox.confirm(sMsg, 'Warning', {
 			confirmButtonText: '确认',
 			cancelButtonText: '取消',
 			type: 'warning',
@@ -664,7 +665,7 @@ export function mainPart(){
 			await toRecordDiration(infoAtDb, oDuration);
 			cur.durationStr = oDuration.sDuration;
 			const sTips = `${sPath.split('/').pop()}：${oDuration.sDuration}`;
-			vm.$message.success(sTips);
+			ElMessage.success(sTips);
 		}
 	}
 	// ▼如果数据库中没有记录音频的时长，此时应该将时长记录起来
@@ -690,7 +691,7 @@ export function mainPart(){
 	}
 	async function setAllEmpty(){
 		const sMsg = `清空所有行的文本？`;
-		const isSure = await vm.$confirm(sMsg, 'Warning', {
+		const isSure = await ElMessageBox.confirm(sMsg, 'Warning', {
 			confirmButtonText: '确认',
 			cancelButtonText: '取消',
 			type: 'warning',

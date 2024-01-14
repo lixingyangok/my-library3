@@ -33,8 +33,8 @@
             </ul>
         </section>
         <p>
-            当前：{{aPath.join('/')}}<br/>
-            当前：{{aRoutes.join('/')}}<br/>
+            当前1：{{aPath.join('/')}}<br/>
+            当前2：{{aRoutesInt.join('/')}}<br/>
             目标：{{this.$route.query.sPath}}
         </p>
         <div class="legend" >
@@ -59,6 +59,7 @@
             <ul v-for="(aColumn, i1) of aDirectory" :key="i1">
                 <li class="one-item"
                     v-for="(cur, i2) of aColumn" :key="i2"
+                    :class="{active: i2 == aRoutesInt[i1],}"
                     @click="ckickItem(i1, i2, cur)"
                 >
                     <template v-if="cur.kind == 'directory'">
@@ -331,7 +332,7 @@ export default {
             // 👇新的
             aFolders: [], // 选择过的历史记录
             aDirectory: [],
-            aRoutes: [],
+            aRoutesInt: [],
         };
     },
     created(){

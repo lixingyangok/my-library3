@@ -66,7 +66,7 @@ const oFn01 = {
         console.log("目标的子元素（初步数据）\n", arr);
         this.aDirectory.splice(i1+1, Infinity, arr);
         fillTheList(this.aDirectory[i1+1]);
-        this.aRoutes.splice(i1, 1/0, oItem.name);
+        this.aRoutesInt.splice(i1, 1/0, i2);
     },
 };
 
