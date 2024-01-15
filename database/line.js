@@ -2,7 +2,7 @@
  * @Author: 
  * @Date: 2024-01-14 21:38:06
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-14 23:10:25
+ * @LastEditTime: 2024-01-15 22:39:28
  * @Description: 
  */
 
@@ -13,25 +13,22 @@ export const LineDB = {
     async updateMediaLines(obj){
         console.log("sqlite", sqlite);
         const {toSaveArr=[], toDelArr=[], isReturnAll, mediaId} = obj;
-        const [toInsert, toUpdate] = [[], []];
+        const [aInsert, aUpdate] = [[], []];
         const arr = [[], 0];
+        const aPromise = [];
         if (toSaveArr.length) {
+            const sNow = new Date().toISOString().replace('T', ' ').replace('Z', ' +00:00');
             obj.toSaveArr.forEach(cur => {
                 if (cur.text && !cur.filledAt){
-                    cur.filledAt = new Date();
+                    cur.filledAt = sNow;
                 }
-                if (cur.id) toInsert.push(cur);
-                else toUpdate.push(cur);
+                if (cur.id) aUpdate.push(cur);
+                else aInsert.push(cur);
             });
             // arr[0] = oFn.saveLine(toSaveArr);
-            ['id', 'createdAt', 'updatedAt', 'end', 'start', 'filledAt', 'mediaId', 'text', 'trans', ]
         }
         if (toDelArr.length) {
-            const delResult = sqlite.exec(`
-                delete from line
-                where id in (${toDelArr.join(',')})
-            `);
-            console.log("delResult", delResult);
+            aPromise.push(this.toDelete(toDelArr));
             // 👇删除练习记录
             // if (!fnRemoveLineID){
             //     const {default: oFn} = await import("./action.js");
@@ -42,66 +39,99 @@ export const LineDB = {
             //     where: { id: obj.toDelArr },
             // });
         }
-        // const res = await Promise.all(arr);
-        // let aNewRows = [];
-        // // if (isReturnAll){
-        // //     aNewRows = await oFn.getLineByMedia(mediaId);
-        // // }
-        // const oResult = {
-        //     save: res[0]?.map(cur => cur.dataValues) || [],
-        //     delete: res[1],
-        //     newRows: aNewRows,
-        // };
-        // return oResult;
+        if (aInsert.length){
+            aPromise.push(this.toInsert(aInsert));
+        }
+        if (aUpdate.length){
+            aPromise.push(this.toUpdate(aUpdate));
+        }
+        await Promise.all(aPromise);
+        let newRows = [];
+        if (isReturnAll){
+            newRows = this.getLineByMedia(mediaId);
+        }
+        const oResult = {
+            save: toSaveArr.length, // 假值
+            delete: toDelArr.length, // 假值
+            newRows,
+        };
+        return oResult;
     },
-    toInsert (arr=[{},{},{},]){
+    async toDelete(toDelArr){
+        if (!toDelArr.length) return true;
+        const delResult = sqlite.exec(`
+            delete from line
+            where id in (${toDelArr.join(',')})
+        `);
+        console.log("delResult", delResult);
+        return true;
+    },
+    async toInsert (arr){
         const stmt = sqlite.prepare(`
             INSERT INTO line
             (createdAt, updatedAt, filledAt, start, end, mediaId, text, trans)
             VALUES (
-                strftime('%Y-%m-%d %H:%M:%f', 'now'),
-                strftime('%Y-%m-%d %H:%M:%f', 'now'),
+                strftime('%Y-%m-%d %H:%M:%f +00:00', 'now'),
+                strftime('%Y-%m-%d %H:%M:%f +00:00', 'now'),
                 :filledAt, :start, :end, :mediaId, :text, :trans
             );
         `);
         arr.forEach((cur, idx) => {
             stmt.bind({
-                ':filledAt': "strftime('%Y-%m-%d %H:%M:%f', 'now')",
-                ':start': idx+1,
-                ':end': idx+1+1,
-                ':mediaId': 789,
-                ':text': 'abc',
-                ':trans': '',
+                ':filledAt': cur.filledAt ?? null,
+                ':start': cur.start ?? null,
+                ':end': cur.end ?? null,
+                ':mediaId': cur.mediaId ?? null,
+                ':text': cur.text ?? null,
+                ':trans': cur.trans ?? null,
             });
         });
         while (stmt.step()) {
+            debugger;
             console.log('stmt.get()', stmt.get()); 
         }
         stmt.free();
+        return true;
     },
-    toUpdate(arr){
+    async toUpdate(arr){
+        // 'id', 'createdAt', 'updatedAt', 
+        var aKeys = ['end', 'start', 'filledAt', 'mediaId', 'text', 'trans'];
         arr.forEach((cur, idx) => {
-            let items = Object.entries(({a:1, b:2})).reduce((sResult, oCur)=>{
-                const [key, val] = oCur;
-                if (val == void 0 || val == null || key == 'id') {
-                    return sResult;
+            let items = Object.entries(cur).reduce((sResult, oCur)=>{
+                let [key, val] = oCur;
+                const toSkip = [
+                    val === void 0,
+                    val === null,
+                    key === 'id',
+                    !aKeys.includes(key),
+                ].some(cur=>cur);
+                if (toSkip) return sResult;
+                if ((typeof val) === 'string'){
+                    val = `'${val.replace(/'/g, `''`)}'`;
                 }
-                if (typeof val ==  'string'){
-                    val.replace(`'`, `''`);
-                    val = `'${val}'`;
-                }
-                sResult += `${key} = ${val}, `;
-                return sResult
+                return sResult + `${key} = ${val}, `;
             }, '');
             if (items.endsWith(', ')) items = items.slice(0, -2);
-            sqlite.exec(`
+            const sFullSql = `
                 UPDATE line SET
-                updatedAt = strftime('%Y-%m-%d %H:%M:%f', 'now'),
+                updatedAt = strftime('%Y-%m-%d %H:%M:%f +00:00', 'now'),
                 ${items}
                 where id = ${cur.id}
-            `);
+            `;
+            console.log("sFullSql", sFullSql);
+            sqlite.exec(sFullSql);
         });
+        return true;
     },
+    getLineByMedia(iMediaId){
+        const aRows = sqlite.select(`
+            select id, start, end, text, filledAt
+            from line
+            where mediaId = ${iMediaId}
+            order by start asc
+        `);
+        return aRows;
+    }
 }
 
 

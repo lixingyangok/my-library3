@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-14 23:21:37
+ * @LastEditTime: 2024-01-15 22:27:03
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
@@ -692,32 +692,33 @@ export function fnAllKeydownFn() {
         if (!toSaveArr.length && !toDelArr.length) {
             return ElMessage.warning(`没有修改，无法保存`);
         }
-        // console.time('保存与查询');
+        console.time('保存与查询');
         isSavingToDB = true;
         console.log('将保存字幕：\n', toSaveArr, toDelArr);
         console.log("LineDB", LineDB);
-        LineDB.updateMediaLines({
-                toSaveArr,
-                toDelArr,
-                mediaId,
-                isReturnAll: true,
-        });
-        // const oResult = await fnInvoke('db', 'updateLine', {
-        //     toSaveArr,
-        //     toDelArr,
-        //     isReturnAll: true,
-        //     mediaId,
-        // }).catch(err=>{
-        //     console.log('保存失败\n', err);
-        //     alert('保存失败');
+        // LineDB.updateMediaLines({
+        //         toSaveArr,
+        //         toDelArr,
+        //         mediaId,
+        //         isReturnAll: true,
         // });
-        // console.timeEnd('保存与查询');
-        // if (!oResult) {
-        //     isSavingToDB = false;
-        //     return;
-        // }
-        // afterSaved(oResult); // 在其内执行 isSavingToDB = false;
-        isSavingToDB = false;
+        const oResult = await LineDB.updateMediaLines({
+            toSaveArr,
+            toDelArr,
+            isReturnAll: true,
+            mediaId,
+        }).catch(err=>{
+            console.log('保存失败\n', err);
+            alert('保存失败');
+        });
+        console.timeEnd('保存与查询');
+        if (!oResult) {
+            isSavingToDB = false;
+            return;
+        }
+        console.log("保存结果", oResult);
+        afterSaved(oResult); // 在其内执行 isSavingToDB = false;
+        // isSavingToDB = false;
     }
     function afterSaved(oResult){
         // ▼ 加载新字幕
@@ -725,10 +726,10 @@ export function fnAllKeydownFn() {
             isSavingToDB = false;
         });
         ElMessage.success(`
-            成功：已修改 ${oResult.save.length} 条，删除 ${oResult.delete} 条
+            成功：已修改 ${oResult.save} 条，删除 ${oResult.delete} 条
         `.trim());
         This.deletedSet.clear();
-        This.oTodayBar.init();
+        // This.oTodayBar.init();
     }
     // ▼撤销-恢复
     function setHistory(iType) {

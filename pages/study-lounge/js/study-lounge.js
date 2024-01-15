@@ -5,6 +5,7 @@ import {figureOut} from './figure-out-region.js';
 import {getTubePath, getDateDiff} from '@/common/js/common-fn.js';
 import {getFolderChildren, addAllMediaDbInfo} from '@/common/js/fs-fn.js';
 import {path2file} from '@/common/js/fileSystemAPI.js';
+import {LineDB} from '@/database/line.js';
 // import {useActionStore} from '@/store/action-store.js';
 let sqlite = await useSqlite;
 
@@ -202,7 +203,7 @@ export function mainPart(){
 		oData.oMediaFile = await path2file(oData.oMediaInLocal.pathFull, !trying);
 		// const aRes = await fnInvoke('db', 'getMediaInfo', {hash});
 		const aRes = sqlite.select(`
-			select * from media where hash = '${hash}'
+			select * from media where hash = '${hash}' limit 1
 		`);
 		console.log('库中媒体信息\n', aRes[0]);
 		if (!aRes?.[0]) return ElMessage.error('当前媒体未被收录');
@@ -218,13 +219,14 @@ export function mainPart(){
 	// ▼查询库中的字幕
 	async function getLinesFromDB(aRes=[]){
 		if (!aRes.length){
+			aRes = await LineDB.getLineByMedia(oData.oMediaInfo.id);
 			// aRes = await fnInvoke('db', 'getLineByMedia', oData.oMediaInfo.id);
-			aRes = sqlite.select(`
-				select id, start, end, text, filledAt
-				from line
-				where mediaId = '${oData.oMediaInfo.id}'
-				order by start asc
-			`);
+			// aRes = sqlite.select(`
+			// 	select id, start, end, text, filledAt
+			// 	from line
+			// 	where mediaId = '${oData.oMediaInfo.id}'
+			// 	order by start asc
+			// `);
 		}
 		if (!aRes?.length) {
 			if (oData.oMediaBuffer) setFirstLine();
