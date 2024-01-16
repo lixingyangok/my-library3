@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-15 22:27:03
+ * @LastEditTime: 2024-01-16 22:07:42
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
@@ -692,16 +692,9 @@ export function fnAllKeydownFn() {
         if (!toSaveArr.length && !toDelArr.length) {
             return ElMessage.warning(`没有修改，无法保存`);
         }
-        console.time('保存与查询');
+        console.time('保存与查询计时');
         isSavingToDB = true;
-        console.log('将保存字幕：\n', toSaveArr, toDelArr);
-        console.log("LineDB", LineDB);
-        // LineDB.updateMediaLines({
-        //         toSaveArr,
-        //         toDelArr,
-        //         mediaId,
-        //         isReturnAll: true,
-        // });
+        // console.log('将保存字幕：\n', toSaveArr, toDelArr);
         const oResult = await LineDB.updateMediaLines({
             toSaveArr,
             toDelArr,
@@ -711,14 +704,32 @@ export function fnAllKeydownFn() {
             console.log('保存失败\n', err);
             alert('保存失败');
         });
-        console.timeEnd('保存与查询');
+        console.timeEnd('保存与查询计时');
         if (!oResult) {
             isSavingToDB = false;
             return;
         }
         console.log("保存结果", oResult);
         afterSaved(oResult); // 在其内执行 isSavingToDB = false;
+        saveInDx();
         // isSavingToDB = false;
+    }
+    // 👇保存到 dxDB
+    async function saveInDx(){
+        const sqlite = await useSqlite;
+        console.time('执行-sqlite.export()');
+        const exported = sqlite.export(); // Uint8Array
+        console.timeEnd('执行-sqlite.export()');
+        console.time('执行-new Blob()');
+        const myBlob = new Blob([exported]);
+        console.timeEnd('执行-new Blob()');
+        await dxDB.sqlite.clear();
+        // console.time('执行-保存到 dxDB');
+        dxDB.sqlite.add({ // 耗时小于 1ms
+            time: new Date().toLocaleString(),
+            data: myBlob,
+        });
+        // console.timeEnd('执行-保存到 dxDB');
     }
     function afterSaved(oResult){
         // ▼ 加载新字幕

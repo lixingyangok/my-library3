@@ -624,10 +624,10 @@ export function mainPart(){
 		// oData.isShowFileList = false; // 关闭窗口
 		const {sFullPath} = oTarget;
 		store.transact('oRecent', (oldData) => {
-            const old = oldData[store('sFilePath')] || {
+            const old = store('media') || {
                 startAt: new Date() * 1, // 记录开始时间
             };
-            oldData[store('sFilePath')] = {
+            oldData[store('media').pathFull] = {
                 ...old,
 				sTxtFile: sFullPath,
             };

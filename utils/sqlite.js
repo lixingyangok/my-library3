@@ -2,7 +2,7 @@
  * @Author: Merlin
  * @Date: 2024-01-08 09:35:15
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-13 17:57:21
+ * @LastEditTime: 2024-01-16 22:24:14
  * @Description: 
  */
 import { dxDB } from "./dxDB";
@@ -35,10 +35,9 @@ export const useSqlite = (async ()=>{
 
 
 function select(sql){
-    // console.log("sql=", sql);
-    console.time(sql);
+    const iStart = Date.now();
     const aData = this.exec(sql);
-    console.timeEnd(sql);
+    // console.log(sql, Date.now() - iStart);
     const {columns, values} = aData[0] || {};
     if (!columns) return [];
     // columns: ['id', 'mediaId', 'start', 'end', 'text', 'trans', 'createdAt', 'updatedAt', 'filledAt']

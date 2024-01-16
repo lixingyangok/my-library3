@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-14 11:35:08
+ * @LastEditTime: 2024-01-16 22:12:11
  * @Description: 
 -->
 <template>
@@ -476,11 +476,11 @@ export default {
             return oData.aArticle.length;
         });
         const oAllFn = fnAllKeydownFn();
-        document.addEventListener('keyup', oAllFn.readingStopped);
-        onBeforeUnmount(() => {
-            console.log('卸载-取消按键抬起~~');
-            document.removeEventListener('keyup', oAllFn.readingStopped);
-        });
+        // document.addEventListener('keyup', oAllFn.readingStopped);
+        // onBeforeUnmount(() => {
+        //     console.log('卸载-取消按键抬起~~');
+        //     document.removeEventListener('keyup', oAllFn.readingStopped);
+        // });
         return {
             ...toRefs(oData),
             ...oAllFn,

@@ -329,8 +329,8 @@ export default function(){
 		if (iHeight > max) iHeight = max;
 		oData.iHeight = iHeight.toFixed(2) * 1;
         store.transact('oRecent', (oldData) => {
-            const old = oldData[store('sFilePath')] || {};
-            oldData[store('sFilePath')] = {
+            const old = store('media') || {};
+            oldData[old.pathFull] = {
                 ...old,
                 iWaveHeight: iHeight, // 可能取不到值
             };
