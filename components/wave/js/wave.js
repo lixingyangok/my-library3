@@ -20,7 +20,7 @@ export default function(){
         oPointer: null,
         mediaSrc: null,
     });
-    const {iWaveHeight = 0.4} = store('oRecent')?.[store('sFilePath')] || {};
+    const {iWaveHeight = 0.4} = store('oRecent')?.[store('media')?.pathFull] || {};
     const oData = reactive({
         oMediaBuffer: {}, // 媒体buffer，疑似需要向上提交以便显示时长等信息
         playing: false,
