@@ -1,9 +1,7 @@
-
 <template>
-    <section class="outer" >
-        <h2>{{aDisks}}</h2>
-
-        <ul class="path-list" >
+    <section class="outer">
+        <h2 v-if="1"> {{aDisks}} </h2>
+        <ul class="path-list" v-if="0">
             <li v-for="(cur, idx) of oConfig.aRoot" :key="idx"
                 :class="{active: aPath.join('/').startsWith(cur)}"
             >
@@ -16,26 +14,29 @@
                 </el-button> -->
             </li>
         </ul>
-        <section class="block01" >
-            <button @click="chooseFolder">选择文件夹</button>
+
+        <section class="root-choosing" >
+            <button @click="chooseRoot">选择文件夹</button>
             <br/>
             <ul>
-                <li v-for="cur, idx of aFolders" :key="idx" >
-                    <em @click="setRootFolder(idx)">
+                <li v-for="cur, idx of aRoots" :key="idx" 
+                    :class="{active: cur.active}"
+                >
+                    <em @click="setRoot(idx)">
                         {{ cur.name }}__
                         {{ cur.createdAt }}
                     </em>
                     &emsp;
-                    <button @click="delRootFolder(idx)">
+                    <button @click="deletRoot(idx)">
                         删除
                     </button>
                 </li>
             </ul>
         </section>
         <p>
-            当前1：{{aPath.join('/')}}<br/>
-            当前2：{{aRoutesInt.join('/')}}<br/>
-            目标：{{this.$route.query.sPath}}
+            <!-- 当前1：{{aPath.join('/')}}<br/> -->
+            当前2：{{aRoutesStr.join('/')}}<br/>
+            <!-- 目标：{{this.$route.query.sPath}} -->
         </p>
         <div class="legend" >
             图标含义：
@@ -145,7 +146,7 @@
         v-model="dialogVisible"
     >
         <el-tree node-key="sPath" default-expand-all
-            :data="aFolders" :expand-on-click-node="false"
+            :data="aRoots" :expand-on-click-node="false"
         >
             <template #default="{ node, data }">
                 <span class="tree-line">
@@ -330,10 +331,17 @@ export default {
                 aWords: [],
             },
             // 👇新的
-            aFolders: [], // 选择过的历史记录
-            aDirectory: [],
+            aRoots: [], // 选择过的历史记录
+            aDirectory: [], // 显示文件列表
             aRoutesInt: [],
         };
+    },
+    computed: {
+        aRoutesStr(){
+            return this.aRoutesInt.map((i1, i2) => {
+                return this.aDirectory[i2][i1]?.name;
+            });
+        },
     },
     created(){
         // this.getMediaHomesArr();
@@ -359,11 +367,6 @@ export default {
 
 <style scoped src="./style/shelf.scss" lang="scss"></style>
 <style scoped src="./style/media-info.css"></style>
-<style scoped lang="scss">
-.block01{
-    padding: 25px 0;
-    background-color: #eee;
-}
-</style>
+
 
 

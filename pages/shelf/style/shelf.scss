@@ -45,6 +45,18 @@
     }
 }
 
+.root-choosing{
+    background-color: #efefef;
+    padding: 10px;
+    li{
+        cursor: pointer;
+        line-height: 2;
+    }
+    .active{
+        color: blue;
+    }
+}
+
 .legend{
     padding: 20px 0 10px;
 }

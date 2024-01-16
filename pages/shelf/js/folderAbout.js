@@ -2,56 +2,56 @@ import {mySort} from '@/common/js/common-fn.js';
 import {handler2List, handler2FileObj} from '@/common/js/fileSystemAPI.js';
 
 const oFn01 = {
-    async chooseFolder(){
+    async chooseRoot(){
         let handler = await window.showDirectoryPicker({
             mode: 'readwrite',
         }).catch(err => {});
         if (!handler) return;
-        console.log("handler", handler);
         const {kind, name} = handler;
         const createdAt = dayjs().format('YYYY-MM-DD HH:mm:ss');
         const path = `${createdAt}`;
-        const arr = await handler2List(handler, {path});
-        this.aDirectory.splice(0, 1/0, arr);
-        fillTheList(this.aDirectory[0]);
-        this.aRoutes.splice(0, 1/0);
         await dxDB.directory.add({
             name,
             path,
-            createdAt, // 当 id 使用
-            handler
+            handler,
+            createdAt, // 当唯一键使用
         });
         this.showRootList();
+        const arr = await handler2List(handler, {path});
+        this.aDirectory.splice(0, 1/0, arr);
+        fillTheList(this.aDirectory[0]);
     },
     async showRootList(){
-        const aDirectory = await dxDB.directory.toArray();
-        console.log("aDirectory", aDirectory);
-        this.aFolders = aDirectory;
+        const aRoots = await dxDB.directory.toArray();
+        // console.log("aRoots", aRoots);
+        this.aRoots = aRoots;
         // ↓ 找到有权限的目录，显示出来
         let hasFound;
-        this.aFolders.forEach(async (cur, idx) => {
+        this.aRoots.forEach(async (cur, idx) => {
             const answer = await cur.handler.queryPermission();
             cur.permission = answer; // 记录起来，备用 
             if (answer == 'granted' && !hasFound){
                 hasFound = true;
-                this.setRootFolder(idx);
+                cur.active = true;
+                this.setRoot(idx);
             }
         });
     },
-    delRootFolder(idx){
-        const {id, path} = this.aFolders[idx];
-        this.aFolders.splice(idx, 1);
+    deletRoot(idx){
+        const {id, path} = this.aRoots[idx];
+        this.aRoots.splice(idx, 1);
         dxDB.directory.delete(id);
         dxDB.file.where('pathFull').startsWith(path).delete();
     },
-    async setRootFolder(idx){
-        const {handler, path} = this.aFolders[idx];
-        console.log("path", path);
+    async setRoot(idx){
+        const {handler, path} = this.aRoots[idx];
+        this.aRoots.forEach((cur, index)=>{
+            cur.active = idx === index;
+        });
         let answer = await handler.requestPermission({ mode: 'readwrite', });
         if (answer != 'granted') return;
         console.log("handler", handler);
         const aRoot = await handler2List(handler, {path});
-        // mySort(aRoot, 'name');
         this.aDirectory.splice(0, Infinity, aRoot);
         fillTheList(this.aDirectory[0]);
     },
