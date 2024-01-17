@@ -10,7 +10,6 @@ import {LineDB} from '@/database/line.js';
 let sqlite = await useSqlite;
 
 export function mainPart(){
-
 	// const fsp = require('node:fs/promises');
 	// const oActionStore = useActionStore();
 	const sToday = window.dayjs().format('YYYY-MM-DD');
@@ -220,13 +219,6 @@ export function mainPart(){
 	async function getLinesFromDB(aRes=[]){
 		if (!aRes.length){
 			aRes = await LineDB.getLineByMedia(oData.oMediaInfo.id);
-			// aRes = await fnInvoke('db', 'getLineByMedia', oData.oMediaInfo.id);
-			// aRes = sqlite.select(`
-			// 	select id, start, end, text, filledAt
-			// 	from line
-			// 	where mediaId = '${oData.oMediaInfo.id}'
-			// 	order by start asc
-			// `);
 		}
 		if (!aRes?.length) {
 			if (oData.oMediaBuffer) setFirstLine();
@@ -245,13 +237,14 @@ export function mainPart(){
 		await oInstance.proxy.$nextTick();
 		// ▼ 没有目标行就跳到0行（防止纵向滚动条没回顶部
 		// let {iLineNo=0, sTxtFile} = store('oRecent')[store('sFilePath')] || {};
-		// // ▼ 只有媒体变更了才重新定位行，即，因保存字幕后重新加载时不要行动
-		// if (isMediaChanged){ 
-		// 	console.log(`isMediaChanged ${isMediaChanged}, iLineNo=${iLineNo}`);
-		// 	oInstance.proxy.goLine(iLineNo);
-		// 	isMediaChanged = false; // 复位
-		// }
-		// oData.sReadingFile || showFileAotuly(sTxtFile);
+		let {iLineNo=0, sTxtFile} = store('media') || {};
+		// ▼ 只有媒体变更了才重新定位行，即，因保存字幕后重新加载时不要行动
+		if (isMediaChanged){
+			console.log(`isMediaChanged ${isMediaChanged}, iLineNo=${iLineNo}`);
+			oInstance.proxy.goLine(iLineNo);
+			isMediaChanged = false; // 复位
+		}
+		oData.sReadingFile || showFileAotuly(sTxtFile);
 		// oActionStore.getMediaRows(oData.oMediaInfo.id);
 	}
 	// ▼通过文本文件路径读取其中内容（音频的原文文件）
@@ -619,7 +612,7 @@ export function mainPart(){
 		}
 		ElMessage.warning('没有上/下一个');
 	}
-	// ▼点击文本文件后打开文件的方法
+	// ▼点击文本文件后打开文件的方法（保存学习记录）
 	async function chooseFile(oTarget){
 		// oData.isShowFileList = false; // 关闭窗口
 		const {sFullPath} = oTarget;

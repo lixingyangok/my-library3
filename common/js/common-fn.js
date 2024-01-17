@@ -1,8 +1,8 @@
 /*
  * @Author: 李星阳
  * @Date: 2022-01-09 17:59:23
- * @LastEditors: 李星阳
- * @LastEditTime: 2023-08-26 09:03:50
+ * @LastEditors: Merlin
+ * @LastEditTime: 2024-01-17 22:18:39
  * @Description: 
  */
 
@@ -89,10 +89,10 @@ export function mySort(arr, sKey) {
 }
 
 // ▼跳转到目标页
-export function goToLounage(sFilePath){
-    ls('sFilePath', sFilePath);
-    vm.$router.push({
-        name: 'studyLounge',
+export function goToLounage(oMedia){
+    store('media', oMedia);
+    useRouter().push({
+        path: 'study-lounge',
     });
 }
 
