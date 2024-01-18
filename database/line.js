@@ -2,7 +2,7 @@
  * @Author: 
  * @Date: 2024-01-14 21:38:06
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-15 22:39:28
+ * @LastEditTime: 2024-01-18 22:01:29
  * @Description: 
  */
 
@@ -67,30 +67,26 @@ export const LineDB = {
         return true;
     },
     async toInsert (arr){
-        const stmt = sqlite.prepare(`
+        let sFullSql = `
             INSERT INTO line
             (createdAt, updatedAt, filledAt, start, end, mediaId, text, trans)
             VALUES (
                 strftime('%Y-%m-%d %H:%M:%f +00:00', 'now'),
                 strftime('%Y-%m-%d %H:%M:%f +00:00', 'now'),
-                :filledAt, :start, :end, :mediaId, :text, :trans
+                ?, ?, ?, ?, ?, ?
             );
-        `);
-        arr.forEach((cur, idx) => {
-            stmt.bind({
-                ':filledAt': cur.filledAt ?? null,
-                ':start': cur.start ?? null,
-                ':end': cur.end ?? null,
-                ':mediaId': cur.mediaId ?? null,
-                ':text': cur.text ?? null,
-                ':trans': cur.trans ?? null,
-            });
+        `;
+        arr.forEach(cur => {
+            const thisArr = [
+                cur.filledAt ?? null,
+                cur.start ?? null,
+                cur.end ?? null,
+                cur.mediaId ?? null,
+                cur.text ?? null,
+                cur.trans ?? null
+            ];
+            db.run(sFullSql, thisArr);
         });
-        while (stmt.step()) {
-            debugger;
-            console.log('stmt.get()', stmt.get()); 
-        }
-        stmt.free();
         return true;
     },
     async toUpdate(arr){

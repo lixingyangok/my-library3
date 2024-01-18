@@ -213,7 +213,6 @@ export function mainPart(){
 		await getNeighbors(); // 一定要 await 下方的方法才会正常运行
 		return;
 		getNewWords();
-		console.log('当前媒体所有行：\n', oData.aLineArr.$dc());
 	}
 	// ▼查询库中的字幕
 	async function getLinesFromDB(aRes=[]){
@@ -225,6 +224,7 @@ export function mainPart(){
 			oData.iSubtitle = -1; // -1 表示文件不存在 
 			return;
 		}
+		console.log('当前媒体所有行：\n', aRes);
 		const aLineArr = fixTime(aRes);
 		const sLineArr = JSON.stringify(aLineArr);
 		oData.aHistory[0].sLineArr = sLineArr;
@@ -236,8 +236,8 @@ export function mainPart(){
 		}, {});
 		await oInstance.proxy.$nextTick();
 		// ▼ 没有目标行就跳到0行（防止纵向滚动条没回顶部
-		// let {iLineNo=0, sTxtFile} = store('oRecent')[store('sFilePath')] || {};
-		let {iLineNo=0, sTxtFile} = store('media') || {};
+		let {iLineNo=0, sTxtFile} = store('oRecent')[store('media')?.pathFull] || {};
+		// let {iLineNo=0, sTxtFile} = store('media') || {};
 		// ▼ 只有媒体变更了才重新定位行，即，因保存字幕后重新加载时不要行动
 		if (isMediaChanged){
 			console.log(`isMediaChanged ${isMediaChanged}, iLineNo=${iLineNo}`);
