@@ -2,7 +2,7 @@
  * @Author: Merlin
  * @Date: 2023-12-30 10:38:50
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-13 22:22:25
+ * @LastEditTime: 2024-01-19 22:10:22
  * @Description: 
 -->
 <template>
@@ -16,7 +16,6 @@
 </template>
 
 <script setup>
-
 
 useHead({
     title: '😄 哈哈学习',
@@ -33,23 +32,22 @@ useHead({
         rel: 'stylesheet',
         type: 'text/css',
         href: '//unpkg.com/element-plus/dist/index.css',
-    } ],
-    script: [{
+    }],
+    script: [{ // echarts
+        src: 'https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js',
+    },{ // store
         src: 'https://cdn.jsdelivr.net/npm/store2@2.14.2/dist/store2.min.js',
-    },{
-        // dayjs
+    },{ // dayjs
         src: 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/dayjs.min.js',
-    },{
-        // Dexie
+    },{ // Dexie
         src: 'https://unpkg.com/dexie@latest/dist/dexie.js',
-    }, {
-        // hashwasm.xxhash64
+    }, { // hashwasm.xxhash64
         src: 'https://cdn.jsdelivr.net/npm/hash-wasm@4/dist/xxhash64.umd.min.js',
-    }, {
-        // initSqlJs
+    }, { // initSqlJs
         src: 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.9.0/sql-wasm.js',
-    }]
+    }],
 });
+
 const showing = ref(true);
 const oIns = getCurrentInstance();
 

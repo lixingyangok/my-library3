@@ -25,6 +25,7 @@ export const useSqlite = (async ()=>{
     const sqlite = new SQL.Database(Uint8Arr);
     Object.assign(sqlite, {
         select,
+        save,
     });
     if (globalThis?.alert){
         console.log("window.db", window.db);
@@ -52,6 +53,9 @@ function select(sql){
     return aRows;
 }
 
+function save(){
+    console.log("保存到 dxDB", );
+}
 
 
 

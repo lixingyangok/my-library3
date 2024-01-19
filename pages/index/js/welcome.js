@@ -167,7 +167,7 @@ const oFn_recentList = {
         console.log('oTarget', );
         console.log(oTarget.$dc());
         store.transact('oRecent', (oOldData)=>{
-            Reflect.deleteProperty(oOldData, oTarget.file);
+            Reflect.deleteProperty(oOldData, oTarget.pathFull);
         });
         this.updateTheRecent();
     },

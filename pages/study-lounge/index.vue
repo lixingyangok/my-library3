@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-16 22:12:11
+ * @LastEditTime: 2024-01-19 22:09:29
  * @Description: 
 -->
 <template>
@@ -247,6 +247,7 @@
                     v-model="aLineArr[iCurLineIdx].text"
                     abckeydown.enter.prevent="() => previousAndNext(1)"
                     @input="inputHandler"
+                    @focus="textareaFocused"
                 ></textarea>
                 <!-- @keydown.backspace="typed" -->
                 <ul class="candidate-list">
@@ -496,6 +497,10 @@ export default {
         const oFnList = getKeyDownFnMap(this, 'obj');
         registerKeydownFn(oFnList);
     },
+    // beforeRouteEnter(to, from){
+    //     console.log("from", from);
+    //     console.log("to", to);
+    // },
 };
 </script>
 

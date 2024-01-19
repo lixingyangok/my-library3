@@ -211,7 +211,6 @@ export function mainPart(){
 		oData.oMediaInfo = aRes[0];
 		getLinesFromDB();
 		await getNeighbors(); // 一定要 await 下方的方法才会正常运行
-		return;
 		getNewWords();
 	}
 	// ▼查询库中的字幕
@@ -349,11 +348,14 @@ export function mainPart(){
 	}
 	// ▼查询新词
 	async function getNewWords(){
-		const aRes = await fnInvoke('db', 'getWordsByMedia', {
-			mediaId: [oData.oMediaInfo.id].concat(
-				oData.aSiblings.map(cur => cur?.infoAtDb?.id),
-			),
-		});
+		const mediaId = [
+			oData.oMediaInfo.id,
+			...oData.aSiblings.map(cur => cur?.infoAtDb?.id)
+		];
+		const aRes = await sqlite.select(`
+			select word from new_word
+			where mediaId in (${mediaId.join(',')})
+		`);
 		if (!aRes) return;
 		oData.aFullWords = aRes.map(cur => cur.word);
 		oData.oProperNoun = {}; // 清空
@@ -433,7 +435,7 @@ export function mainPart(){
 	async function visitSibling(oMedia){
 		oData.iCurLineIdx = 0;
 		oData.aLineArr = [{text:''}];
-		store('sFilePath', oMedia.sPath);
+		store('media', oMedia);
 		oData.sMediaSrc = getTubePath(oMedia.sPath);
 		await proxy.$nextTick();
 		init();
@@ -704,6 +706,10 @@ export function mainPart(){
 			cur.text = '';
 		});
 	}
+	async function textareaFocused(){
+		if (oData.oMediaFile) return;
+		oData.oMediaFile = await path2file(oData.oMediaInLocal.pathFull);
+	}
 	// watch(() => oActionStore.aMediaRows, (aNewVal)=>{
 	// 	aNewVal.forEach(cur=>{
 	// 		if (!cur.lineId) return;
@@ -712,9 +718,9 @@ export function mainPart(){
 	// 	});
 	// });
 	// ============================================================================
-	console.log("init(true);");
 	init(true);
 	const oFn = {
+		textareaFocused,
 		chooseFile,
 		init,
 		setAllEmpty,
