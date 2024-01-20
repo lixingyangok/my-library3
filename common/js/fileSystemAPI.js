@@ -1,3 +1,10 @@
+/*
+ * @Author: 
+ * @Date: 2024-01-10 22:32:22
+ * @LastEditors: Merlin
+ * @LastEditTime: 2024-01-20 11:34:29
+ * @Description: 
+ */
 import {mySort} from '@/common/js/common-fn.js';
 
 // 从文件夹 handler 返回其子元素列表
@@ -77,9 +84,11 @@ export async function path2file(sPath, ask=true){
     });
     if (!oRoot) return;
     let answer = await oRoot.handler.queryPermission();
+    console.log("answer:", answer);
     if ((answer != 'granted') && ask) {
         answer = await oRoot.handler.requestPermission({
-            mode: 'readwrite'
+            mode: 'readwrite',
+            // id: rootID,
         });
     }
     if (answer != 'granted') return;

@@ -17,6 +17,7 @@
 
         <section class="root-choosing" >
             <button @click="chooseRoot">选择文件夹</button>
+            <button @click="exportDB">导出数据库</button>
             <br/>
             <ul>
                 <li v-for="cur, idx of aRoots" :key="idx" 

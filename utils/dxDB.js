@@ -1,3 +1,10 @@
+/*
+ * @Author: Merlin
+ * @Date: 2024-01-07 21:07:28
+ * @LastEditors: Merlin
+ * @LastEditTime: 2024-01-20 10:31:52
+ * @Description: 
+ */
 
 export const dxDB = (()=>{
     if (!import.meta.client) return;
@@ -12,3 +19,7 @@ export const dxDB = (()=>{
     });
     return myDB;
 })();
+
+if (import.meta.client){
+    window.dxDB = dxDB; // 测试
+}

@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-02 20:27:04
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-17 21:51:56
+ * @LastEditTime: 2024-01-20 11:34:43
  * @Description: 
 -->
 
@@ -40,36 +40,38 @@
         </div>
         <!-- ▲大标题 -->
         <div class="first-list" >
-            <el-table :data="aRecent" stripe border style="width: 100%;">
-                <el-table-column label="文件">
-                    <template #default="scope">
-                        <p class="folder-name">{{scope.row.name}}</p>
-                        <p class="the-first">{{scope.row.path}}</p>
-                    </template>
-                </el-table-column>
-                <el-table-column prop="sTime" label="时间" width="120"></el-table-column>
-                <el-table-column prop="iLineNo" label="位置" width="165">
-                    <template #default="scope">
-                        {{scope.row.iLineNo}}/{{scope.row.iAll}}<br/>
-                        {{scope.row.sPosition}}/{{scope.row.durationStr}}
-                    </template>
-                </el-table-column>
-                <el-table-column prop="fPercent" label="进度" width="250" >
-                    <template #default="scope">
-                        <el-progress :percentage="scope.row.fPercent" />
-                    </template>
-                </el-table-column>
-                <el-table-column label="操作" width="150">
-                    <template #default="scope">
-                        <el-button link @click="goToLounge(scope.row)" >
-                            推进
-                        </el-button>
-                        <el-button link @click="delFile(scope.row)" >
-                            删除
-                        </el-button>
-                    </template>
-                </el-table-column>
-            </el-table>
+            <client-only>
+                <el-table :data="aRecent" stripe border style="width: 100%;">
+                    <el-table-column label="文件">
+                        <template #default="scope">
+                            <p class="folder-name">{{scope.row.name}}</p>
+                            <p class="the-first">{{scope.row.path}}</p>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="sTime" label="时间" width="120"></el-table-column>
+                    <el-table-column prop="iLineNo" label="位置" width="165">
+                        <template #default="scope">
+                            {{scope.row.iLineNo}}/{{scope.row.iAll}}<br/>
+                            {{scope.row.sPosition}}/{{scope.row.durationStr}}
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="fPercent" label="进度" width="250" >
+                        <template #default="scope">
+                            <el-progress :percentage="scope.row.fPercent" />
+                        </template>
+                    </el-table-column>
+                    <el-table-column label="操作" width="150">
+                        <template #default="scope">
+                            <el-button link @click="goToLounge(scope.row)" >
+                                推进
+                            </el-button>
+                            <el-button link @click="delFile(scope.row)" >
+                                删除
+                            </el-button>
+                        </template>
+                    </el-table-column>
+                </el-table>
+            </client-only>
         </div>
         <!-- <TodayHistory/> -->
         <section>
