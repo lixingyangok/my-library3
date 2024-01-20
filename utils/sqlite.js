@@ -2,7 +2,7 @@
  * @Author: Merlin
  * @Date: 2024-01-08 09:35:15
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-20 21:29:29
+ * @LastEditTime: 2024-01-20 22:54:42
  * @Description: 
  */
 import { dxDB } from "./dxDB";
@@ -46,7 +46,7 @@ export async function checkDataForDB(blob){
     const sqlite = new SQL.Database(Uint8Arr);
     try{
         const [tables] = sqlite.exec(`SELECT name FROM sqlite_master WHERE type='table'`);
-        console.log("tables", tables);
+        console.log("导入库包含表：\n", tables.values);
         return tables.values;
     }catch(err){}
     return false;

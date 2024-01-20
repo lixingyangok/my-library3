@@ -224,7 +224,7 @@ export default {
     async loadDbData(ev){
         const files = [...ev.target.files];
         files.sort((aa, bb) => aa.name.localeCompare(bb.name));
-        // console.log(files);
+        console.log('这些文件将导入到数据库\n', files);
         if (!files.length) return;
         const aPromise = files.map(curFile=>{
             let resolve = null;

@@ -83,7 +83,27 @@
                         <i v-else class="fa-solid fa-fw fa-circle-notch fa-spin" />
                     </template>
                     <i v-else class="fas fa-fw fa-file-alt"/>
-                    {{ cur.name }}
+                    <!-- {{ cur.name }} -->
+                    <!-- 左右分界 -->
+                    <el-popover v-if="cur.isMedia" placement="right" trigger="hover" 
+                        :width="300"
+                    >
+                        <template #reference>
+                            <span class="item-name" :hash="cur.hash">
+                                {{cur.name}}
+                            </span>
+                        </template>
+                        <p>{{cur.name}}</p>
+                        <p>hash: {{cur.hash}}</p>
+                        <el-button type="primary" link :key="`${i1}-${i2}`"
+                            @click="checkDetail(cur)"
+                        >
+                            详情
+                        </el-button >
+                    </el-popover>
+                    <span class="item-name" v-else>
+                        {{cur.name}}
+                    </span>
                 </li>
             </ul>
         </article>
@@ -117,7 +137,7 @@
                     </template>
                     <i v-else class="fas fa-file-alt"/>
                     <!-- 左右分界 -->
-                    <!-- <el-popover v-if="cur.isMedia" placement="right" trigger="hover" 
+                    <el-popover v-if="cur.isMedia" placement="right" trigger="hover" 
                         :width="300"
                     >
                         <template #reference>
@@ -132,7 +152,7 @@
                         >
                             详情
                         </el-button >
-                    </el-popover> -->
+                    </el-popover>
                     <span class="item-name" v-else>
                         {{cur.sItem}}
                     </span>

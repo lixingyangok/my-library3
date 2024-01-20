@@ -2,7 +2,7 @@
  * @Author: 
  * @Date: 2024-01-10 22:32:22
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-20 22:07:14
+ * @LastEditTime: 2024-01-20 22:14:44
  * @Description: 
  */
 import {mySort} from '@/common/js/common-fn.js';
@@ -112,6 +112,7 @@ export async function saveFile(aFiles, oParams={}){
     directoryHandle ||= await window.showDirectoryPicker({
         mode: 'readwrite',
     }).catch(err => {});
+    if (!directoryHandle) return;
     const sTime = dayjs().format('YYYY.MM.DD HH.mm.ss');
     const newFolderHandle = await directoryHandle.getDirectoryHandle(sTime, { 
         create: true,
