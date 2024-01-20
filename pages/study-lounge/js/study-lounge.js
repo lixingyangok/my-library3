@@ -197,10 +197,13 @@ export function mainPart(){
 	// ▼方法 ====================================================================================
 	async function init(trying){
 		oDom?.oMyWave?.cleanCanvas(true);
-		const hash = oData.oMediaInLocal.hash;
+		oData.oMediaInLocal = store('media') || {};
+		const {hash, pathFull} = oData.oMediaInLocal;
 		if (!hash) throw '没有hash';
-		oData.oMediaFile = await path2file(oData.oMediaInLocal.pathFull, !trying);
-		// const aRes = await fnInvoke('db', 'getMediaInfo', {hash});
+		oData.oMediaFile = await path2file(pathFull, !trying);
+		if (oData.oMediaFile){
+			ElMessage.success('开始加载波形');
+		}
 		const aRes = sqlite.select(`
 			select * from media where hash = '${hash}' limit 1
 		`);
@@ -434,9 +437,10 @@ export function mainPart(){
 	// ▼跳转到邻居
 	async function visitSibling(oMedia){
 		oData.iCurLineIdx = 0;
-		oData.aLineArr = [{text:''}];
+		oData.aLineArr = [{text: ''}];
+		oMedia.path = oMedia.pathFull.match(/.+(?=\/)/)[0];
 		store('media', oMedia);
-		oData.sMediaSrc = getTubePath(oMedia.sPath);
+		// oData.sMediaSrc = getTubePath(oMedia.sPath);
 		await proxy.$nextTick();
 		init();
 	}
