@@ -1,5 +1,6 @@
 import {mySort} from '@/common/js/common-fn.js';
 import {handler2List, handler2FileObj} from '@/common/js/fileSystemAPI.js';
+const sqlite = await useSqlite;
 
 const oFn01 = {
     async chooseRoot(){
@@ -79,6 +80,9 @@ const oFn01 = {
         fillTheList(this.aDirectory[i1+1]);
         this.aRoutesInt.splice(i1, 1/0, i2);
     },
+    exportDatabase(){
+        sqlite.toExport(true);
+    },
 };
 
 
@@ -97,6 +101,7 @@ async function fillTheList(aList){
 
 async function fillOneFile(oFileInfo){
     const oPathFull = {pathFull: oFileInfo.pathFull};
+    // console.log("oPathFull", oPathFull);
     const aPromise = await Promise.all([
         handler2FileObj(oFileInfo.handler),
         dxDB.file.where(oPathFull).first(),

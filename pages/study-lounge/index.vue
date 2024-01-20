@@ -10,8 +10,7 @@
         <section class="left" v-show="isShowLeft" >
             <!-- iframe 内有全局变量 window.pdfjsLib -->
             <iframe ref="oIframe"
-                v-if="0"
-                v-show="1 || leftType=='pdf'"
+                v-if="leftType=='pdf'"
                 :src1="sPdfViewer"
                 src="https://mozilla.github.io/pdf.js/web/viewer.html"
                 data-src="https://www.vanderbilt.edu/olli/class-materials/Franz_Kafka.pdf"

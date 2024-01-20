@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-02 20:27:04
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-20 11:34:43
+ * @LastEditTime: 2024-01-20 19:36:26
  * @Description: 
 -->
 
@@ -37,6 +37,12 @@
             文件数量：{{ oMedias.iCount}}个 / 总时长：{{ oMedias.hours}}Hrs
             &nbsp;&nbsp;
             总行数：{{ iAllLines.toLocaleString() }}
+        </div>
+        <div>
+            <label style="border: solid 1px #aaa" >
+                导入数据库
+                <input v-show="0" multiple type="file" @change="loadDbData" />
+            </label>
         </div>
         <!-- ▲大标题 -->
         <div class="first-list" >

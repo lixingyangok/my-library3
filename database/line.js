@@ -2,7 +2,7 @@
  * @Author: 
  * @Date: 2024-01-14 21:38:06
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-18 22:01:29
+ * @LastEditTime: 2024-01-20 19:26:11
  * @Description: 
  */
 
@@ -114,7 +114,7 @@ export const LineDB = {
                 ${items}
                 where id = ${cur.id}
             `;
-            console.log("sFullSql", sFullSql);
+            // console.log("sFullSql", sFullSql);
             sqlite.exec(sFullSql);
         });
         return true;

@@ -4,6 +4,7 @@ import {mySort, goToLounage, getDateDiff} from '@/common/js/common-fn.js';
 // const child_process = require("child_process");
 // const { createFFmpeg, fetchFile } = require('@ffmpeg/ffmpeg');
 // const ffmpeg = createFFmpeg({ log: true });
+const sqlite = await useSqlite;
 
 const oPendingDataFn = {
     async getPendingList(){
@@ -220,6 +221,26 @@ export default {
     ...oRecordFn,
     ...oVisitFn,
     ...oFn_recentList,
+    async loadDbData(ev){
+        const files = [...ev.target.files];
+        files.sort((aa, bb) => aa.name.localeCompare(bb.name));
+        // console.log(files);
+        if (!files.length) return;
+        const aPromise = files.map(curFile=>{
+            let resolve = null;
+            const oPromise = new Promise((f1, f2) => resolve = f1);
+            const reader01 = Object.assign(new FileReader(), {
+                onload: ev => resolve(ev.target.result),
+            });
+            reader01.readAsArrayBuffer(curFile);
+            return oPromise;
+        });
+        const aFileArrBuffer = await Promise.all(aPromise);
+        const oBlob = new Blob(aFileArrBuffer);
+        const aTables = await checkDataForDB(oBlob);
+        if (!aTables?.length) return;
+        sqlite.persist(oBlob);
+    },
     // ▼给主进程送信
     logFn() {
         oRenderer.send('channel01', '张三');

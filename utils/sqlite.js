@@ -2,10 +2,11 @@
  * @Author: Merlin
  * @Date: 2024-01-08 09:35:15
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-20 16:37:48
+ * @LastEditTime: 2024-01-20 21:29:29
  * @Description: 
  */
 import { dxDB } from "./dxDB";
+import {saveFile} from '@/common/js/fileSystemAPI.js';
 
 export const useSqlite = (async ()=>{
     if (!import.meta.client) return;
@@ -33,6 +34,25 @@ export const useSqlite = (async ()=>{
     return sqlite;
 })();
 
+// ↓ 检查导入的数据是不是有效数据 
+export async function checkDataForDB(blob){
+    const [SQL, aBuffer] = await Promise.all([
+        window.initSqlJs({ 
+            locateFile: () => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.9.0/sql-wasm.wasm`,
+        }),
+        blob.arrayBuffer(),
+    ]);
+    const Uint8Arr = new Uint8Array(aBuffer);
+    const sqlite = new SQL.Database(Uint8Arr);
+    try{
+        const [tables] = sqlite.exec(`SELECT name FROM sqlite_master WHERE type='table'`);
+        console.log("tables", tables);
+        return tables.values;
+    }catch(err){}
+    return false;
+}
+
+
 function select(sql){
     const iStart = Date.now();
     const aData = this.exec(sql);
@@ -52,18 +72,25 @@ function select(sql){
 }
 
 // ↓ 持久化
-async function persist(){
-    console.time('sqlite.export()');
-    const exported = this.export(); // get Uint8Array
-    console.timeEnd('sqlite.export()');
-    console.time('new Blob()');
-    const blob = new Blob([exported]);
-    console.timeEnd('new Blob()');
+async function persist(blob){
+    if (blob){
+        console.log("导入数据库");
+    }else{
+        console.time('sqlite.export()');
+        const exported = this.export(); // get Uint8Array
+        console.timeEnd('sqlite.export()');
+        console.time('new Blob()');
+        blob = new Blob([exported]);
+        console.timeEnd('new Blob()');
+    }
     const createdAt = new Date();
+    const time = createdAt.toLocaleString();
     dxDB.sqlite.add({ // 耗时小于 1ms
         blob,
-        time: createdAt.toLocaleString(), // 用于查询后展示
+        time, // 用于查询后展示
         createdAt, // 用于查询最新或最旧的数据
+    }).then(res=>{
+        console.log("已经导入库：", time, res);
     });
     const oCollection = dxDB.sqlite.orderBy('createdAt');
     const count = await oCollection.count();
@@ -72,22 +99,29 @@ async function persist(){
     dxDB.sqlite.delete(first.id);
 }
 
+
 // ↓ 导出
-async function toExport(){
+async function toExport(toCut){
     const res = await dxDB.sqlite.orderBy('createdAt').last();
     const {blob} = res;
-    const iBatch = 9 * (1024 * 1024); // 9MB
-    const iAllBatch = Math.ceil(blob.size / iBatch);
-    const aResult = [...Array(iAllBatch).keys()].map((cur, idx) => {
+    const iMB = toCut ? 5 : 999; // 999MB一般无法达到
+    const iBatch = iMB * (1024 * 1024); // 9MB
+    const iAllBatch = Math.ceil(blob.size / iBatch) || 1;
+    const sAllBatch = String(iAllBatch).padStart(2, '0');
+    // const sTime = new Date().toLocaleString().replace(/\//g, '-').replace(/:/g, '');
+    const sTime = dayjs().format('YYYY.MM.DD HH.mm.ss');
+    const aItems = [...Array(iAllBatch).keys()].map((cur, idx) => {
         const iStart = cur * iBatch;
+        const sIndex = String(idx+1).padStart(2, '0');
         return {
-            name: `sqlite ${iAllBatch}-${idx+1}.blob`,
+            name: `Sqlite_${sTime}(${sAllBatch}-${sIndex}).blob`,
             content: blob.slice(iStart, iStart + iBatch),
         };
     });
     // 开始导出
-    // const newOne = new Blob(aResult);
-    // this.writeFile(aResult);
+    // const newOne = new Blob(aItems);
+    // this.writeFile(aItems);
+    saveFile(aItems);
 }
 
 

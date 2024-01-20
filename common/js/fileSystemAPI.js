@@ -2,7 +2,7 @@
  * @Author: 
  * @Date: 2024-01-10 22:32:22
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-20 11:34:29
+ * @LastEditTime: 2024-01-20 22:07:14
  * @Description: 
  */
 import {mySort} from '@/common/js/common-fn.js';
@@ -106,14 +106,18 @@ export async function path2file(sPath, ask=true){
     return oFile;
 }
 
-export async function saveFile(aFiles, oParams){
+export async function saveFile(aFiles, oParams={}){
     // 👇保存到指定的 folder 目录内
     let {directoryHandle, folderName} = oParams;
     directoryHandle ||= await window.showDirectoryPicker({
         mode: 'readwrite',
     }).catch(err => {});
+    const sTime = dayjs().format('YYYY.MM.DD HH.mm.ss');
+    const newFolderHandle = await directoryHandle.getDirectoryHandle(sTime, { 
+        create: true,
+    });
     for (const { name, content } of aFiles) {
-        const fileHandle = await directoryHandle.getFileHandle(name, {
+        const fileHandle = await newFolderHandle.getFileHandle(name, {
             create: true,
         });
         const writable = await fileHandle.createWritable();
