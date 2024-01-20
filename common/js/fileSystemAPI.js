@@ -105,3 +105,20 @@ export async function path2file(sPath, ask=true){
     const oFile = await oTargetHandler.getFile();
     return oFile;
 }
+
+export async function saveFile(aFiles, oParams){
+    // 👇保存到指定的 folder 目录内
+    let {directoryHandle, folderName} = oParams;
+    directoryHandle ||= await window.showDirectoryPicker({
+        mode: 'readwrite',
+    }).catch(err => {});
+    for (const { name, content } of aFiles) {
+        const fileHandle = await directoryHandle.getFileHandle(name, {
+            create: true,
+        });
+        const writable = await fileHandle.createWritable();
+        await writable.write(content);
+        await writable.close();
+    }
+}
+

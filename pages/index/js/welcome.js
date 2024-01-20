@@ -173,6 +173,7 @@ const oFn_recentList = {
     },
     updateTheRecent(){
         const oRecent = store.get('oRecent');
+        if (!oRecent) return;
         const aList = Object.values(oRecent).map(cur=>{
             const name = cur.pathFull.split('/').pop();
             const path = cur.path.slice(cur.path.indexOf('/'));

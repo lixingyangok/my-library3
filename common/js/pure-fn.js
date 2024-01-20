@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-11 21:33:35
+ * @LastEditTime: 2024-01-20 17:29:09
  * @Description: 
  */
 
@@ -60,7 +60,7 @@ export async function fileToBuffer(oFile){
 		const fElapsedSec = ((new Date() - iBeginTime) / 1000).toFixed(2) * 1;
 		oBuffer.fElapsedSec = fElapsedSec;
 		resolveFn(oBuffer);
-		console.log(`■ 波形解析信息：\n■ 体积：${sizeMB}MB / 时长：${oBuffer.sDuration_} / 加载耗时：${fElapsedSec}秒\n波形压缩：${tGap}秒`);
+		console.log(`■ 波形解析信息：\n■ 媒体文件体积：${sizeMB}MB / 时长：${oBuffer.sDuration_} / 加载耗时：${fElapsedSec}秒\n波形压缩：${tGap}秒`);
 	};
 	Object.assign(new FileReader(), {
 		onload,
@@ -76,8 +76,6 @@ export function getFakeBuffer(buffer){
 	if (buffer.sampleRate>=96000){
 		iLeap = 200;
 	}
-	console.log(`buffer.sampleRate: ${buffer.sampleRate}`, buffer.sampleRate/iLeap);
-
 	const buffer_ = { // 原始数据
 		duration: buffer.duration,
 		sDuration_: secToStr(buffer.duration),
@@ -91,10 +89,14 @@ export function getFakeBuffer(buffer){
 		// console.log(`遍历次数 ${(length / iLeap / 10_000).toFixed(2)} 万`);
 		for (let idx = 0; idx < length; idx += iLeap) {
 			const cur = aChannel[idx];
-			aResult.push(cur * (cur > 0 ? 127 : 128));
+			// ChatGPT: 在JavaScript中，Int8Array 是一种类型化数组（TypedArray），属于 ECMAScript 2015（ES6）引入的一部分。Int8Array 是用来表示 8 位带符号整数的数组。这意味着每个元素占用 8 位（一个字节），表示的整数范围是从 -128 到 127。
+			aResult.push(cur * (cur > 0 ? 127 : 128)); // 范围：-128 to 127
 		}
 		return Int8Array.from(aResult);
 	})();
+	console.log(`buffer.sampleRate: ${buffer.sampleRate}`, buffer.sampleRate/iLeap);
+	const fChannelSize = (aChannelData_.byteLength / 1024 / 1024).toFixed(2);
+	console.log(`波形信息体积：${fChannelSize}MB`);
 	return {
 		...buffer_,
 		length: aChannelData_.length,

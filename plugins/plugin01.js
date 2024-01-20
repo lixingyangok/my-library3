@@ -18,6 +18,7 @@ export default defineNuxtPlugin((nuxtApp) => {
  */
 export default defineNuxtPlugin((nuxtApp) => {
     // ▼自定义方法
+    if (!import.meta.client) return;
     Object.defineProperties(Object.prototype, {
         '$dc': { // deep copy = 深拷贝
             value: function () {

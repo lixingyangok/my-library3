@@ -2,7 +2,7 @@
  * @Author: Merlin
  * @Date: 2024-01-07 21:07:28
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-20 10:31:52
+ * @LastEditTime: 2024-01-20 15:32:25
  * @Description: 
  */
 
@@ -10,12 +10,12 @@ export const dxDB = (()=>{
     if (!import.meta.client) return;
     // 新建一个名为 xx 的库，如果已经存在，就会连接上 作者：西芹术士 https://www.bilibili.com/read/cv15712691/ 出处：bilibili
     const myDB = new window.Dexie("dxDB");
-    myDB.version(8).stores({
-        // 表名：索引列， // 其它列
-        sqlite: "++id", // 
+    myDB.version(9).stores({
+        // 表名：索引列,（非索引列不需要添加
+        sqlite: "++id, createdAt",
         directory: '++id, createdAt',
-        // ▼ hash 不能设为唯一键，因为不同的目录有可能包含相同的文件
-        file: '++id, &pathFull, hash, createdAt, updatedAt', // createdAt, updatedAt
+        // ▼ & 是唯一键标记。注意这里的 hash 不能设为唯一键，因为同一文件会出现在不同的目录下
+        file: '++id, &pathFull, hash, createdAt, updatedAt',
     });
     return myDB;
 })();
@@ -23,3 +23,4 @@ export const dxDB = (()=>{
 if (import.meta.client){
     window.dxDB = dxDB; // 测试
 }
+

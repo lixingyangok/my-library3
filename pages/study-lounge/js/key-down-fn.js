@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-17 22:09:29
+ * @LastEditTime: 2024-01-20 15:56:33
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
@@ -679,7 +679,7 @@ export function fnAllKeydownFn() {
     }
     // ▼保存到数据库
     async function saveLines() {
-        if (isSavingToDB) return; // 防抖
+        if (isSavingToDB) return; // 节流
         const toSaveArr = [];
         const mediaId = This.oMediaInfo.id;
         This.aLineArr.forEach(cur => {
@@ -707,42 +707,20 @@ export function fnAllKeydownFn() {
             alert('保存失败');
         });
         console.timeEnd('保存与查询计时');
-        if (!oResult) {
-            isSavingToDB = false;
-            return;
+        if (oResult) {
+            console.log("保存后返回：", oResult);
+            await afterSaved(oResult);
+            useSqlite.then(res => res.persist());
         }
-        console.log("保存结果", oResult);
-        afterSaved(oResult); // 在其内执行 isSavingToDB = false;
-        saveInDx();
-        // isSavingToDB = false;
+        isSavingToDB = false;
     }
-    // 👇保存到 dxDB
-    async function saveInDx(){
-        const sqlite = await useSqlite;
-        console.time('执行-sqlite.export()');
-        const exported = sqlite.export(); // Uint8Array
-        console.timeEnd('执行-sqlite.export()');
-        console.time('执行-new Blob()');
-        const myBlob = new Blob([exported]);
-        console.timeEnd('执行-new Blob()');
-        await dxDB.sqlite.clear();
-        // console.time('执行-保存到 dxDB');
-        dxDB.sqlite.add({ // 耗时小于 1ms
-            time: new Date().toLocaleString(),
-            data: myBlob,
-        });
-        // console.timeEnd('执行-保存到 dxDB');
-    }
-    function afterSaved(oResult){
+    async function afterSaved(oResult){
         // ▼ 加载新字幕
-        This.getLinesFromDB(oResult.newRows).then(res=>{
-            isSavingToDB = false;
-        });
+        await This.getLinesFromDB(oResult.newRows);
         ElMessage.success(`
             成功：已修改 ${oResult.save} 条，删除 ${oResult.delete} 条
         `.trim());
         This.deletedSet.clear();
-        // This.oTodayBar.init();
     }
     // ▼撤销-恢复
     function setHistory(iType) {

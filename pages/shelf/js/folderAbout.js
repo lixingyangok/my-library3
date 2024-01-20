@@ -79,36 +79,8 @@ const oFn01 = {
         fillTheList(this.aDirectory[i1+1]);
         this.aRoutesInt.splice(i1, 1/0, i2);
     },
-    async exportDB(){
-        const res = await dxDB.sqlite.where('id').aboveOrEqual(0).first();
-        const {data} = res;
-        const iBatch = 9 * 1024 * 1024;
-        const iAllBatch = Math.ceil(data.size / iBatch);
-        const aResult = [...Array(iAllBatch).keys()].map((cur, idx) => {
-            const iStart = cur * iBatch;
-            return {
-                name: `sqlite ${iAllBatch}-${idx+1}.blob`,
-                content: data.slice(iStart, iStart + iBatch),
-            };
-        });
-        // const newOne = new Blob(aResult);
-        this.writeFile(aResult);
-    },
-    async writeFile(files){
-        const directoryHandle = await window.showDirectoryPicker({
-            mode: 'readwrite',
-        }).catch(err => {});
-        // 将文件保存到用户选择的文件夹
-        for (const { name, content } of files) {
-            const fileHandle = await directoryHandle.getFileHandle(name, {
-                create: true,
-            });
-            const writable = await fileHandle.createWritable();
-            await writable.write(content);
-            await writable.close();
-        }
-    },
 };
+
 
 export default {
     ...oFn01,
