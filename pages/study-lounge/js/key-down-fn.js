@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-20 15:56:33
+ * @LastEditTime: 2024-01-21 23:20:48
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
@@ -90,7 +90,7 @@ export function getKeyDownFnMap(This, sType) {
         // alt + shift
         { key: 'alt + shift + j', name: '向【左】插入一句', fn: () => This.toInsert(-1) },
         { key: 'alt + shift + k', name: '向【右】插入一句', fn: () => This.toInsert(1) },
-        { key: 'alt + shift + d', name: '保存单词到云', fn: () => This.saveWord() },
+        { key: 'alt + shift + d', name: '保存新词', fn: () => This.saveWord() },
         { key: 'alt + shift + c', name: '查字典', fn: () => This.searchWord() },
     ];
     // ▼将来用于前端显示给用户
@@ -577,16 +577,19 @@ export function fnAllKeydownFn() {
         const oExist = This.aWordsList.flat().find(cur => {
             return wordReExp.test(cur.word);
         });
-        if (oExist) return This.changeWordType(oExist);
+        if (oExist) { // 立即终止
+            return This.changeWordType(oExist);
+        }
         const lengthOK = (word.length >= 2) && (word.length <= 30);
         if (!lengthOK) {
             return ElMessage.error(`单词长度应 >= 2 && <= 30`);
         }
-        const res = await fnInvoke('db', 'saveOneNewWord', {
-            word, mediaId: This.oMediaInfo.id,
+        const res = sqlite.tb.new_word.insertOne({
+            word,
+            type: word.match(/^[A-Z]/) ? 2 : 1,
+            mediaId: This.oMediaInfo.id,
         });
         if (!res) return ElMessage.error('保存未成功');
-        // console.log('res\n', res);
         ElMessage.success('保存成功');
         This.getNewWords();
     }

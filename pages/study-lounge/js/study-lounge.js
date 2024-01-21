@@ -327,28 +327,24 @@ export function mainPart(){
 	}
 	// ▼切换单词类型
 	async function changeWordType(oWord){
-		console.log('单词', oWord.$dc());
-		const res = await fnInvoke('db', 'switchWordType', {
-			...oWord,
-			// ▼要思考要不要添加这一行（因为当前高亮的单词可能是邻居媒体收藏的）
-			mediaId: oData.oMediaInfo.id,
+		// console.log("oWord", oWord.$dc());
+		const res = sqlite.tb.new_word.updateOne({
+			id: oWord.id,
+			type: oWord.type === 1 ? 2 : 1
 		});
 		if (!res) return ElMessage.error('保存未成功');
-		console.log('修改反馈', res);
+		// console.log('修改反馈', res);
 		getNewWords();
 	}
 	// ▼删除1个单词
 	async function delOneWord(oWord){
-		const res = await fnInvoke('db', 'delOneNewWord', {
-			...oWord,
-			mediaId: oData.oMediaInfo.id,
-		});
-		if (res) {
-			ElMessage.success('已删除');
-			return getNewWords();
+		// console.log("oWord", oWord.$dc());
+		const res = sqlite.tb.new_word.delete(oWord.id);
+		if (!res) {
+			return ElMessage.error('删除单词未成功');
 		}
-		ElMessage.error('删除单词未成功');
-		console.log('删除单词未成功', res);		
+		ElMessage.success('已删除');
+		return getNewWords();
 	}
 	// ▼查询新词
 	async function getNewWords(){
@@ -358,7 +354,8 @@ export function mainPart(){
 		].filter(cur => cur >= 0);
 		if (!mediaId?.length) return;
 		const aRes = await sqlite.select(`
-			select word from new_word
+			select word, type, id
+			from new_word
 			where mediaId in (${mediaId.join(',')})
 		`);
 		if (!aRes) return;

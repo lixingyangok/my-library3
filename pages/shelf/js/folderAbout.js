@@ -25,7 +25,7 @@ const oFn01 = {
     async showRootList(){
         const aRoots = await dxDB.directory.toArray();
         // console.log("aRoots", aRoots);
-        this.aRoots = aRoots;
+        this.aRoots = aRoots || [];
         // ↓ 找到有权限的目录，显示出来
         let hasFound;
         this.aRoots.forEach(async (cur, idx) => {

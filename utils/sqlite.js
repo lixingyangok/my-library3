@@ -2,7 +2,7 @@
  * @Author: Merlin
  * @Date: 2024-01-08 09:35:15
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-20 22:54:42
+ * @LastEditTime: 2024-01-21 23:15:53
  * @Description: 
  */
 import { dxDB } from "./dxDB";
@@ -24,11 +24,19 @@ export const useSqlite = (async ()=>{
     }
     const Uint8Arr = oldData ? new Uint8Array(oldData) : void 0;
     const sqlite = new SQL.Database(Uint8Arr);
+    const [tables] = sqlite.exec(`SELECT name FROM sqlite_master WHERE type='table'`);
     Object.assign(sqlite, {
         select,
         persist,
         toExport,
     });
+    sqlite.tb = tables.values.reduce((oResult, sCur)=>{
+        oResult[sCur] = new TableFunction({
+            db: sqlite,
+            tbName: sCur,
+        });
+        return oResult;
+    }, {});
     window.db = sqlite; // 用于调试
     console.log("window.db\n", window.db);
     return sqlite;
@@ -54,11 +62,9 @@ export async function checkDataForDB(blob){
 
 
 function select(sql){
-    const iStart = Date.now();
     const aData = this.exec(sql);
-    // console.log(sql, Date.now() - iStart);
-    const {columns, values} = aData[0] || {};
-    if (!columns) return [];
+    if (!aData?.length) return [];
+    const {columns, values} = aData[0];
     // columns: ['id', 'mediaId', 'start', 'end', 'text', 'trans', 'createdAt', 'updatedAt', 'filledAt']
     // values: [Array(9), Array(9), Array(9), Array(9), Array(9), Array(9), Array(9), Array(9), Array(9), Array(9), Array(9), Array(9), Array(9), Array(9), Array(9), Array(9), Array(9), Array(9), Array(9), Array(9)]
     const aRows = values.map(cur => {
@@ -125,9 +131,189 @@ async function toExport(toCut){
 }
 
 
+// 👇 实测：只返回空数组
+// db.exec(`update dev_history set note = '测试中中' where id=1`)
+
+// ↓ 实测：返回 db 对象本身
+// db.run(`update dev_history set note = '测试中中' where id=1`)
+
+class TableFunction {
+    db = null;
+    tbName = '';
+    columns = [];
+    colChangeable = [];
+    constructor(oParams){
+        this.db = oParams.db;
+        this.tbName = oParams.tbName;
+        this.columns = this.db.select(`
+            SELECT * FROM pragma_table_info('${this.tbName}')
+        `);
+        const aCanNot = ['id', 'createdAt'];
+        this.colChangeable = this.columns.map(cur => {
+            return cur.name;
+        }).filter(cur => {
+            return !aCanNot.includes(cur);
+        });
+    }
+    // 交集
+    #getColsArr(obj){
+        const keys = Object.keys(obj);
+        const aColName = this.colChangeable.filter((cur) => {
+            return keys.includes(cur);
+        });
+        return aColName;
+    }
+    #getWhereSql(params){
+        if (typeof params === 'string') {
+            // params = params.trim();
+            return `and ${params}`;
+        }
+        if (params.constructor.name === 'Array'){
+            let sWhere = params.map(cur=>{
+                return ` and ${cur}`;
+            });
+            return sWhere;
+        }
+        if (params.constructor.name === 'Object'){
+            let sWhere = Object.entries(params).map(cur=>{
+                let [key, val] = cur;
+                if (typeof val === 'string') {
+                    val = `'${val.replaceAll("'", "''")}'`;
+                }
+                return ` and ${key} = ${val}`;
+            }).join(' ');
+            return sWhere;
+        }
+    }
+    #getUpdateSql(params){
+        let sWhere = ` updatedAt = strftime('%Y-%m-%d %H:%M:%f +00:00', 'now'), \n`;
+        const aColName = this.#getColsArr(params);
+        if (typeof params === 'string') {
+            sWhere += ` ${params}`;
+        }
+        if (params.constructor.name === 'Array'){
+            sWhere += params.join(', ');
+        }
+        if (params.constructor.name === 'Object'){
+            const aSet = aColName.map(key => {
+                const val = params[key];
+                const aSkip = [
+                    !Reflect.has(params, key),
+                    ['id', 'updatedAt'].includes(key),
+                    // [null, void 0].includes(val), // 有可能有意删除值，所以不跳过
+                ];
+                if (aSkip.some(Boolean)) return;
+                if ((typeof val === 'string') && val) {
+                    val = `'${val.replaceAll("'", "''")}'`;
+                }
+                return `${key} = ${val}`;
+            });
+            sWhere += aSet.filter(Boolean).join(', ');
+        }
+        sWhere = sWhere.trimEnd().replace(/,+$/, '') + ' ';
+        return sWhere;
+    }
+    // ▲ 私有方法 ----------------------------------------------
+    select(params, onlyOne){
+        if (!params) return;
+        let sql = `
+            select * from ${this.tbName} 
+            where 1 = 1 ${this.#getWhereSql(params)}
+        `;
+        if (onlyOne) sql += ` limit 1`; 
+        // console.log("sql", sql);
+        const arr = this.db.select(sql);
+        return arr;
+    }
+    getOne(params){
+        const [res] = this.db.select(params, true);
+        return res;
+    }
+    update(oParams){
+        return;
+        const {set, where = {}} = oParams;
+        if (!set.id && !where) return;
+        let sql = `
+            update ${this.tbName}
+            set ${this.#getUpdateSql(set)}
+            where 1 = 1 
+        `;
+        if (set.id){
+            sql += ` and id = ${set.id}`;
+        }else{
+            sql += this.#getWhereSql(where);
+        }
+        console.log("sql", sql);
+        const res = this.db.run(sql);
+        return res;
+    }
+    updateOne(oParams){
+        if (!oParams.id) return;
+        let sql = `
+            update ${this.tbName}
+            set ${this.#getUpdateSql(oParams)}
+            where id = ${oParams.id}
+        `;
+        console.log("sql", sql);
+        const res = this.db.run(sql);
+        return res;
+    }
+    insertOne(oParams){
+        if (!oParams) return;
+        const aColName = this.#getColsArr(oParams);
+        let sFullSql = `
+            INSERT INTO ${this.tbName}
+            (
+                createdAt,
+                updatedAt,
+                ${aColName.join(', ')}
+            )
+            VALUES (
+                strftime('%Y-%m-%d %H:%M:%f +00:00', 'now'),
+                strftime('%Y-%m-%d %H:%M:%f +00:00', 'now'),
+                ${aColName.map(() => '?').join(', ')}
+            );
+        `;
+        const thisArr = aColName.map(cur => {
+            return oParams[cur] ?? null;
+        });
+        console.log("sFullSql", sFullSql);
+        console.log("thisArr", thisArr);
+        const inserted = db.run(sFullSql, thisArr);
+        console.log("inserted", inserted);
+        return inserted;
+    }
+    insert(aParams){
+        if (!aParams?.length) return;
+        forEach(cur=>{
+            this.insertOne(cur);
+        });
+    }
+    delete(params){
+        if (!params) return;
+        let sWhere = '';
+        if (typeof params === 'number'){
+            sWhere = ` id = ${params}`;
+        }else {
+            sWhere = this.#getWhereSql(params);
+        }
+        let sFullSql = `
+            DELETE FROM ${this.tbName}
+            WHERE ${sWhere};
+        `;
+        const res = this.db.run(sFullSql);
+        return res;
+    }
+}
 
 
 
 
+// .run()
+// .exec()
+// .prepare()
 
 
+// UPDATE Customers
+// SET ContactName = 'Alfred Schmidt', City= 'Frankfurt'
+// WHERE CustomerID = 1;
