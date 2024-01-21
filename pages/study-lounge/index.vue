@@ -312,10 +312,11 @@
             ▼弹出窗口 ■■■■■■■■
             ▼弹出窗口 ■■■■■■■■
         -->
-        <!-- <dictionaryVue :beDialog="true"
+        <dictionaryVue
+            beDialog
             v-model:dialogVisible="isShowDictionary"
             :word="sSearching"
-        ></dictionaryVue> -->
+        ></dictionaryVue>
         <!-- ▼单词表 -->
         <el-dialog title="单词表" v-model="isShowNewWords">
             <div class="new-words-search-bar" >
@@ -420,7 +421,7 @@ import {toRefs, computed, onBeforeUnmount} from 'vue';
 import {mainPart} from './js/study-lounge.js';
 import {getKeyDownFnMap, fnAllKeydownFn} from './js/key-down-fn.js';
 import {registerKeydownFn, getTubePath} from '@/common/js/common-fn.js';
-// import dictionaryVue from '../dictionary/dictionary.vue';
+import dictionaryVue from '../dictionary/index.vue';
 // import TodayHistory from '@/components/today-history/today-history.vue';
 // import dayTrack from '@/components/day-track/day-track.vue';
 // import happyBar from '@/components/happy-bar/happy-bar.vue';
@@ -429,7 +430,7 @@ export default {
     name: 'study-lounge',
     components: {
         // dayTrack,
-        // dictionaryVue,
+        dictionaryVue,
         // TodayHistory,
         // happyBar,
     },

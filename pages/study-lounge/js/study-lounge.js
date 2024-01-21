@@ -384,9 +384,9 @@ export function mainPart(){
 	// ▼ 查询邻居文件列表
 	async function getNeighbors(){
 		const {path} = oData.oMediaInLocal;
-		const aList = await dxDB.file.where('pathFull').startsWith(path).toArray();
+		const aList = await dxDB.file.where('path').equals(path).toArray();
 		// let aList = await getFolderChildren(oData.oMediaInfo.dir);
-		if (!aList) return;
+		if (!aList?.length) return;
 		await addAllMediaDbInfo(aList, true);
 		aList.forEach((cur, idx) => {
 			const {finishedAt, id, durationStr} = cur.infoAtDb || {};
