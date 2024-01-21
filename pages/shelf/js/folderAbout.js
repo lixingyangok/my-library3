@@ -85,6 +85,11 @@ const oFn01 = {
     exportDatabase(){
         sqlite.toExport(true);
     },
+    // 👇光标停于文件上方
+    hoverHandler(oTarget){
+        if (!oTarget.isMedia) return; 
+        oTarget.hovered = true;
+    },
 };
 
 

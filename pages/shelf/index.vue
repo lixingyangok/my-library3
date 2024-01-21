@@ -63,6 +63,7 @@
                     v-for="(cur, i2) of aColumn" :key="i2"
                     :class="{active: i2 == aRoutesInt[i1],}"
                     @click="ckickItem(i1, i2, cur)"
+                    @mouseenter="hoverHandler(cur)"
                 >
                     <template v-if="cur.kind == 'directory'">
                         <i class="fas fa-fw folder-mark fa-folder "
@@ -83,10 +84,11 @@
                         <i v-else class="fa-solid fa-fw fa-circle-notch fa-spin" />
                     </template>
                     <i v-else class="fas fa-fw fa-file-alt"/>
-                    <!-- {{ cur.name }} -->
-                    <!-- 左右分界 -->
-                    <el-popover v-if="cur.isMedia" placement="right" trigger="hover" 
-                        :width="300"
+                    <!-- 左右分界 （el-popover性能不好，所以利用 cur.hovered 显示它） -->
+                    <el-popover :width="300"
+                        v-if="cur.hovered && cur.isMedia"
+                        trigger="hover"
+                        placement="right"
                     >
                         <template #reference>
                             <span class="item-name" :hash="cur.hash">
@@ -99,7 +101,7 @@
                             @click="checkDetail(cur)"
                         >
                             详情
-                        </el-button >
+                        </el-button>
                     </el-popover>
                     <span class="item-name" v-else>
                         {{cur.name}}
