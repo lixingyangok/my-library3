@@ -354,7 +354,8 @@ export function mainPart(){
 		const mediaId = [
 			oData.oMediaInfo.id,
 			...oData.aSiblings.map(cur => cur?.infoAtDb?.id)
-		];
+		].filter(cur => cur >= 0);
+		if (!mediaId?.length) return;
 		const aRes = await sqlite.select(`
 			select word from new_word
 			where mediaId in (${mediaId.join(',')})
