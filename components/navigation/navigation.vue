@@ -22,7 +22,7 @@
 
 <script>
 
-export const routes = [ {
+export const routes = [{
     path: '/',
     name_: '首页',
     icon_: 'fas fa-desktop',
@@ -36,6 +36,10 @@ export const routes = [ {
     name: 'studyLounge',
     name_: '听写',
     icon_: 'fas fa-paper-plane',
+},{
+    path: '/dictionary',
+    name_: '字典',
+    icon_: 'fas fa-book',
 },
 // {
 //     path: '/dashboard',
@@ -46,10 +50,6 @@ export const routes = [ {
 //     path: '/settings',
 //     name_: '设置',
 //     icon_: 'fas fa-cog',
-// },{
-//     path: '/dictionary',
-//     name_: '字典',
-//     icon_: 'fas fa-book',
 // },{
 //     path: '/tools',
 //     redirect: '/tools/alarm-clock',
