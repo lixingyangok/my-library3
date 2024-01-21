@@ -62,7 +62,6 @@ const oFn01 = {
         const oItem = this.aDirectory[i1][i2];
         const {isMedia, dxID, hash, pathFull} = oItem;
         console.log(`点击目标：\n`, oItem, '\n', JSON.parse(JSON.stringify(oItem)));
-        oItem.path = pathFull.match('.+(?=\/)')[0];
         if (isMedia) {
             if (dxID && hash) {
                 store('media', oItem);

@@ -1,4 +1,4 @@
-import { reactive, getCurrentInstance, watch, computed, onMounted, } from 'vue';
+import { reactive, getCurrentInstance, watch, computed, } from 'vue';
 import { fileToBuffer, getPeaks, getChannelArr, } from '@/common/js/pure-fn.js';
 import { getTubePath } from '@/common/js/common-fn.js';
 // import TheAction from '@/common/js/action.js';
@@ -103,9 +103,9 @@ export default function(){
             oMediaBuffer = await fileToBuffer(oMediaFile);
         }
         if (!oMediaBuffer) {
-            const sTips = `读取媒体文件未成功, sPath = ${sPath.split('/').pop()}`;
+            const sTips = `读取媒体 buffer 未成功: ${sPath.split('/').pop()}`;
             console.log(sTips);
-            return vm.$message.error(sTips);
+            return ElMessage.error(sTips);
         }
         oData.oMediaBuffer = oMediaBuffer;
         setCanvasWidthAndDraw();

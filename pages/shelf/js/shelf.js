@@ -9,8 +9,8 @@ import {
     findMedia,
 } from '../../../common/js/fs-fn.js';
 
-const fsp = require('node:fs/promises');
-// console.log('●\n', path.extname('aa.Txt'));
+const fsp = {}; // require('node:fs/promises');
+const sqlite = await useSqlite;
 
 const fnAboutDB = {
     choseRoot(sCurRoot) {
@@ -139,52 +139,9 @@ const oAboutTree = {
         if (!isMedia) return;
         this.goToLearn(sFilePath);
     },
-    // ▼删除一项
-    async checkDetail(oMedia){
-        console.log(oMedia.$dc());
-        const {id} = oMedia?.infoAtDb || {}; //媒体 ID
-        if (!id) return; 
-        this.oMediaInfo.isShow = true;
-        this.loadMediaInfo(id);
-    },
-    // ▼加载媒体信息
-    async loadMediaInfo(iMediaID){
-        const aTask01 = [
-            fnInvoke('db', 'doSql', `select * FROM media WHERE id=${iMediaID};`),
-            fnInvoke('db', 'doSql', `select * FROM line WHERE mediaId=${iMediaID};`),
-            fnInvoke('db', 'doSql', `select * FROM new_word WHERE mediaId=${iMediaID};`),
-        ];
-        const [[aMedia], [aLine], [aWords]] = await Promise.all(aTask01);
-        // console.log(aMedia[0], aLine, aWords);
-        Object.assign(this.oMediaInfo, {
-            oMedia: aMedia[0] || {},
-            aLines: aLine || [],
-            aWords: aWords || [],
-        });
-    },
-    // ▼删除
-    async toForgetMedia(oMedia){
-        const {id} = oMedia;
-        console.log(oMedia.$dc());
-        const sAnswer = await ElMessageBox.confirm(
-            '确认删除?', '请注意',
-            {
-                confirmButtonText: '确认删除',
-                cancelButtonText: '取消',
-                type: 'warning',
-            }
-        ).catch(xx=>xx);
-        if (sAnswer != 'confirm') return;
-        const aTask = [
-            fnInvoke('db', 'doSql', `DELETE FROM action WHERE mediaId=${id};`),
-            fnInvoke('db', 'doSql', `DELETE FROM new_word WHERE mediaId=${id};`),
-            fnInvoke('db', 'doSql', `DELETE FROM line WHERE mediaId=${id};`),
-        ];
-        await Promise.all(aTask);
-        await fnInvoke('db', 'doSql', `DELETE FROM media WHERE id=${id};`);
-        await this.loadMediaInfo(id);
-        this.getDirChildren();
-    },
+
+
+
     // ▼跳转到学习页
     goToLearn(sFilePath) {
         goToLounage(sFilePath);
@@ -209,9 +166,62 @@ const oAboutTree = {
     },
 };
 
+
+// ========= 已经移植到新版的功能 =============================
+const oUseInNew = {
+    // ▼检查媒体详情
+    async checkDetail(oMedia){
+        console.log(oMedia.$dc());
+        const {id} = oMedia?.infoAtDb || {}; //媒体 ID
+        if (!id) return; 
+        this.oMediaInfo.isShow = true;
+        this.loadMediaInfo(id);
+    },
+    // ▼加载媒体信息
+    async loadMediaInfo(iMediaID){
+        const aTask01 = [
+            sqlite.select(`select * FROM media WHERE id=${iMediaID};`),
+            sqlite.select(`select * FROM line WHERE mediaId=${iMediaID};`),
+            sqlite.select(`select * FROM new_word WHERE mediaId=${iMediaID};`),
+        ];
+        const [aMedia, aLine, aWords] = await Promise.all(aTask01);
+        // console.log(aMedia, aLine, aWords);
+        Object.assign(this.oMediaInfo, {
+            oMedia: aMedia[0] || {},
+            aLines: aLine || [],
+            aWords: aWords || [],
+        });
+    },
+    // ▼删除一项（待验证）
+    async toForgetMedia(oMedia){
+        const {id} = oMedia;
+        console.log(oMedia.$dc());
+        const sAnswer = await ElMessageBox.confirm(
+            '确认删除?', '请注意',
+            {
+                confirmButtonText: '确认删除',
+                cancelButtonText: '取消',
+                type: 'warning',
+            }
+        ).catch(xx=>xx);
+        if (sAnswer != 'confirm') return;
+        const aTask = [
+            sqlite.run(`DELETE FROM action WHERE mediaId=${id};`),
+            sqlite.run(`DELETE FROM new_word WHERE mediaId=${id};`),
+            sqlite.run(`DELETE FROM line WHERE mediaId=${id};`),
+        ];
+        await Promise.all(aTask);
+        await sqlite.run(`DELETE FROM media WHERE id=${id};`);
+        await this.loadMediaInfo(id);
+        this.getDirChildren();
+    },
+};
+
+
 export default {
-    ...fnAboutDB,
-    ...oAboutTree,
+    // ...fnAboutDB,
+    // ...oAboutTree,
+    ...oUseInNew,
 };
 
 async function getTree(sPath) {

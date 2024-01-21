@@ -85,7 +85,7 @@ export default {
             type: Number,
             default: 0,
         },
-        mediaPath: String, // 将废弃 
+        mediaPath: String, // 文件的绝对路径，将废弃 
         oMediaFile: { // 新增
             type: Object,
         },

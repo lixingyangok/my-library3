@@ -29,7 +29,7 @@
                     </em>
                     &emsp;
                     <button @click="deletRoot(idx)">
-                        删除
+                        移除
                     </button>
                 </li>
             </ul>
@@ -84,7 +84,7 @@
                         <i v-else class="fa-solid fa-fw fa-circle-notch fa-spin" />
                     </template>
                     <i v-else class="fas fa-fw fa-file-alt"/>
-                    <!-- 左右分界 （el-popover性能不好，所以利用 cur.hovered 显示它） -->
+                    <!-- 左右分界 （el-popover性能不好，利用 cur.hovered 延迟显示） -->
                     <el-popover :width="300"
                         v-if="cur.hovered && cur.isMedia"
                         trigger="hover"
@@ -246,7 +246,8 @@
         </template>
     </el-dialog> -->
     <!-- ▼媒体详情窗口 -->
-    <!-- <el-dialog title="初始化" width="550px"
+    <el-dialog title="媒体详情"
+        width="550px"
         v-model="oMediaInfo.isShow"
     >
         <section class="media-info" >
@@ -270,23 +271,23 @@
         </p>
         <ul class="media-all-line" >
             <li v-for="(cur, idx) of oMediaInfo.aLines" :key="idx" >
-                {{ String(idx+1).padStart(2, '0') }}_{{ cur.text }}
+                {{ String(idx+1).padStart(2, '0') }}_{{ cur?.text }}
             </li>
         </ul>
         <section class="btn-group" >
             <el-button type="primary">
-                占位
+                占位按钮
             </el-button>
             <el-button type="danger" @click="toForgetMedia(oMediaInfo.oMedia)">
-                删除
+                移除媒体
             </el-button>
         </section>
-    </el-dialog> -->
+    </el-dialog>
 </template>
 
 <script>
-// import oMethods from './js/shelf.js';
-import oMethods01 from './js/folderAbout.js';
+import oMethods01 from './js/shelf.js';
+import oMethods02 from './js/folderAbout.js';
 
 
 export default {
@@ -383,7 +384,7 @@ export default {
     },
     methods: {
         ...oMethods01,
-        // ...oMethods,
+        ...oMethods02,
     },
 };
 </script>

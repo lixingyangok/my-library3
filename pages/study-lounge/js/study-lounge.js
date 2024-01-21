@@ -308,12 +308,13 @@ export function mainPart(){
 	// ▼接收子组件波形数据
 	function bufferReceiver(oMediaBuffer){
 		// console.log('收到了波形');
+		ElMessage.success('波形已经加载');
 		// TODO 经常收到的波形不属于当前媒体文件（旧的波形）
 		oData.oMediaBuffer = oMediaBuffer;
 		const {id, duration=0} = oData.oMediaInfo;
 		const iDurDifference = duration && Math.abs(oMediaBuffer.duration - duration);
 		if (!id){
-			console.log('不能‘在加载波形之前’加载库中媒体信息 ');
+			console.log('未能‘在加载波形之前’加载库中媒体信息');
 		}else if (iDurDifference > 1){
 			dealMediaTimeGaP(oData.oMediaInfo, oMediaBuffer);
 		}
@@ -439,9 +440,7 @@ export function mainPart(){
 	async function visitSibling(oMedia){
 		oData.iCurLineIdx = 0;
 		oData.aLineArr = [{text: ''}];
-		oMedia.path = oMedia.pathFull.match(/.+(?=\/)/)[0];
 		store('media', oMedia);
-		// oData.sMediaSrc = getTubePath(oMedia.sPath);
 		await proxy.$nextTick();
 		init();
 	}
@@ -612,7 +611,6 @@ export function mainPart(){
 			if (!cur.active_) continue;
 			const oAim = oData.aSiblings[idx + iType];
 			if (oAim) {
-				ElMessage.success('开始跳转');
 				return visitSibling(oAim);;
 			}
 			break;
