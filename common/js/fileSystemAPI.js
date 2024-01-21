@@ -2,17 +2,17 @@
  * @Author: 
  * @Date: 2024-01-10 22:32:22
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-20 22:14:44
+ * @LastEditTime: 2024-01-21 14:29:53
  * @Description: 
  */
 import {mySort} from '@/common/js/common-fn.js';
 
-// 从文件夹 handler 返回其子元素列表
-export async function handler2List(handler, oConfig={}){
+// 从文件夹 handle 返回其子元素列表
+export async function handle2List(handle, oConfig={}){
     let {path, findingName, findingType} = oConfig;
-    const directory = handler.kind == 'directory';
+    const directory = handle.kind == 'directory';
     if (!directory) return [];
-    path &&= `${path}/${handler.name}`;
+    path &&= `${path}/${handle.name}`;
     const aSkipFormat = ['ecdl'];
     const aMediaList = ['mp4', 'mp3', 'ogg', 'm4a', 'acc', 'aac', 'opus',];
     const aResult = [
@@ -20,7 +20,7 @@ export async function handler2List(handler, oConfig={}){
         [], // 媒体文件
         [], // 其它
     ];
-    for await (const oItem of handler.values()){
+    for await (const oItem of handle.values()){
         const {name, kind} = oItem;
         if (findingName && findingType){
             const aa = name == findingName;
@@ -38,7 +38,7 @@ export async function handler2List(handler, oConfig={}){
         const oThisOne = {
             name,
             kind,
-            handler: oItem,
+            handle: oItem,
             path,
             pathFull: `${path}/${name}`,
         };
@@ -46,7 +46,7 @@ export async function handler2List(handler, oConfig={}){
         aResult[iTarget].push(oThisOne);
     }
     if (findingName){
-        return; // 返回空，表示没找到
+        return; // 找而不得，返回空，表示没找到
     }
     // console.log("aResult", JSON.parse(JSON.stringify(aResult)));
     aResult.forEach(curArr => mySort(curArr, 'name'));
@@ -54,11 +54,11 @@ export async function handler2List(handler, oConfig={}){
     return aResult.flat(1/0);
 }
 
-// 👇 从文件 handler 读取文件信息 
-export async function handler2FileObj(handler){
-    const file = handler.kind === 'file';
+// 👇 从文件 handle 读取文件信息 
+export async function handle2FileObj(handle){
+    const file = handle.kind === 'file';
     if (!file) return {};
-    const oFile = await handler.getFile();
+    const oFile = await handle.getFile();
     const isMedia = !!oFile.type.match(/audio|video/);
     const oResult = {
         lastModified: oFile.lastModified,
@@ -83,26 +83,26 @@ export async function path2file(sPath, ask=true){
         createdAt: rootID,
     });
     if (!oRoot) return;
-    let answer = await oRoot.handler.queryPermission();
+    let answer = await oRoot.handle.queryPermission();
     console.log("answer:", answer);
     if ((answer != 'granted') && ask) {
-        answer = await oRoot.handler.requestPermission({
+        answer = await oRoot.handle.requestPermission({
             mode: 'readwrite',
-            // id: rootID,
         });
     }
     if (answer != 'granted') return;
-    let oTargetHandler = oRoot.handler;
+    handleManager(oRoot.handle);
+    let oTargetHandle = oRoot.handle;
     for await (const [idx, cur] of aPath.entries()){
         if (idx === 0) continue;
         const type = (idx === aPath.length-1) ? 'file' : 'directory';
-        oTargetHandler = await handler2List(oTargetHandler, {
+        oTargetHandle = await handle2List(oTargetHandle, {
             findingName: cur,
             findingType: type,
         });
-        if (!oTargetHandler) break;
+        if (!oTargetHandle) break;
     }
-    const oFile = await oTargetHandler.getFile();
+    const oFile = await oTargetHandle.getFile();
     return oFile;
 }
 
@@ -127,3 +127,11 @@ export async function saveFile(aFiles, oParams={}){
     }
 }
 
+// 保存到全局防止权限被回收，
+export async function handleManager(handle){
+    window.aHandleArr ||= new Set();
+    if (handle){
+        window.aHandleArr.add(handle);
+    }
+    return [...window.aHandleArr];
+}

@@ -1,24 +1,24 @@
 import {mySort} from '@/common/js/common-fn.js';
-import {handler2List, handler2FileObj} from '@/common/js/fileSystemAPI.js';
+import {handle2List, handle2FileObj, handleManager} from '@/common/js/fileSystemAPI.js';
 const sqlite = await useSqlite;
 
 const oFn01 = {
     async chooseRoot(){
-        let handler = await window.showDirectoryPicker({
+        let handle = await window.showDirectoryPicker({
             mode: 'readwrite',
         }).catch(err => {});
-        if (!handler) return;
-        const {kind, name} = handler;
+        if (!handle) return;
+        const {kind, name} = handle;
         const createdAt = dayjs().format('YYYY-MM-DD HH:mm:ss');
         const path = `${createdAt}`;
         await dxDB.directory.add({
             name,
             path,
-            handler,
+            handle,
             createdAt, // 当唯一键使用
         });
         this.showRootList();
-        const arr = await handler2List(handler, {path});
+        const arr = await handle2List(handle, {path});
         this.aDirectory.splice(0, 1/0, arr);
         fillTheList(this.aDirectory[0]);
     },
@@ -29,7 +29,7 @@ const oFn01 = {
         // ↓ 找到有权限的目录，显示出来
         let hasFound;
         this.aRoots.forEach(async (cur, idx) => {
-            const answer = await cur.handler.queryPermission();
+            const answer = await cur.handle.queryPermission();
             cur.permission = answer; // 记录起来，备用 
             if (answer == 'granted' && !hasFound){
                 hasFound = true;
@@ -45,14 +45,16 @@ const oFn01 = {
         dxDB.file.where('pathFull').startsWith(path).delete();
     },
     async setRoot(idx){
-        const {handler, path} = this.aRoots[idx];
+        const {handle, path} = this.aRoots[idx];
         this.aRoots.forEach((cur, index)=>{
             cur.active = idx === index;
         });
-        let answer = await handler.requestPermission({ mode: 'readwrite', });
+        let answer = await handle.requestPermission({
+            mode: 'readwrite',
+        });
         if (answer != 'granted') return;
-        console.log("handler", handler);
-        const aRoot = await handler2List(handler, {path});
+        handleManager(handle);
+        const aRoot = await handle2List(handle, {path});
         this.aDirectory.splice(0, Infinity, aRoot);
         fillTheList(this.aDirectory[0]);
     },
@@ -74,7 +76,7 @@ const oFn01 = {
         // 👈处理点击文件夹动作
         // ▼ this.aPath 正在被 watch 监听，操作会触发后续动作
         // this.aPath.splice(i1 + 1, Infinity, sItem);
-        const arr = await handler2List(oItem.handler, {path: oItem.path});
+        const arr = await handle2List(oItem.handle, {path: oItem.path});
         console.log("目标的子元素（初步数据）\n", arr);
         this.aDirectory.splice(i1+1, Infinity, arr);
         fillTheList(this.aDirectory[i1+1]);
@@ -94,16 +96,16 @@ export default {
 async function fillTheList(aList){
     if (!aList?.length) return;
     for await (const [idx, cur] of aList.entries()){
-        if (idx % 3 === 0) await fillOneFile(cur);
+        if (idx % 3 == 0) await fillOneFile(cur);
         else fillOneFile(cur);
     }
 }
 
+// 👇 取得文件
 async function fillOneFile(oFileInfo){
     const oPathFull = {pathFull: oFileInfo.pathFull};
-    // console.log("oPathFull", oPathFull);
     const aPromise = await Promise.all([
-        handler2FileObj(oFileInfo.handler),
+        handle2FileObj(oFileInfo.handle),
         dxDB.file.where(oPathFull).first(),
     ]);
     let [oFileINfo, oFileInDx] = aPromise;
@@ -113,12 +115,10 @@ async function fillOneFile(oFileInfo){
         if (!oFileInDx) return [];
         const aa = oFileInfo.size == oFileInDx.size;
         const bb = oFileInfo.lastModified == oFileInDx.lastModified;
-        // console.log("库中 hash", oFileInDx.hash);
-        if (aa && bb) {
-            return [oFileInDx.hash, oFileInDx.id];
-        }
-        return [];
+        if (!aa || !bb) return [];
+        return [oFileInDx.hash, oFileInDx.id];
     })();
+    // console.log("dxDB 中的 hash: ", hash || '暂无');
     if (!hash){
         let arrayBuffer = await oFileINfo.oFile.arrayBuffer();
         let arrayData = new Uint8Array(arrayBuffer);
@@ -129,12 +129,20 @@ async function fillOneFile(oFileInfo){
             createdAt,
             updatedAt: createdAt,
             ...oPathFull,
+            path: oFileInfo.pathFull.match(/.+(?=\/)/)[0],
             size: oFileINfo.size,
             lastModified: oFileINfo.lastModified,
         }, oPathFull).then(iID => {
             oFileInfo.dxID = iID;
         });
     }
+    Promise.resolve().then(()=>{
+        // console.time('查询hash 对应的媒体')
+        const res = sqlite.select(`select * from media where hash='${hash}'`);
+        // console.timeEnd('查询hash 对应的媒体')
+        if (!res?.[0]) return;
+        oFileInfo.infoAtDb = res[0];
+    });
     oFileInfo.hash = hash;
     if(id) oFileInfo.dxID = id;
 }
