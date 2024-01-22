@@ -2,11 +2,16 @@
  * @Author: Merlin
  * @Date: 2024-01-08 09:35:15
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-21 23:15:53
+ * @LastEditTime: 2024-01-22 22:46:25
  * @Description: 
  */
 import { dxDB } from "./dxDB";
 import {saveFile} from '@/common/js/fileSystemAPI.js';
+import {line} from './orm/line.js';
+
+const additional = {
+    line,
+};
 
 export const useSqlite = (async ()=>{
     if (!import.meta.client) return;
@@ -24,23 +29,48 @@ export const useSqlite = (async ()=>{
     }
     const Uint8Arr = oldData ? new Uint8Array(oldData) : void 0;
     const sqlite = new SQL.Database(Uint8Arr);
-    const [tables] = sqlite.exec(`SELECT name FROM sqlite_master WHERE type='table'`);
-    Object.assign(sqlite, {
-        select,
-        persist,
-        toExport,
-    });
-    sqlite.tb = tables.values.reduce((oResult, sCur)=>{
-        oResult[sCur] = new TableFunction({
-            db: sqlite,
-            tbName: sCur,
-        });
-        return oResult;
-    }, {});
+    console.time('加载数据库方法');
+    toAttach(sqlite);
+    console.timeEnd('加载数据库方法');
     window.db = sqlite; // 用于调试
     console.log("window.db\n", window.db);
     return sqlite;
 })();
+
+
+function toAttach(sqlite){
+    Object.assign(sqlite, {
+        ...commonDatabaseFn,
+        tableList: [],
+        tb: {},
+    });
+    let aTablesAndView = sqlite.select(`
+        SELECT * FROM sqlite_master
+        WHERE type in ('table', 'view')
+    `);
+    sqlite.tableList = aTablesAndView;
+    // console.log("tables", tables);
+    const tables = aTablesAndView.filter(cur => cur.type == 'table').map(cur => cur.name);
+    sqlite.tb = tables.reduce((oResult, tbName) => {
+        oResult[tbName] = new TableFunction({
+            db: sqlite,
+            tbName,
+        });
+        return oResult;
+    }, {});
+    Object.entries(sqlite.tb).forEach(thisTable=>{
+        const [tableName, oTableFn] = thisTable;
+        const oNewFn = additional[tableName];
+        if (!oNewFn) return;
+        Object.values(oNewFn).forEach(thisFn => {
+            if (oTableFn[thisFn.name]) {
+                return console.error('重名了');
+            }
+            oTableFn[thisFn.name] = thisFn;
+        });
+    });
+}
+
 
 // ↓ 检查导入的数据是不是有效数据 
 export async function checkDataForDB(blob){
@@ -60,75 +90,72 @@ export async function checkDataForDB(blob){
     return false;
 }
 
-
-function select(sql){
-    const aData = this.exec(sql);
-    if (!aData?.length) return [];
-    const {columns, values} = aData[0];
-    // columns: ['id', 'mediaId', 'start', 'end', 'text', 'trans', 'createdAt', 'updatedAt', 'filledAt']
-    // values: [Array(9), Array(9), Array(9), Array(9), Array(9), Array(9), Array(9), Array(9), Array(9), Array(9), Array(9), Array(9), Array(9), Array(9), Array(9), Array(9), Array(9), Array(9), Array(9), Array(9)]
-    const aRows = values.map(cur => {
-        const obj = {};
-        columns.forEach((key, idx)=>{
-            obj[key] = cur[idx];
+const commonDatabaseFn = {
+    select(sql){
+        const aData = this.exec(sql);
+        if (!aData?.length) return [];
+        const {columns, values} = aData[0];
+        // columns: ['id', 'mediaId', 'start', 'end', 'text', 'trans', 'createdAt', 'updatedAt', 'filledAt']
+        // values: [Array(9), Array(9), Array(9), Array(9), Array(9), Array(9), Array(9), Array(9), Array(9), Array(9), Array(9), Array(9), Array(9), Array(9), Array(9), Array(9), Array(9), Array(9), Array(9), Array(9)]
+        const aRows = values.map(cur => {
+            const obj = {};
+            columns.forEach((key, idx)=>{
+                obj[key] = cur[idx];
+            });
+            return obj;
         });
-        return obj;
-    });
-    return aRows;
-}
-
-// ↓ 持久化
-async function persist(blob){
-    if (blob){
-        console.log("导入数据库");
-    }else{
-        console.time('sqlite.export()');
-        const exported = this.export(); // get Uint8Array
-        console.timeEnd('sqlite.export()');
-        console.time('new Blob()');
-        blob = new Blob([exported]);
-        console.timeEnd('new Blob()');
+        return aRows;
+    },
+    // ↓ 持久化
+    async persist(blob){
+        if (blob){
+            console.log("导入数据库");
+        }else{
+            console.time('sqlite.export()');
+            const exported = this.export(); // get Uint8Array
+            console.timeEnd('sqlite.export()');
+            console.time('new Blob()');
+            blob = new Blob([exported]);
+            console.timeEnd('new Blob()');
+        }
+        const createdAt = new Date();
+        const time = createdAt.toLocaleString();
+        dxDB.sqlite.add({ // 耗时小于 1ms
+            blob,
+            time, // 用于查询后展示
+            createdAt, // 用于查询最新或最旧的数据
+        }).then(res=>{
+            console.log("已经导入库：", time, res);
+        });
+        const oCollection = dxDB.sqlite.orderBy('createdAt');
+        const count = await oCollection.count();
+        if (count <= 3) return;
+        const first = await oCollection.first();
+        dxDB.sqlite.delete(first.id);
+    },
+    // ↓ 导出
+    async toExport(toCut){
+        const res = await dxDB.sqlite.orderBy('createdAt').last();
+        const {blob} = res;
+        const iMB = toCut ? 5 : 999; // 999MB一般无法达到
+        const iBatch = iMB * (1024 * 1024); // 9MB
+        const iAllBatch = Math.ceil(blob.size / iBatch) || 1;
+        const sAllBatch = String(iAllBatch).padStart(2, '0');
+        // const sTime = new Date().toLocaleString().replace(/\//g, '-').replace(/:/g, '');
+        const sTime = dayjs().format('YYYY.MM.DD HH.mm.ss');
+        const aItems = [...Array(iAllBatch).keys()].map((cur, idx) => {
+            const iStart = cur * iBatch;
+            const sIndex = String(idx+1).padStart(2, '0');
+            return {
+                name: `Sqlite_${sTime}(${sAllBatch}-${sIndex}).blob`,
+                content: blob.slice(iStart, iStart + iBatch),
+            };
+        });
+        console.log("开始写入到磁盘");
+        saveFile(aItems);
     }
-    const createdAt = new Date();
-    const time = createdAt.toLocaleString();
-    dxDB.sqlite.add({ // 耗时小于 1ms
-        blob,
-        time, // 用于查询后展示
-        createdAt, // 用于查询最新或最旧的数据
-    }).then(res=>{
-        console.log("已经导入库：", time, res);
-    });
-    const oCollection = dxDB.sqlite.orderBy('createdAt');
-    const count = await oCollection.count();
-    if (count <= 3) return;
-    const first = await oCollection.first();
-    dxDB.sqlite.delete(first.id);
-}
+};
 
-
-// ↓ 导出
-async function toExport(toCut){
-    const res = await dxDB.sqlite.orderBy('createdAt').last();
-    const {blob} = res;
-    const iMB = toCut ? 5 : 999; // 999MB一般无法达到
-    const iBatch = iMB * (1024 * 1024); // 9MB
-    const iAllBatch = Math.ceil(blob.size / iBatch) || 1;
-    const sAllBatch = String(iAllBatch).padStart(2, '0');
-    // const sTime = new Date().toLocaleString().replace(/\//g, '-').replace(/:/g, '');
-    const sTime = dayjs().format('YYYY.MM.DD HH.mm.ss');
-    const aItems = [...Array(iAllBatch).keys()].map((cur, idx) => {
-        const iStart = cur * iBatch;
-        const sIndex = String(idx+1).padStart(2, '0');
-        return {
-            name: `Sqlite_${sTime}(${sAllBatch}-${sIndex}).blob`,
-            content: blob.slice(iStart, iStart + iBatch),
-        };
-    });
-    // 开始导出
-    // const newOne = new Blob(aItems);
-    // this.writeFile(aItems);
-    saveFile(aItems);
-}
 
 
 // 👇 实测：只返回空数组
@@ -138,7 +165,7 @@ async function toExport(toCut){
 // db.run(`update dev_history set note = '测试中中' where id=1`)
 
 class TableFunction {
-    db = null;
+    db = {};
     tbName = '';
     columns = [];
     colChangeable = [];
@@ -148,11 +175,11 @@ class TableFunction {
         this.columns = this.db.select(`
             SELECT * FROM pragma_table_info('${this.tbName}')
         `);
-        const aCanNot = ['id', 'createdAt'];
+        const aCanNotChange = ['id', 'createdAt'];
         this.colChangeable = this.columns.map(cur => {
             return cur.name;
         }).filter(cur => {
-            return !aCanNot.includes(cur);
+            return !aCanNotChange.includes(cur);
         });
     }
     // 交集
@@ -186,32 +213,26 @@ class TableFunction {
         }
     }
     #getUpdateSql(params){
-        let sWhere = ` updatedAt = strftime('%Y-%m-%d %H:%M:%f +00:00', 'now'), \n`;
+        let sSet = ` updatedAt = strftime('%Y-%m-%d %H:%M:%f +00:00', 'now'), \n`;
         const aColName = this.#getColsArr(params);
         if (typeof params === 'string') {
-            sWhere += ` ${params}`;
+            sSet += ` ${params}`;
         }
         if (params.constructor.name === 'Array'){
-            sWhere += params.join(', ');
+            sSet += params.join(', ');
         }
         if (params.constructor.name === 'Object'){
-            const aSet = aColName.map(key => {
+            const aSetArr = aColName.map(key => {
                 const val = params[key];
-                const aSkip = [
-                    !Reflect.has(params, key),
-                    ['id', 'updatedAt'].includes(key),
-                    // [null, void 0].includes(val), // 有可能有意删除值，所以不跳过
-                ];
-                if (aSkip.some(Boolean)) return;
                 if ((typeof val === 'string') && val) {
                     val = `'${val.replaceAll("'", "''")}'`;
                 }
                 return `${key} = ${val}`;
             });
-            sWhere += aSet.filter(Boolean).join(', ');
+            sSet += aSetArr.filter(Boolean).join(', ');
         }
-        sWhere = sWhere.trimEnd().replace(/,+$/, '') + ' ';
-        return sWhere;
+        sSet = sSet.trimEnd().replace(/,+$/, '') + ' ';
+        return sSet;
     }
     // ▲ 私有方法 ----------------------------------------------
     select(params, onlyOne){
@@ -264,8 +285,7 @@ class TableFunction {
         let sFullSql = `
             INSERT INTO ${this.tbName}
             (
-                createdAt,
-                updatedAt,
+                createdAt, updatedAt,
                 ${aColName.join(', ')}
             )
             VALUES (
@@ -303,6 +323,12 @@ class TableFunction {
         `;
         const res = this.db.run(sFullSql);
         return res;
+    }
+    saveBatch(arr){
+        arr.forEach(cur => {
+            if (cur.id) this.updateOne(cur);
+            else this.insertOne(cur);
+        });
     }
 }
 

@@ -5,7 +5,6 @@ import {figureOut} from './figure-out-region.js';
 import {getTubePath, getDateDiff} from '@/common/js/common-fn.js';
 import {getFolderChildren, addAllMediaDbInfo} from '@/common/js/fs-fn.js';
 import {path2file} from '@/common/js/fileSystemAPI.js';
-import {LineDB} from '@/database/line.js';
 // import {useActionStore} from '@/store/action-store.js';
 let sqlite = await useSqlite;
 
@@ -219,7 +218,7 @@ export function mainPart(){
 	// ▼查询库中的字幕
 	async function getLinesFromDB(aRes=[]){
 		if (!aRes.length){
-			aRes = await LineDB.getLineByMedia(oData.oMediaInfo.id);
+			aRes = await sqlite.tb.line.getLineByMedia(oData.oMediaInfo.id);
 		}
 		if (!aRes?.length) {
 			if (oData.oMediaBuffer) setFirstLine();

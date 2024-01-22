@@ -2,19 +2,19 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-21 23:20:48
+ * @LastEditTime: 2024-01-22 22:43:07
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
 import { fixTime } from '../../../common/js/pure-fn.js';
 import { figureOut } from './figure-out-region.js';
 import TheAction from '@/common/js/action.js';
-import {LineDB} from '@/database/line.js';
+
 // import {useBarInfo} from '@/store/happy-bar.js';
 // const oBarInfo = useBarInfo();
 const oActionFn = new TheAction('reading');
 let iSearchingQ = 0;
-let isSavingToDB = false; //保存事件防抖
+let isSavingToDB = false; // 保存事件防抖
 let sqlite = await useSqlite;
 
 export function getKeyDownFnMap(This, sType) {
@@ -700,7 +700,7 @@ export function fnAllKeydownFn() {
         console.time('保存与查询计时');
         isSavingToDB = true;
         // console.log('将保存字幕：\n', toSaveArr, toDelArr);
-        const oResult = await LineDB.updateMediaLines({
+        const oResult = await sqlite.tb.line.updateMediaLines({
             toSaveArr,
             toDelArr,
             isReturnAll: true,

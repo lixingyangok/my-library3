@@ -1,7 +1,7 @@
 <!--
  * @Author: 李星阳
  * @Date: 2021-12-04 15:18:43
- * @LastEditors: Merlin
+ * @LastEditors: 
  * @LastEditTime: 2024-01-01 14:31:17
  * @Description: 
 -->
@@ -40,7 +40,11 @@ export const routes = [{
     path: '/dictionary',
     name_: '字典',
     icon_: 'fas fa-book',
-},
+},{
+    path: '/empty',
+    name_: 'empty',
+    icon_: 'fas fa-book',
+}
 // {
 //     path: '/dashboard',
 //     name: 'dashboard',
