@@ -2,10 +2,17 @@
  * @Author: 
  * @Date: 2024-01-10 22:32:22
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-21 14:29:53
+ * @LastEditTime: 2024-01-23 21:38:07
  * @Description: 
  */
 import {mySort} from '@/common/js/common-fn.js';
+
+const aMediaList = ['mp4', 'mp3', 'ogg', 'm4a', 'acc', 'aac', 'opus',];
+
+function checkMediaByName(sName){
+    const stail = sName.split('.').pop().toLowerCase();
+    return aMediaList.includes(stail);
+}
 
 // 从文件夹 handle 返回其子元素列表
 export async function handle2List(handle, oConfig={}){
@@ -14,7 +21,6 @@ export async function handle2List(handle, oConfig={}){
     if (!directory) return [];
     path &&= `${path}/${handle.name}`;
     const aSkipFormat = ['ecdl'];
-    const aMediaList = ['mp4', 'mp3', 'ogg', 'm4a', 'acc', 'aac', 'opus',];
     const aResult = [
         [], // 文件夹
         [], // 媒体文件
@@ -30,7 +36,7 @@ export async function handle2List(handle, oConfig={}){
         const suffix = name.split('.').pop().toLowerCase(); 
         const toSkip = aSkipFormat.includes(suffix); 
         if (toSkip) continue;
-        const isMedia = aMediaList.includes(suffix);
+        const isMedia = checkMediaByName(name); // aMediaList.includes(suffix);
         const iTarget = (() => {
             if (kind === 'directory') return 0;
             return isMedia ? 1: 2;
@@ -59,21 +65,21 @@ export async function handle2FileObj(handle){
     const file = handle.kind === 'file';
     if (!file) return {};
     const oFile = await handle.getFile();
-    const isMedia = !!oFile.type.match(/audio|video/);
     const oResult = {
         lastModified: oFile.lastModified,
         lastModifiedDate: oFile.lastModifiedDate,
         size: oFile.size,
         webkitRelativePath: oFile.webkitRelativePath,
         type: oFile.type,
-        isMedia,
+        isMedia: checkMediaByName(handle.name),
     };
-    if (isMedia) {
+    if (oResult.isMedia) {
         oResult.oFile = oFile;
         oResult.hash = ''; // 预置
     }
     return oResult;
 }
+
 
 export async function path2file(sPath, ask=true){
     console.log('sPath', sPath);
@@ -105,6 +111,7 @@ export async function path2file(sPath, ask=true){
     const oFile = await oTargetHandle.getFile();
     return oFile;
 }
+
 
 export async function saveFile(aFiles, oParams={}){
     // 👇保存到指定的 folder 目录内

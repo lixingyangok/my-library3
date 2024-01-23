@@ -717,7 +717,7 @@ export function mainPart(){
 	// 	});
 	// });
 	// ============================================================================
-	init(true);
+	if (import.meta.client) init(true);
 	const oFn = {
 		textareaFocused,
 		chooseFile,

@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-19 22:09:29
+ * @LastEditTime: 2024-01-22 23:02:58
  * @Description: 
 -->
 <template>
@@ -28,7 +28,7 @@
                 <!-- ▼媒体信息 -->
                 <div>
                     <h3>
-                        <br/>{{oMediaInfo.dir}}/
+                        <br/>{{oMediaInfo?.dir}}/
                         <br/><em style="color: black; font-weight: bold;">{{oMediaInfo.name}}</em>
                     </h3>
                 </div>
@@ -94,7 +94,7 @@
         -->
         <section class="right">
             <article class="file-info-bar">
-                ◆文件：{{(oMediaInfo.dir||'').split('/').slice(-2).join('/') + `/${oMediaInfo.name}`}}&emsp;
+                ◆文件：{{(oMediaInfo?.dir||'').split('/').slice(-2).join('/') + `/${oMediaInfo.name}`}}&emsp;
                 ◆时长：{{oMediaBuffer.sDuration_}}&emsp;
                 ◆完成于：{{oMediaInfo?.finishedAt?.toLocaleString() || '进行中'}}&emsp;
             </article>
@@ -347,7 +347,7 @@
         >
             <el-descriptions title="" border :column="3">
                 <el-descriptions-item label="当前文件" :span="3">
-                    {{oMediaInfo.dir}}
+                    {{oMediaInfo?.dir}}
                     <br/><em style="color: black; font-weight: bold;">{{oMediaInfo.name}}</em>
                 </el-descriptions-item>
                 <el-descriptions-item label="合计时长">{{oSiblingsInfo.sDurationSum}}</el-descriptions-item>
