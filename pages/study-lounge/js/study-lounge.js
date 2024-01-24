@@ -280,6 +280,7 @@ export function mainPart(){
 			name: arr.slice(-1)[0],
 			dir: arr.slice(0, -1).join('/'),
 		};
+		return alert('需要删除 fnInvoke');
 		const oInfo = await fnInvoke('db', 'saveMediaInfo', obj);
 		if (!oInfo) throw '保存未成功';
 		init();
@@ -373,7 +374,6 @@ export function mainPart(){
 	}
 	// ▼显示一批媒体信息
 	async function showMediaDialog(){
-		console.log('打开邻居窗口');
 		oData.isShowMediaInfo = true;
 		setFolderInfo();
 	}
@@ -381,6 +381,7 @@ export function mainPart(){
 	async function getNeighbors(){
 		const {path} = oData.oMediaInLocal;
 		const aList = await dxDB.file.where('path').equals(path).toArray();
+		console.log('当前媒体邻居:', aList);
 		// let aList = await getFolderChildren(oData.oMediaInfo.dir);
 		if (!aList?.length) return;
 		await addAllMediaDbInfo(aList, true);
@@ -391,7 +392,7 @@ export function mainPart(){
 			cur.durationStr = durationStr;
 			cur.active_ = id == oData.oMediaInfo.id;
 			if (cur.done_){ // YYYY-MM-DD HH:mm:ss
-				cur.finishedAt_ = dayjs(finishedAt).format('YYYY-MM-DD HH:mm'); 
+				cur.finishedAt_ = dayjs(finishedAt).format('YYYY-MM-DD HH:mm');
 			}
 		});
 		oData.aSiblings = aList;
@@ -399,6 +400,7 @@ export function mainPart(){
 	}
 	// ▼统计文件夹音频时长（打开邻居窗口调用）
 	async function setFolderInfo(){
+		console.log('打开邻居窗口');
 		const {aSiblings} = oData;
 		const aID = [];
 		const fDurationSum = aSiblings.reduce((sum, cur) => {
@@ -566,9 +568,10 @@ export function mainPart(){
 	async function setItFinished(oTarget){
 		console.log('oTarget', oTarget.$dc());
 		let {id, finishedAt} = oTarget.infoAtDb;
-		finishedAt = finishedAt ? null : new Date();
-		const res = await fnInvoke("db", 'updateMediaInfo', {
-			id, finishedAt,
+		finishedAt = finishedAt ? null : Date.now();
+		const res = sqlite.tb.media.updateOne({
+			id,
+			finishedAt,
 		});
 		if (!res) return;
 		ElMessage.success('状态变更成功');
@@ -673,6 +676,7 @@ export function mainPart(){
 	}
 	// ▼如果数据库中没有记录音频的时长，此时应该将时长记录起来
 	async function toRecordDiration(oMediaInfo, oDuration){
+		return alert('需要删除 fnInvoke');
 		const res = await fnInvoke("db", 'updateMediaInfo', {
 			id: oMediaInfo.id,
 			duration: oDuration.fDuration,

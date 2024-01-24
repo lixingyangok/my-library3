@@ -330,10 +330,3 @@ function treeObj2Arr(obj){
 //     return iSum;
 // }
 
-// ▼查询【某1个媒体】在DB中的信息
-// async getOneMediaInfoFromDB(oMedia){
-//     const hash = await fnInvoke('getHash', oMedia.sPath);
-//     const res = await fnInvoke('db', 'getMediaInfo', {hash});
-//     oMedia.hash = hash;
-//     oMedia.infoAtDb = res[0];
-// },

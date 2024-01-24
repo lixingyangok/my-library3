@@ -295,7 +295,7 @@ export default {
     components: {
     },
     data(){
-        if (process.client){
+        if (import.meta.client){
             window.oConfig = (function(){
                 const aMedia = [
                     '.mp4', // 视频
@@ -324,15 +324,15 @@ export default {
         }
         // console.log("window.oConfig", window.oConfig);
         // console.log('vm.$route;\n', this.$route);
-        const {aRoot=[]} = window.oConfig;
+        const {aRoot=[]} = window.oConfig || {};
         const {sPath=''} = this.$route.query;
         let aPath = [aRoot[0]];
         let aAimTo = [];
-        for (const cur of aRoot){
-            if (!sPath.startsWith(cur)) continue
-            aPath = [cur];
-            aAimTo = sPath.slice(cur.length + 1).split('/');
-        }
+        // for (const cur of aRoot){
+        //     if (!sPath.startsWith(cur)) continue
+        //     aPath = [cur];
+        //     aAimTo = sPath.slice(cur.length + 1).split('/');
+        // }
         return {
             aFolderMedia: [],
             aDisks: document.body.disks,

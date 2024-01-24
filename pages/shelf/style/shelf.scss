@@ -50,9 +50,11 @@
     padding: 10px;
     li{
         cursor: pointer;
-        line-height: 2;
+        line-height: 1.5;
+        margin: 10px 0 0;
     }
-    .active{
+    li:hover,
+    li.active{
         color: blue;
     }
 }

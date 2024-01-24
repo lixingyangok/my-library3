@@ -635,9 +635,6 @@ export function fnAllKeydownFn() {
         // console.log('候选词：', aResult.$dc());
         This.aCandidate = aResult;
         if (typeof iCurQs != 'number') return;
-        // const aWords = await fnInvoke('db', 'getCandidate', {
-        //     sWord, limit: 9 - aResult.length,
-        // });
         console.time('查字典');
         let aWords = sqlite.select(`
             select word

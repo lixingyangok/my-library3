@@ -2,15 +2,17 @@
  * @Author: 
  * @Date: 2024-01-22 22:45:22
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-23 22:14:35
+ * @LastEditTime: 2024-01-24 22:24:18
  * @Description: 
  */
 
+// const sNow = strftime('%Y-%m-%d %H:%M:%f +00:00', 'now')
 
 export class TableFunction {
     db = {};
     tbName = '';
     columns = [];
+    oColumnsInfo = {};
     colChangeable = [];
     constructor(oParams){
         this.db = oParams.db;
@@ -19,10 +21,11 @@ export class TableFunction {
             SELECT * FROM pragma_table_info('${this.tbName}')
         `);
         const aCanNotChange = ['id', 'createdAt'];
-        this.colChangeable = this.columns.map(cur => {
-            return cur.name;
-        }).filter(cur => {
-            return !aCanNotChange.includes(cur);
+        this.columns.forEach(cur=>{
+            this.oColumnsInfo[cur.name] = cur;
+            if (!aCanNotChange.includes(cur.name)){
+                this.colChangeable.push(cur.name);
+            }
         });
     }
     // 交集
@@ -66,11 +69,14 @@ export class TableFunction {
         }
         if (params.constructor.name === 'Object'){
             const aSetArr = aColName.map(key => {
+                const sColType = this.oColumnsInfo[key].type;
                 let val = params[key];
                 if ((typeof val === 'string') && val) {
                     val = `'${val.replaceAll("'", "''")}'`;
+                }else if (sColType === 'DATETIME' && typeof val === 'number'){
+                    val = `strftime('%Y-%m-%d %H:%M:%f +00:00', ${val / 1000}, 'unixepoch')`;
                 }
-                return `${key} = ${val}`;
+                return `${key} = ${val}`; 
             });
             sSet += aSetArr.join(', ');
         }
