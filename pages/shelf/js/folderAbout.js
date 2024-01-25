@@ -1,4 +1,4 @@
-import {mySort} from '@/common/js/common-fn.js';
+import {goToLounage} from '@/common/js/common-fn.js';
 import {handle2List, handle2FileObj, handleManager} from '@/common/js/fileSystemAPI.js';
 const sqlite = await useSqlite;
 
@@ -61,13 +61,12 @@ const oFn01 = {
     async ckickItem(i1, i2){
         const oItem = this.aDirectory[i1][i2];
         const {isMedia, dxID, hash, pathFull} = oItem;
-        console.log(`点击目标：\n`, oItem, '\n', JSON.parse(JSON.stringify(oItem)));
+        console.log(`点击目标：\n`, oItem.$dc());
         if (isMedia) {
             if (dxID && hash) {
-                store('media', oItem);
-                useRouter().push('/study-lounge');
+                goToLounage(oItem);
             }else{
-                console.log("不可跳转", );
+                console.log("注意，不可跳转", );
             }
             return;
         }

@@ -241,6 +241,7 @@ export default function(){
         const sDate = [oDate.getFullYear(), (oDate.getMonth()+1+'').padStart(2,0), (oDate.getDate()+'').padStart(2,0)].join('-');
         const sTempName = `${mediaPath.split('/').pop()}●${sDate}.blob`;
         const sSaveTo = oConfig.sTempDir + sTempName;
+        alert('fnInvoke 调用');
         const err = await fnInvoke("fileSaver", {
             sSaveTo,
             aChannelData_: oMediaBuffer.aChannelData_,

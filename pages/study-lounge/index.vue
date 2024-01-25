@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-22 23:02:58
+ * @LastEditTime: 2024-01-25 20:52:17
  * @Description: 
 -->
 <template>
@@ -497,10 +497,6 @@ export default {
         const oFnList = getKeyDownFnMap(this, 'obj');
         registerKeydownFn(oFnList);
     },
-    // beforeRouteEnter(to, from){
-    //     console.log("from", from);
-    //     console.log("to", to);
-    // },
 };
 </script>
 

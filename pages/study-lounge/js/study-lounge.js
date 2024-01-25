@@ -194,14 +194,14 @@ export function mainPart(){
 	})();
 	// ▲数据 ====================================================================================
 	// ▼方法 ====================================================================================
-	async function init(trying){
+	async function init(){
 		oDom?.oMyWave?.cleanCanvas(true);
 		oData.oMediaInLocal = store('media') || {};
 		const {hash, pathFull} = oData.oMediaInLocal;
 		if (!hash) throw '没有hash';
-		oData.oMediaFile = await path2file(pathFull, !trying);
+		oData.oMediaFile = await path2file(pathFull);
 		if (oData.oMediaFile){
-			ElMessage.success('开始加载波形');
+			ElMessage.success('正在加载波形数据……');
 		}
 		const aRes = sqlite.select(`
 			select * from media where hash = '${hash}' limit 1
@@ -307,7 +307,7 @@ export function mainPart(){
 	}
 	// ▼接收子组件波形数据
 	function bufferReceiver(oMediaBuffer){
-		// console.log('收到了波形');
+		console.log('收到了波形');
 		ElMessage.success('波形已经加载');
 		// TODO 经常收到的波形不属于当前媒体文件（旧的波形）
 		oData.oMediaBuffer = oMediaBuffer;
@@ -381,8 +381,7 @@ export function mainPart(){
 	async function getNeighbors(){
 		const {path} = oData.oMediaInLocal;
 		const aList = await dxDB.file.where('path').equals(path).toArray();
-		console.log('当前媒体邻居:', aList);
-		// let aList = await getFolderChildren(oData.oMediaInfo.dir);
+		// console.log('当前媒体邻居:', aList);
 		if (!aList?.length) return;
 		await addAllMediaDbInfo(aList, true);
 		aList.forEach((cur, idx) => {
@@ -391,7 +390,7 @@ export function mainPart(){
 			cur.done_ = !!finishedAt;
 			cur.durationStr = durationStr;
 			cur.active_ = id == oData.oMediaInfo.id;
-			if (cur.done_){ // YYYY-MM-DD HH:mm:ss
+			if (finishedAt){ // YYYY-MM-DD HH:mm:ss
 				cur.finishedAt_ = dayjs(finishedAt).format('YYYY-MM-DD HH:mm');
 			}
 		});
@@ -721,7 +720,7 @@ export function mainPart(){
 	// 	});
 	// });
 	// ============================================================================
-	if (import.meta.client) init(true);
+	init();
 	const oFn = {
 		textareaFocused,
 		chooseFile,

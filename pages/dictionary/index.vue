@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-23 18:49:41
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-21 16:33:03
+ * @LastEditTime: 2024-01-25 21:34:54
  * @Description: 
 -->
 <template>
@@ -163,9 +163,7 @@ onMounted(()=>{
         setTimeout(showIframe, 100);
     }
 });
-onBeforeUnmount(()=>{
-    // fnInvoke('BrowserView', 'hide');
-});
+
 
 watch(
     isShowSelf,

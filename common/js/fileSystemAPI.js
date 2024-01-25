@@ -2,7 +2,7 @@
  * @Author: 
  * @Date: 2024-01-10 22:32:22
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-23 21:38:07
+ * @LastEditTime: 2024-01-25 21:39:15
  * @Description: 
  */
 import {mySort} from '@/common/js/common-fn.js';
@@ -80,21 +80,24 @@ export async function handle2FileObj(handle){
     return oResult;
 }
 
-
-export async function path2file(sPath, ask=true){
-    console.log('sPath', sPath);
-    const rootID = sPath.slice(0,19);
+// ↓通过路径找到文件
+export async function path2file(sPath){
+    const rootID = sPath.slice(0, 19);
     const aPath = sPath.slice(20).split('/');
     const oRoot = await dxDB.directory.get({
         createdAt: rootID,
     });
     if (!oRoot) return;
     let answer = await oRoot.handle.queryPermission();
-    console.log("answer:", answer);
-    if ((answer != 'granted') && ask) {
-        answer = await oRoot.handle.requestPermission({
-            mode: 'readwrite',
-        });
+    if (answer != 'granted') {
+        try{
+            answer = await oRoot.handle.requestPermission({
+                mode: 'readwrite',
+            });
+        }catch(err){
+            console.log("无法申请文件权限：\n", err);
+            return;
+        }
     }
     if (answer != 'granted') return;
     handleManager(oRoot.handle);
@@ -106,7 +109,7 @@ export async function path2file(sPath, ask=true){
             findingName: cur,
             findingType: type,
         });
-        if (!oTargetHandle) break;
+        if (!oTargetHandle) return;
     }
     const oFile = await oTargetHandle.getFile();
     return oFile;

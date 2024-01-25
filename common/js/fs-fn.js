@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-22 19:31:55
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-13 22:57:57
+ * @LastEditTime: 2024-01-25 21:40:26
  * @Description: 与文件夹/文件相关的方法（纯函数）
  */
 // 本包将来可修改为，提供数据查询的包
@@ -111,8 +111,6 @@ export async function addAllMediaDbInfo(arr, oneByOne){
 // ▼查询【某1个媒体】在DB中的信息
 export async function AaddMediaInfoFromDB(oMedia){
     const sqlite = await useSqlite;
-    // const hash = await fnInvoke('getHash', oMedia.sPath);
-    // const res = await fnInvoke('db', 'getMediaInfo', {hash});
     const {hash} = oMedia;
     const res = sqlite.select(`select * from media where hash='${hash}'`);
     if (res?.[0]){
@@ -152,6 +150,7 @@ export async function findMedia(sPath, oTarget) {
 
 // 查询：某天/某几天 的学习数据
 export async function getLearningHistory(iMediaID){
+    const sqlite = await useSqlite;
     let sql = `
         SELECT *,
             julianday('now', 'localtime') - julianday(createdAt, 'localtime') as gap
@@ -165,9 +164,8 @@ export async function getLearningHistory(iMediaID){
     if (iMediaID){
         sql += `and mediaId = ${iMediaID}`;
     }
-    const [r01, r02] = await fnInvoke('db', 'doSql', sql);
-    if (!r01) return;
-    return r01;
+    const res = await sqlite(sql);
+    return res;
 }
 
 // 查询：当天的学习数据

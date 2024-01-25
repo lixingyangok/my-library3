@@ -177,11 +177,9 @@ const oFn_recentList = {
         if (!oRecent) return;
         const aList = Object.values(oRecent).map(cur=>{
             const name = cur.pathFull.split('/').pop();
-            const path = cur.path.slice(cur.path.indexOf('/'));
             return {
                 ...cur,
                 name,
-                path,
                 sTime: getDateDiff(cur.iTime),
                 fPercent: Math.min(cur.fPercent, 100),
             };
@@ -208,9 +206,9 @@ const oVisitFn = {
     },
     // ▼访问学习页
     goToLounge(oTarget){
-        const {dir, name} = oTarget;
-        const sPath = `${dir}/${name}`;
-        // console.log('oTarget', oTarget.oFirst.$dc());
+        // const {dir, name} = oTarget;
+        // const sPath = `${dir}/${name}`;
+        console.log('oTarget', oTarget.$dc());
         goToLounage(oTarget);
     },
 };
