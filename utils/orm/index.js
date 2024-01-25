@@ -2,7 +2,7 @@
  * @Author: 
  * @Date: 2024-01-22 22:45:22
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-25 22:30:29
+ * @LastEditTime: 2024-01-25 22:55:50
  * @Description: 
  */
 
@@ -60,7 +60,6 @@ export class TableFunction {
     }
     #getUpdateSql(params){
         let sSet = ` updatedAt = strftime('%Y-%m-%d %H:%M:%f +00:00', 'now'), \n`;
-        const aColName = this.#getColsArr(params);
         if (typeof params === 'string') {
             sSet += ` ${params}`;
         }
@@ -68,19 +67,19 @@ export class TableFunction {
             sSet += params.join(', ');
         }
         if (params.constructor.name === 'Object'){
+            const aColName = this.#getColsArr(params);
             const aSetArr = aColName.map(key => {
                 const sColType = this.oColumnsInfo[key].type;
-                let value = params[key];
+                let value = params[key] ?? null; // 用 null 顶替 undefined
                 let sValType = typeof value;
-                if (sColType.startsWith('VARCHAR')) value ??= ''; // 防止得到 null, undefined
                 if (sValType === 'string') {
                     value = `'${value.replaceAll("'", "''")}'`;
                 }else if (sValType === 'number' && sColType === 'DATETIME'){
-                    value = `strftime('%Y-%m-%d %H:%M:%f +00:00', ${value / 1000}, 'unixepoch')`;
+                    value = `strftime('%Y-%m-%d %H:%M:%f +00:00', ${value / 1000}, 'unixepoch')`; 
                 }
                 return `${key} = ${value}`; 
             });
-            sSet += aSetArr.join(', ');
+            sSet += aSetArr.join(',\n');
         }
         sSet = sSet.trimEnd().replace(/,+$/, '') + ' ';
         return sSet;
@@ -183,7 +182,7 @@ export class TableFunction {
             set ${this.#getUpdateSql(oParams)}
             where id = ${oParams.id}
         `;
-        // console.log("sql", sql);
+        console.log("修改语句：\n", sql);
         const res = this.db.run(sql);
         return res;
     }
