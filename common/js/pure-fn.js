@@ -41,7 +41,7 @@ export async function getMediaDuration(sFilePath){
 }
 
 export async function fileToBuffer(oFile){
-	const iBeginTime = new Date().getTime();
+	const iBeginTime = Date.now();
 	let resolveFn = xx => xx;
 	const promise = new Promise(f1 => resolveFn = f1);
 	const onload = async evt => {
@@ -52,12 +52,12 @@ export async function fileToBuffer(oFile){
 		});
 		if (!oRealBuffer) return;
 		audioContext = null; // 据说：如果不销毁audioContext，audio标签无法播放
-		const t02 = new Date().getTime();
+		const t02 = Date.now();
 		const oBuffer = getFakeBuffer(oRealBuffer);
-		const tGap = ((new Date() - t02)/1000).toFixed(2) * 1;
+		const tGap = ((Date.now() - t02)/1000).toFixed(2) * 1;
 		oRealBuffer = null;
 		const sizeMB = (oFile.size/1024/1024).toFixed(2);
-		const fElapsedSec = ((new Date() - iBeginTime) / 1000).toFixed(2) * 1;
+		const fElapsedSec = ((Date.now() - iBeginTime) / 1000).toFixed(2) * 1;
 		oBuffer.fElapsedSec = fElapsedSec;
 		resolveFn(oBuffer);
 		console.log(`■ 波形解析信息：\n■ 媒体文件体积：${sizeMB}MB / 时长：${oBuffer.sDuration_} / 加载耗时：${fElapsedSec}秒\n波形压缩：${tGap}秒`);

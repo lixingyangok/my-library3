@@ -246,7 +246,6 @@
                     v-model="aLineArr[iCurLineIdx].text"
                     abckeydown.enter.prevent="() => previousAndNext(1)"
                     @input="inputHandler"
-                    @focus="textareaFocused"
                 ></textarea>
                 <!-- @keydown.backspace="typed" -->
                 <ul class="candidate-list">

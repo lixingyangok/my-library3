@@ -2,7 +2,7 @@
  * @Author: 
  * @Date: 2024-01-22 22:45:22
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-24 22:24:18
+ * @LastEditTime: 2024-01-25 22:30:29
  * @Description: 
  */
 
@@ -70,13 +70,15 @@ export class TableFunction {
         if (params.constructor.name === 'Object'){
             const aSetArr = aColName.map(key => {
                 const sColType = this.oColumnsInfo[key].type;
-                let val = params[key];
-                if ((typeof val === 'string') && val) {
-                    val = `'${val.replaceAll("'", "''")}'`;
-                }else if (sColType === 'DATETIME' && typeof val === 'number'){
-                    val = `strftime('%Y-%m-%d %H:%M:%f +00:00', ${val / 1000}, 'unixepoch')`;
+                let value = params[key];
+                let sValType = typeof value;
+                if (sColType.startsWith('VARCHAR')) value ??= ''; // 防止得到 null, undefined
+                if (sValType === 'string') {
+                    value = `'${value.replaceAll("'", "''")}'`;
+                }else if (sValType === 'number' && sColType === 'DATETIME'){
+                    value = `strftime('%Y-%m-%d %H:%M:%f +00:00', ${value / 1000}, 'unixepoch')`;
                 }
-                return `${key} = ${val}`; 
+                return `${key} = ${value}`; 
             });
             sSet += aSetArr.join(', ');
         }

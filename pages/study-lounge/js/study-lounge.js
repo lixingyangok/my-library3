@@ -59,7 +59,7 @@ export function mainPart(){
 		...oInputMethod,
 		...visiableControl,
 		isReading: false,
-		sMediaSrc: getTubePath(store('sFilePath')), // 将废弃
+		sMediaSrc: store('media')?.pathFull, // 考虑废弃
 		oMediaInLocal: store('media') || {},
 		oMediaFile: null, // 媒体文件
 		
@@ -309,7 +309,7 @@ export function mainPart(){
 	function bufferReceiver(oMediaBuffer){
 		console.log('收到了波形');
 		ElMessage.success('波形已经加载');
-		// TODO 经常收到的波形不属于当前媒体文件（旧的波形）
+		// TODO 偶有收到的波形不属于当前媒体文件
 		oData.oMediaBuffer = oMediaBuffer;
 		const {id, duration=0} = oData.oMediaInfo;
 		const iDurDifference = duration && Math.abs(oMediaBuffer.duration - duration);
@@ -708,10 +708,6 @@ export function mainPart(){
 			cur.text = '';
 		});
 	}
-	async function textareaFocused(){
-		if (oData.oMediaFile) return;
-		oData.oMediaFile = await path2file(oData.oMediaInLocal.pathFull);
-	}
 	// watch(() => oActionStore.aMediaRows, (aNewVal)=>{
 	// 	aNewVal.forEach(cur=>{
 	// 		if (!cur.lineId) return;
@@ -722,7 +718,6 @@ export function mainPart(){
 	// ============================================================================
 	init();
 	const oFn = {
-		textareaFocused,
 		chooseFile,
 		init,
 		setAllEmpty,
