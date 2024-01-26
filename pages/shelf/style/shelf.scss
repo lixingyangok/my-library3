@@ -184,3 +184,16 @@
     }
 }
 
+// 气泡中的 hash 值
+.hash-value{
+    line-height: 2;
+    cursor: pointer;
+    &:hover{
+        color: blue;
+    }
+    &[class~=copied]{
+        font-weight: bold;
+    }
+}
+
+

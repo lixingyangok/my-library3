@@ -134,6 +134,7 @@ export async function saveFile(aFiles, oParams={}){
         const writable = await fileHandle.createWritable();
         await writable.write(content);
         await writable.close();
+        console.log("已经保存：", name);
     }
 }
 

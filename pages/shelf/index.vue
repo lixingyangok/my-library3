@@ -62,7 +62,7 @@
                 <li class="one-item"
                     v-for="(cur, i2) of aColumn" :key="i2"
                     :class="{active: i2 == aRoutesInt[i1],}"
-                    @click="ckickItem(i1, i2, cur)"
+                    @click="ckickItem(i1, i2)"
                     @mouseenter="hoverHandler(cur)"
                 >
                     <template v-if="cur.kind == 'directory'">
@@ -96,11 +96,24 @@
                             </span>
                         </template>
                         <p>{{cur.name}}</p>
-                        <p>hash: {{cur.hash}}</p>
+                        <p @click="copyHash(cur.hash)"
+                            class="hash-value"
+                            :clss="{'copied': cur.hash === hashCoped}"
+                        >
+                            hash: {{cur.hash}}
+                        </p>
+                        <br/>
                         <el-button type="primary" link :key="`${i1}-${i2}`"
+                            v-if="cur.infoAtDb"
                             @click="checkDetail(cur)"
                         >
                             详情
+                        </el-button>
+                        <el-button type="primary" link :key="`${i1}-${i2}`"
+                            v-if="cur.infoAtDb"
+                            @click="useAnotherMedia(cur)"
+                        >
+                            切换文件
                         </el-button>
                     </el-popover>
                     <span class="item-name" v-else>
@@ -249,6 +262,7 @@
     <el-dialog title="媒体详情"
         width="550px"
         v-model="oMediaInfo.isShow"
+        top="10vh"
     >
         <section class="media-info" >
             <h5> name: {{ oMediaInfo.oMedia.name || '无，或许已被删除' }} </h5>
@@ -356,7 +370,9 @@ export default {
             // 👇新的
             aRoots: [], // 选择过的历史记录
             aDirectory: [], // 显示文件列表
-            aRoutesInt: [],
+            aRoutesInt: [], // 1,3
+            aLastFolder: [], // 某列列项
+            hashCoped: '',
         };
     },
     computed: {

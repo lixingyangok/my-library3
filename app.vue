@@ -1,8 +1,8 @@
 <!--
  * @Author: 
  * @Date: 2023-12-30 10:38:50
- * @LastEditors: 
- * @LastEditTime: 2024-01-19 22:10:22
+ * @LastEditors: Merlin
+ * @LastEditTime: 2024-01-26 22:58:39
  * @Description: 
 -->
 <template>
@@ -45,6 +45,12 @@ useHead({
         src: 'https://cdn.jsdelivr.net/npm/hash-wasm@4/dist/xxhash64.umd.min.js',
     }, { // initSqlJs
         src: 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.9.0/sql-wasm.js',
+    },{
+        type: 'module',
+        src: 'https://cdn.bootcdn.net/ajax/libs/ffmpeg/0.12.6/esm/classes.js',
+    },{
+        type: 'module',
+        src:'https://cdnjs.cloudflare.com/ajax/libs/ffmpeg/0.12.10/esm/index.js',
     }],
 });
 
@@ -66,6 +72,10 @@ if (process.client){
     //     console.log("pdf-viewer", );
     //     console.log(res);
     // });
+    // https://cdnjs.com/libraries/ffmpeg
+    import('https://cdn.bootcdn.net/ajax/libs/ffmpeg/0.12.6/esm/classes.js').then(res=>{
+        console.log(res.FFmpeg);
+    });
 }
 
 </script>

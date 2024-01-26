@@ -2,7 +2,7 @@
  * @Author: Merlin
  * @Date: 2024-01-08 09:35:15
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-23 21:47:00
+ * @LastEditTime: 2024-01-26 21:55:18
  * @Description: 
  */
 import { dxDB } from "./dxDB";
@@ -16,12 +16,15 @@ const oTableFuns = {
 
 export const useSqlite = (async ()=>{
     if (!import.meta.client) return;
+    console.time('加载数据库 1');
     const [SQL, oFirst] = await Promise.all([
         window.initSqlJs({ 
             locateFile: () => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.9.0/sql-wasm.wasm`,
         }),
         dxDB.sqlite.orderBy('createdAt').last(),
     ]);
+    console.timeEnd('加载数据库 1');
+    console.time('加载数据库 2');
     let oldData = oFirst?.blob;
     if (oldData?.arrayBuffer) {
         oldData = await oldData.arrayBuffer();
@@ -30,9 +33,10 @@ export const useSqlite = (async ()=>{
     }
     const Uint8Arr = oldData ? new Uint8Array(oldData) : void 0;
     const sqlite = new SQL.Database(Uint8Arr);
-    console.time('加载数据库方法');
+    console.timeEnd('加载数据库 2');
+    console.time('加载数据库 3');
     toAttach(sqlite);
-    console.timeEnd('加载数据库方法');
+    console.timeEnd('加载数据库 3');
     window.db = sqlite; // 用于调试
     console.log("window.db\n", window.db);
     return sqlite;
@@ -44,6 +48,7 @@ function toAttach(sqlite){
         ...commonDatabaseFn,
         tableList: [],
         tb: {},
+        taskTimer: null, // 
     });
     let aTablesAndView = sqlite.select(`
         SELECT * FROM sqlite_master
@@ -92,20 +97,24 @@ const commonDatabaseFn = {
             blob = new Blob([exported]);
             console.timeEnd('new Blob()');
         }
-        const createdAt = new Date();
-        const time = createdAt.toLocaleString();
-        dxDB.sqlite.add({ // 耗时小于 1ms
-            blob,
-            time, // 用于查询后展示
-            createdAt, // 用于查询最新或最旧的数据
-        }).then(res => {
-            console.log(`已经持久化, id=${res}： ${time}`);
-        });
-        const oCollection = dxDB.sqlite.orderBy('createdAt');
-        const count = await oCollection.count();
-        if (count <= 3) return;
-        const first = await oCollection.first();
-        dxDB.sqlite.delete(first.id);
+        console.log("已经设定了持久化任务");
+        clearTimeout(this.taskTimer);
+        this.taskTimer = setTimeout(async () => {
+            const createdAt = new Date();
+            const time = createdAt.toLocaleString();
+            dxDB.sqlite.add({ // 耗时小于 1ms
+                blob,
+                time, // 用于查询后展示
+                createdAt, // 用于查询最新或最旧的数据
+            }).then(res => {
+                console.log(`已经持久化, id=${res}： ${time}`);
+            });
+            const oCollection = dxDB.sqlite.orderBy('createdAt');
+            const count = await oCollection.count();
+            if (count <= 3) return;
+            const first = await oCollection.first();
+            dxDB.sqlite.delete(first.id);
+        }, 1000);
     },
     // ↓ 导出
     async toExport(toCut){

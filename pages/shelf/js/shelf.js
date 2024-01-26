@@ -192,29 +192,7 @@ const oUseInNew = {
             aWords: aWords || [],
         });
     },
-    // ▼删除一项（待验证）
-    async toForgetMedia(oMedia){
-        const {id} = oMedia;
-        console.log(oMedia.$dc());
-        const sAnswer = await ElMessageBox.confirm(
-            '确认删除?', '请注意',
-            {
-                confirmButtonText: '确认删除',
-                cancelButtonText: '取消',
-                type: 'warning',
-            }
-        ).catch(xx=>xx);
-        if (sAnswer != 'confirm') return;
-        const aTask = [
-            sqlite.run(`DELETE FROM action WHERE mediaId=${id};`),
-            sqlite.run(`DELETE FROM new_word WHERE mediaId=${id};`),
-            sqlite.run(`DELETE FROM line WHERE mediaId=${id};`),
-        ];
-        await Promise.all(aTask);
-        await sqlite.run(`DELETE FROM media WHERE id=${id};`);
-        await this.loadMediaInfo(id);
-        this.getDirChildren();
-    },
+
 };
 
 

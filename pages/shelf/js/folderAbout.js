@@ -1,8 +1,16 @@
 import {goToLounage} from '@/common/js/common-fn.js';
 import {handle2List, handle2FileObj, handleManager} from '@/common/js/fileSystemAPI.js';
+import {copyString} from '@/common/js/pure-fn.js';
+
 const sqlite = await useSqlite;
 
 const oFn01 = {
+    copyHash(hash){
+        const res = copyString(hash);
+        if (!res) return;
+        this.hashCoped = hash;
+        ElMessage.success(`已复制 ${hash}`);
+    },
     async chooseRoot(){
         let handle = await window.showDirectoryPicker({
             mode: 'readwrite',
@@ -58,6 +66,7 @@ const oFn01 = {
         this.aDirectory.splice(0, Infinity, aRoot);
         fillTheList(this.aDirectory[0]);
     },
+    // ↓ 点击文件夹、文件
     async ckickItem(i1, i2){
         const oItem = this.aDirectory[i1][i2];
         const {isMedia, dxID, hash, pathFull} = oItem;
@@ -71,6 +80,7 @@ const oFn01 = {
             return;
         }
         if (oItem.kind !== 'directory') return;
+        this.aLastFolder = [i1, i2];
         // 👈处理点击文件夹动作
         // ▼ this.aPath 正在被 watch 监听，操作会触发后续动作
         // this.aPath.splice(i1 + 1, Infinity, sItem);
@@ -88,7 +98,55 @@ const oFn01 = {
         if (!oTarget.isMedia) return; 
         oTarget.hovered = true;
     },
+    // ▼删除一项（待验证）
+    async toForgetMedia(oMedia){
+        const {id} = oMedia;
+        console.log(oMedia.$dc());
+        const {confirm, hash} = await this.askAreYouSure2Delete();
+        if (!confirm) return;
+        console.log("answer\n", confirm, hash);
+        return;
+        const aTask = [
+            sqlite.run(`DELETE FROM action WHERE mediaId=${id};`),
+            sqlite.run(`DELETE FROM new_word WHERE mediaId=${id};`),
+            sqlite.run(`DELETE FROM line WHERE mediaId=${id};`),
+        ];
+        await Promise.all(aTask);
+        await sqlite.run(`DELETE FROM media WHERE id=${id};`);
+        await this.loadMediaInfo(id);
+        this.getDirChildren();
+    },
+    // ↓ 用户确认
+    async askAreYouSure2Delete(){
+        
+    },
+    // ↓ 切换媒体
+    async useAnotherMedia(oMedia){
+        console.log(`点击列\n`, oMedia.$dc());
+        const {name, infoAtDb} = oMedia;
+        const sTitle = `请输入16位文件 hash`;
+        const sTip = `正在修改：${name}`;
+        const oAnswer = await ElMessageBox.prompt(sTip, sTitle, {
+            confirmButtonText: '确认',
+            cancelButtonText: '取消',
+        }).catch(err => {
+            console.log("取消了", err);
+        });
+        const value = oAnswer?.value || '';
+        // hash : "9361db3653916c8a" // ← 16位
+        const [hash] = value.match(/^[0-9a-z]{16}$/i) || [];
+        console.log("hash", hash);
+        if (!hash || !infoAtDb.id) return;
+        const res = sqlite.tb.media.updateOne({
+            id: infoAtDb.id,
+            hash,
+        });
+        if (!res) return;
+        this.ckickItem(...this.aLastFolder);
+        // 从 dxDB 中移或修改记录
+    },
 };
+
 
 
 export default {
@@ -163,3 +221,12 @@ async function init() {
     initBackend(worker);
     console.log(worker);
 }
+
+// const sAnswer = await ElMessageBox.confirm(
+//     '确认删除?', '请注意',
+//     {
+//         confirmButtonText: '确认删除',
+//         cancelButtonText: '取消',
+//         type: 'warning',
+//     }
+// ).catch(xx=>xx);

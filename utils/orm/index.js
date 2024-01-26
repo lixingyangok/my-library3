@@ -2,7 +2,7 @@
  * @Author: 
  * @Date: 2024-01-22 22:45:22
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-25 22:55:50
+ * @LastEditTime: 2024-01-26 21:49:23
  * @Description: 
  */
 
@@ -110,11 +110,12 @@ export class TableFunction {
         const thisArr = aColName.map(cur => {
             return oParams[cur] ?? null;
         });
-        console.log("sFullSql", sFullSql);
-        console.log("thisArr", thisArr);
-        const inserted = db.run(sFullSql, thisArr);
-        console.log("inserted", inserted);
-        return inserted;
+        // console.log("sFullSql", sFullSql);
+        // console.log("thisArr", thisArr);
+        const res = db.run(sFullSql, thisArr);
+        console.log("res", res);
+        if (res) this.db.persist();
+        return res;
     }
     insert(arr){
         if (!arr?.length) return;
@@ -135,6 +136,7 @@ export class TableFunction {
             WHERE ${sWhere};
         `;
         const res = this.db.run(sFullSql);
+        if (res) this.db.persist();
         return res;
     }
     deleteById(id){
@@ -147,11 +149,12 @@ export class TableFunction {
         }else{
             return;
         }
-        const delResult = this.db.exec(`
+        const res = this.db.exec(`
             delete from ${this.tbName}
             where id in (${toDelArr.join(',')})
         `);
-        console.log("delResult", delResult);
+        console.log("res", res);
+        if (res) this.db.persist();
         return true;
     }
     // ▲ 删除 ========================================================
@@ -176,7 +179,9 @@ export class TableFunction {
     //     return res;
     // }
     updateOne(oParams){
-        if (!oParams.id) return;
+        if (!oParams.id) {
+            return console.warn('no data id');
+        }
         let sql = `
             update ${this.tbName}
             set ${this.#getUpdateSql(oParams)}
@@ -184,6 +189,7 @@ export class TableFunction {
         `;
         console.log("修改语句：\n", sql);
         const res = this.db.run(sql);
+        if (res) this.db.persist();
         return res;
     }
     // ▼ 查询方法 ------------------------------------------------------
