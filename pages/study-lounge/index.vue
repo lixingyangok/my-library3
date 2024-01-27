@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-25 20:52:17
+ * @LastEditTime: 2024-01-27 14:41:43
  * @Description: 
 -->
 <template>
@@ -93,11 +93,11 @@
         左右分界
         -->
         <section class="right">
-            <article class="file-info-bar">
+            <div class="file-info-bar">
                 ◆文件：{{(oMediaInfo?.dir||'').split('/').slice(-2).join('/') + `/${oMediaInfo.name}`}}&emsp;
                 ◆时长：{{oMediaBuffer.sDuration_}}&emsp;
                 ◆完成于：{{oMediaInfo?.finishedAt?.toLocaleString() || '进行中'}}&emsp;
-            </article>
+            </div>
             <Wave ref="oMyWave"
                 :media-path="sMediaSrc"
                 :a-line-arr="aLineArr"
@@ -111,7 +111,7 @@
             <!-- <TodayHistory ref="oTodayBar"
                 :iMediaID="oMediaInfo.id"
             /> -->
-            <article class="wave-below">
+            <section class="wave-below">
                 <!-- <div class="practice-record" >
                     <span>练习次数：{{ (oActionStore.oMediaActionSum.iSecLong / oMediaInfo.duration).toFixed(2)}}次</span>
                     <span>播放次数：{{ oActionStore.oMediaActionSum.iPracticeTimes }}</span>
@@ -171,9 +171,9 @@
                 <input type="file" ref="oSrtInput"
                     @change="importSrt" v-show="0"
                 />
-            </article>
-            <!-- ▼输入 -->
-            <div class="type-box" v-if="oCurLine">
+            </section>
+            <!-- ▼输入区 -->
+            <section class="type-box" v-if="oCurLine">
                 <ul class="history-ul" :style="{'--max': iHisMax}">
                     <li v-for="(cur, idx) of aHistory" :key="idx"
                         :class="{cur: idx==iCurStep}"
@@ -230,7 +230,7 @@
                 <!-- <happyBar/> -->
                 <div class="textarea" :key="iCurLineIdx">
                     <template v-for="(word, widx) of splitSentence(oCurLine.text)">
-                        <span v-if="word.sClassName" :class="word.sClassName" :key="widx">
+                        <span v-if="word" :class="word.sClassName" :key="widx">
                             {{word.word}}
                         </span>
                         <template v-else>{{word}}</template>
@@ -243,7 +243,8 @@
                         'may-wrong': oCurLine.text.includes('*'),
                         'ten-times': (iCurLineIdx + 1) % 10 == 0,
                     }"
-                    v-model="aLineArr[iCurLineIdx].text"
+                    x-model="aLineArr[iCurLineIdx].text"
+                    v-model="oCurLine.text"
                     abckeydown.enter.prevent="() => previousAndNext(1)"
                     @input="inputHandler"
                 ></textarea>
@@ -262,7 +263,7 @@
                         </template>
                     </li>
                 </ul>
-            </div>
+            </section>
             <!-- ▲输入框 -->
             <!-- ▼字幕大列表 -->
             <article class="last-part" ref="oSententWrap"

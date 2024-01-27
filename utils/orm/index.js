@@ -205,7 +205,11 @@ export class TableFunction {
         return arr;
     }
     getOne(params){
-        const [res] = this.db.select(params, true);
+        if (!params) return console.warn('no params');
+        if (typeof params === 'number'){
+            params = {id: params}
+        }
+        const [res] = this.select(params, true);
         return res;
     }
 }

@@ -95,7 +95,9 @@ export function mainPart(){
 	});
 	// ▼当前行
 	const oCurLine = computed(()=>{
-		return oData.aLineArr[ oData.iCurLineIdx ];
+		const oRealOne = oData.aLineArr[ oData.iCurLineIdx ];
+		const oSubstitute = { text: '' };
+		return oRealOne || oSubstitute;
 	});
 	// ▼行ID 与行对象对照表
 	const oIdD2Line = computed(()=>{
