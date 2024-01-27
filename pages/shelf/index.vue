@@ -270,11 +270,23 @@
         placement="right"
         trigger="hover"
     >
+        <p>
+            Size: {{oHoveringMedia.sizeMB}} MB
+        </p>
+        <p>
+            MB long: 
+            <span v-if="oHoveringMedia?.infoAtDb?.duration">
+                {{ (oHoveringMedia.infoAtDb.duration / 60 / oHoveringMedia.sizeMB).toFixed(1) }} Min
+            </span>
+        </p>
+        <p>
+            Duration: {{oHoveringMedia?.infoAtDb?.durationStr}}
+        </p>
         <p @click="copyHash(oHoveringMedia.hash)"
             class="hash-value"
             :class="{'copied': oHoveringMedia.hash === hashCopied}"
         >
-            hash: {{oHoveringMedia.hash}}
+            Hash: {{oHoveringMedia.hash}}
         </p>
         <br/>
         <el-button type="primary" link

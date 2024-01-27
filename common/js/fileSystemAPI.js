@@ -76,8 +76,9 @@ export async function handle2FileObj(handle){
         isMedia: checkMediaByName(handle.name),
     };
     if (oResult.isMedia) {
-        oResult.oFile = oFile;
         oResult.hash = ''; // 预置
+        oResult.oFile = oFile;
+        oResult.sizeMB = (oFile.size/1024/1024).toFixed(2);
     }
     return oResult;
 }
