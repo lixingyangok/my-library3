@@ -61,7 +61,10 @@
             <ul v-for="(aColumn, i1) of aDirectory" :key="i1">
                 <li class="one-item"
                     v-for="(cur, i2) of aColumn" :key="i2"
-                    :class="{active: i2 == aRoutesInt[i1],}"
+                    :class="{
+                        'active': i2 == aRoutesInt[i1],
+                        'name-wrong': cur.infoAtDb && !cur.bNameRight,
+                    }"
                     @click="ckickItem(i1, i2)"
                     @mouseenter="hoverHandler(cur)"
                 >
@@ -98,7 +101,7 @@
                         <p>{{cur.name}}</p>
                         <p @click="copyHash(cur.hash)"
                             class="hash-value"
-                            :clss="{'copied': cur.hash === hashCoped}"
+                            :class="{'copied': cur.hash === hashCopied}"
                         >
                             hash: {{cur.hash}}
                         </p>
@@ -372,7 +375,7 @@ export default {
             aDirectory: [], // 显示文件列表
             aRoutesInt: [], // 1,3
             aLastFolder: [], // 某列列项
-            hashCoped: '',
+            hashCopied: '',
         };
     },
     computed: {

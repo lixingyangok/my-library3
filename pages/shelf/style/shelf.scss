@@ -191,7 +191,7 @@
     &:hover{
         color: blue;
     }
-    &[class~=copied]{
+    &[class ~= copied]{
         font-weight: bold;
     }
 }

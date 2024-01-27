@@ -1,14 +1,63 @@
 import {goToLounage} from '@/common/js/common-fn.js';
 import {handle2List, handle2FileObj, handleManager} from '@/common/js/fileSystemAPI.js';
-import {copyString} from '@/common/js/pure-fn.js';
+import {copyString, getMediaDuration} from '@/common/js/pure-fn.js';
 
 const sqlite = await useSqlite;
 
 const oFn01 = {
+    // ▼删除一项（待验证）
+    async toForgetMedia(oMedia){
+        const {id} = oMedia;
+        // console.log(oMedia.$dc());
+        const confirm = await ElMessageBox.confirm(
+            '确认移除记录?',
+            '请确认',
+            {
+                confirmButtonText: '确认移除',
+                cancelButtonText: '取消',
+                type: 'warning',
+            }
+        ).catch(xx=>xx);
+        console.log("answer:", confirm);
+        if (confirm != 'confirm') return;
+        sqlite.run(`DELETE FROM action WHERE mediaId=${id};`),
+        sqlite.run(`DELETE FROM new_word WHERE mediaId=${id};`),
+        sqlite.run(`DELETE FROM line WHERE mediaId=${id};`),
+        sqlite.run(`DELETE FROM media WHERE id=${id};`);
+        // TODO 待修改↓
+        // await this.loadMediaInfo(id);
+        // this.getDirChildren();
+    },
+    // ▼如果文件名名文件位置变化了，此方法用于记录新的信息到数据库
+    async updateMediaInfo(){
+        let aLast = this.aDirectory.at(-1);
+        aLast = aLast.filter(cur => {
+            return cur?.infoAtDb?.id && !cur.bNameRight;
+        });
+        console.log("Wrong list\n", aLast);
+        for await (let [idx, val] of aLast.entries()){
+            const {infoAtDb, oFile} = val;
+            const url = URL.createObjectURL(oFile)
+            const oDuration = await getMediaDuration(url);
+            console.log("oDuration", oDuration);
+            sqlite.tb.media.updateOne({
+                id: infoAtDb.id,
+                name: oFile.name,
+                ...oDuration,
+            });
+            ElMessage.success(`文件信息更新完成：${oFile.name}`);
+        }
+        this.ckickItem(...this.aLastFolder);
+    },
+}
+
+
+
+const oFn02 = {
     copyHash(hash){
         const res = copyString(hash);
         if (!res) return;
-        this.hashCoped = hash;
+        this.hashCopied = hash;
         ElMessage.success(`已复制 ${hash}`);
     },
     async chooseRoot(){
@@ -98,29 +147,8 @@ const oFn01 = {
         if (!oTarget.isMedia) return; 
         oTarget.hovered = true;
     },
-    // ▼删除一项（待验证）
-    async toForgetMedia(oMedia){
-        const {id} = oMedia;
-        console.log(oMedia.$dc());
-        const {confirm, hash} = await this.askAreYouSure2Delete();
-        if (!confirm) return;
-        console.log("answer\n", confirm, hash);
-        return;
-        const aTask = [
-            sqlite.run(`DELETE FROM action WHERE mediaId=${id};`),
-            sqlite.run(`DELETE FROM new_word WHERE mediaId=${id};`),
-            sqlite.run(`DELETE FROM line WHERE mediaId=${id};`),
-        ];
-        await Promise.all(aTask);
-        await sqlite.run(`DELETE FROM media WHERE id=${id};`);
-        await this.loadMediaInfo(id);
-        this.getDirChildren();
-    },
-    // ↓ 用户确认
-    async askAreYouSure2Delete(){
-        
-    },
-    // ↓ 切换媒体
+    
+    // ↓ 切换媒体文件
     async useAnotherMedia(oMedia){
         console.log(`点击列\n`, oMedia.$dc());
         const {name, infoAtDb} = oMedia;
@@ -147,10 +175,9 @@ const oFn01 = {
     },
 };
 
-
-
 export default {
     ...oFn01,
+    ...oFn02,
 };
 
 // 为文件列表填充文件信息
@@ -203,6 +230,7 @@ async function fillOneFile(oFileInfo){
         // console.timeEnd('查询hash 对应的媒体')
         if (!res?.[0]) return;
         oFileInfo.infoAtDb = res[0];
+        oFileInfo.bNameRight = res[0].name === oFileInfo.name;
     });
     oFileInfo.hash = hash;
     if(id) oFileInfo.dxID = id;
@@ -222,11 +250,3 @@ async function init() {
     console.log(worker);
 }
 
-// const sAnswer = await ElMessageBox.confirm(
-//     '确认删除?', '请注意',
-//     {
-//         confirmButtonText: '确认删除',
-//         cancelButtonText: '取消',
-//         type: 'warning',
-//     }
-// ).catch(xx=>xx);

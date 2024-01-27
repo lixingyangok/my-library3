@@ -1,13 +1,12 @@
-import {SubtitlesStr2Arr} from '../../../common/js/pure-fn.js';
-import {mySort, goToLounage} from '../../../common/js/common-fn.js';
-import { ElMessageBox } from 'element-plus';
+import {SubtitlesStr2Arr} from '@/common/js/pure-fn.js';
+import {mySort} from '@/common/js/common-fn.js';
 import {
     getFolderKids,
     getFolderChildren,
     addAllMediaDbInfo,
     checkFile,
     findMedia,
-} from '../../../common/js/fs-fn.js';
+} from '@/common/js/fs-fn.js';
 
 const fsp = {}; // require('node:fs/promises');
 const sqlite = await useSqlite;
@@ -137,33 +136,11 @@ const oAboutTree = {
         const sFilePath = `${this.aPath.join('/')}/${sItem}`;
         const isMedia = await checkFile(sFilePath, oConfig.oMedia)
         if (!isMedia) return;
-        this.goToLearn(sFilePath);
+        // this.goToLearn(sFilePath); // 跳转到学习页
     },
 
 
 
-    // ▼跳转到学习页
-    goToLearn(sFilePath) {
-        goToLounage(sFilePath);
-    },
-    // ▼如果文件名名文件位置变化了，此方法用于记录新的信息到数据库
-    async updateMediaInfo(){
-        let aLast = this.aTree[this.aTree.length-1];
-        for await (let [idx, val] of aLast.entries()){
-            const {isMedia, infoAtDb, bNameRight, sPath} = val;
-            const isWrong = isMedia && infoAtDb && !bNameRight;
-            if (!isWrong) continue;
-            const aPath = sPath.split('/');
-            const res = await fnInvoke("db", 'updateMediaInfo', {
-                id: infoAtDb.id,
-                dir: aPath.slice(0,-1).join('/'),
-                name: aPath.pop(),
-            });
-            if (!res) return;
-            vm.$message.success(`文件：${idx} 位置与文件名更新完成`);
-        }
-        this.getDirChildren();
-    },
 };
 
 

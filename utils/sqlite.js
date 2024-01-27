@@ -37,8 +37,8 @@ export const useSqlite = (async ()=>{
     console.time('加载数据库 3');
     toAttach(sqlite);
     console.timeEnd('加载数据库 3');
-    window.db = sqlite; // 用于调试
-    console.log("window.db\n", window.db);
+    window.sqlite = sqlite; // 用于调试
+    console.log("window.sqlite\n", window.sqlite);
     return sqlite;
 })();
 
