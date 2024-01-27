@@ -2,7 +2,7 @@
  * @Author: 
  * @Date: 2024-01-22 22:45:22
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-26 21:49:23
+ * @LastEditTime: 2024-01-27 22:11:58
  * @Description: 
  */
 
@@ -48,8 +48,9 @@ export class TableFunction {
             return sWhere;
         }
         if (params.constructor.name === 'Object'){
-            let sWhere = Object.entries(params).map(cur => {
-                let [key, val] = cur;
+            const aColName = this.#getColsArr(params);
+            let sWhere = aColName.map(key => {
+                let val = params[key];
                 if (typeof val === 'string') {
                     val = `'${val.replaceAll("'", "''")}'`;
                 }
@@ -112,7 +113,7 @@ export class TableFunction {
         });
         // console.log("sFullSql", sFullSql);
         // console.log("thisArr", thisArr);
-        const res = db.run(sFullSql, thisArr);
+        const res = this.db.run(sFullSql, thisArr);
         console.log("res", res);
         if (res) this.db.persist();
         return res;
@@ -187,21 +188,23 @@ export class TableFunction {
             set ${this.#getUpdateSql(oParams)}
             where id = ${oParams.id}
         `;
-        console.log("修改语句：\n", sql);
+        // console.log("修改语句：\n", sql);
         const res = this.db.run(sql);
         if (res) this.db.persist();
         return res;
     }
     // ▼ 查询方法 ------------------------------------------------------
     select(params, onlyOne){
-        if (!params) return;
+        if (!params) return console.warn('no params');
         let sql = `
             select * from ${this.tbName} 
-            where 1 = 1 ${this.#getWhereSql(params)}
+            where 1 = 1
+            ${this.#getWhereSql(params)}
         `;
         if (onlyOne) sql += ` limit 1`; 
-        // console.log("sql", sql);
         const arr = this.db.select(sql);
+        // console.log("sql\n", sql);
+        // console.log("result\n", arr);
         return arr;
     }
     getOne(params){

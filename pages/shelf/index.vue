@@ -66,6 +66,7 @@
                         'active': i2 == aRoutesInt[i1],
                         'name-wrong': cur.infoAtDb && !cur.bNameRight,
                     }"
+                    :hash="cur.hash"
                     @click="ckickItem(i1, i2)"
                     @mouseenter="hoverIn($event, cur)"
                     @mouseleave="mediaPopperToggle(false)"

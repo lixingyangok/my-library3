@@ -2,7 +2,7 @@
  * @Author: 
  * @Date: 2024-01-10 22:32:22
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-25 21:39:15
+ * @LastEditTime: 2024-01-27 21:18:40
  * @Description: 
  */
 import {mySort} from '@/common/js/common-fn.js';
@@ -48,7 +48,10 @@ export async function handle2List(handle, oConfig={}){
             path,
             pathFull: `${path}/${name}`,
         };
-        if (isMedia) oThisOne.isMedia = true;
+        if (isMedia) {
+            oThisOne.isMedia = true;
+            oThisOne.hash = '';
+        }
         aResult[iTarget].push(oThisOne);
     }
     if (findingName){
@@ -62,8 +65,7 @@ export async function handle2List(handle, oConfig={}){
 
 // 👇 从文件 handle 读取文件信息 
 export async function handle2FileObj(handle){
-    const file = handle.kind === 'file';
-    if (!file) return {};
+    if (handle.kind !== 'file') return {};
     const oFile = await handle.getFile();
     const oResult = {
         lastModified: oFile.lastModified,

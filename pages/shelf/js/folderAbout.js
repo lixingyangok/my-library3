@@ -28,7 +28,7 @@ const oFn01 = {
         // await this.loadMediaInfo(id);
         // this.getDirChildren();
     },
-    // ▼如果文件名名文件位置变化了，此方法用于记录新的信息到数据库
+    // ▼如果文件名，体积，修改时间变化了，此方法用于记录新的信息到数据库
     async updateMediaInfo(){
         let aLast = this.aDirectory.at(-1);
         aLast = aLast.filter(cur => {
@@ -43,6 +43,8 @@ const oFn01 = {
             sqlite.tb.media.updateOne({
                 id: infoAtDb.id,
                 name: oFile.name,
+                size: oFile.size,
+                lastModified: oFile.lastModified,
                 ...oDuration,
             });
             ElMessage.success(`文件信息更新完成：${oFile.name}`);
@@ -168,11 +170,8 @@ const oFn02 = {
         const {isMedia, dxID, hash, pathFull} = oItem;
         console.log(`点击目标：\n`, oItem.$dc());
         if (isMedia) {
-            if (dxID && hash) {
-                goToLounage(oItem);
-            }else{
-                console.log("注意，不可跳转", );
-            }
+            if (hash) goToLounage(oItem);
+            else console.log("注意，不可跳转", );
             return;
         }
         if (oItem.kind !== 'directory') return;
@@ -207,6 +206,7 @@ const oFn02 = {
         const [hash] = value.match(/^[0-9a-z]{16}$/i) || [];
         console.log("hash", hash);
         if (!hash || !infoAtDb.id) return;
+        return alert('停止，需要优化')
         const res = sqlite.tb.media.updateOne({
             id: infoAtDb.id,
             hash,
@@ -257,61 +257,76 @@ export default {
 // 为文件列表填充文件信息
 async function fillTheList(aList){
     if (!aList?.length) return;
+    let index = 0;
     for await (const [idx, cur] of aList.entries()){
-        if (idx % 3 == 0) await fillOneFile(cur);
+        if (!cur.isMedia) continue;
+        // if (!index) console.log('before filling:', cur.$dc());
+        if (++index % 3 == 0) await fillOneFile(cur);
         else fillOneFile(cur);
     }
 }
 
 // 👇 取得文件
-async function fillOneFile(oFileInfo){
-    const oPathFull = {pathFull: oFileInfo.pathFull};
-    const aPromise = await Promise.all([
-        handle2FileObj(oFileInfo.handle),
-        dxDB.file.where(oPathFull).first(),
-    ]);
-    let [oFileINfo, oFileInDx] = aPromise;
-    Object.assign(oFileInfo, oFileINfo);
-    if (!oFileINfo.isMedia) return;
-    let [hash, id] = (()=>{
-        if (!oFileInDx) return [];
-        const aa = oFileInfo.size == oFileInDx.size;
-        const bb = oFileInfo.lastModified == oFileInDx.lastModified;
-        if (!aa || !bb) return [];
-        return [oFileInDx.hash, oFileInDx.id];
-    })();
-    // console.log("dxDB 中的 hash: ", hash || '暂无');
-    if (!hash){
-        let arrayBuffer = await oFileINfo.oFile.arrayBuffer();
-        let arrayData = new Uint8Array(arrayBuffer);
-        hash = await hashwasm.xxhash64(arrayData);
+async function fillOneFile(oFileObject){
+    if (!oFileObject.isMedia) return;
+    const oPathFull = {pathFull: oFileObject.pathFull};
+    const oInfoFromHandle = await handle2FileObj(oFileObject.handle);
+    Object.assign(oFileObject, oInfoFromHandle);
+    const oQuery = {
+        size: oInfoFromHandle.size,
+        lastModified: oInfoFromHandle.lastModified,
+    };
+    const t01 = Date.now();
+    let [oFirstInSqlite, oSecond] = sqlite.tb.media.select(oQuery);
+    // console.log("查找媒体", Date.now()-t01);
+    let hash = '';
+    if (oSecond){
+        return ElMessage.error(`在数据库中找到多个媒体记录`);
+    }else if (!oFirstInSqlite){
+        const [oFileInDx, oSec] = await dxDB.file.where(oQuery).toArray();
+        if (oSec) return ElMessage.error(`在数据库 indexedDB 中找到多个媒体记录`);
+        // console.log("in dxDB", oFileInDx);
+        if (oFileInDx){ // 经查，其位于 dxDB 说明数据库未收录此文件，仅缓存了 hash 在 dxDB  
+            oFileObject.hash = oFileInDx.hash;
+        }else {
+            hash = await getHash(oInfoFromHandle.oFile);
+            oFileObject.hash = hash;
+            oFirstInSqlite = sqlite.tb.media.getOne({hash});
+        }
+    }
+    if (oFirstInSqlite){
+        oFileObject.hash = oFirstInSqlite.hash;
+        oFileObject.infoAtDb = oFirstInSqlite;
+        oFileObject.bNameRight = [
+            oFileObject.name === oFirstInSqlite.name,
+            oFileObject.size === oFirstInSqlite.size,
+            oFileObject.lastModified === oFirstInSqlite.lastModified,
+        ].every(Boolean);
+    }else if(hash){
         const createdAt = new Date();
         dxDB.file.put({
             hash,
             createdAt,
             updatedAt: createdAt,
             ...oPathFull,
-            path: oFileInfo.pathFull.match(/.+(?=\/)/)[0],
-            size: oFileINfo.size,
-            lastModified: oFileINfo.lastModified,
+            path: oFileObject.pathFull.match(/.+(?=\/)/)[0],
+            size: oInfoFromHandle.size,
+            lastModified: oInfoFromHandle.lastModified,
         }, oPathFull).then(iID => {
-            oFileInfo.dxID = iID;
+            oFileObject.dxID = iID;
         });
     }
-    Promise.resolve().then(()=>{
-        // console.time('查询hash 对应的媒体')
-        const res = sqlite.select(`select * from media where hash='${hash}'`);
-        // console.timeEnd('查询hash 对应的媒体')
-        if (!res?.[0]) return;
-        oFileInfo.infoAtDb = res[0];
-        oFileInfo.bNameRight = res[0].name === oFileInfo.name;
-    });
-    oFileInfo.hash = hash;
-    if(id) oFileInfo.dxID = id;
 }
 
 
 
+
+async function getHash(oFile){
+    const arrayBuffer = await oFile.arrayBuffer();
+    const arrayData = new Uint8Array(arrayBuffer);
+    const hash = await hashwasm.xxhash64(arrayData);
+    return hash;
+}
 
 
 async function init() {
@@ -327,3 +342,50 @@ async function init() {
 // const iLastDot = oCur.name.lastIndexOf('.');
 // const sTail = oCur.name.slice(iLastDot + 1);
 // const sNameShorten = oCur.name.slice(0, iLastDot);
+
+
+// async function fillOneFile(oFileInfo){
+//     const oPathFull = {pathFull: oFileInfo.pathFull};
+//     const aPromise = await Promise.all([
+//         handle2FileObj(oFileInfo.handle),
+//         dxDB.file.where(oPathFull).first(),
+//     ]);
+//     let [oFileINfo, oFileInDx] = aPromise;
+//     Object.assign(oFileInfo, oFileINfo);
+//     if (!oFileINfo.isMedia) return;
+//     let [hash, id] = (()=>{
+//         if (!oFileInDx) return [];
+//         const aa = oFileInfo.size == oFileInDx.size;
+//         const bb = oFileInfo.lastModified == oFileInDx.lastModified;
+//         if (!aa || !bb) return [];
+//         return [oFileInDx.hash, oFileInDx.id];
+//     })();
+//     // console.log("dxDB 中的 hash: ", hash || '暂无');
+//     if (!hash){
+//         let arrayBuffer = await oFileINfo.oFile.arrayBuffer();
+//         let arrayData = new Uint8Array(arrayBuffer);
+//         hash = await hashwasm.xxhash64(arrayData);
+//         const createdAt = new Date();
+//         dxDB.file.put({
+//             hash,
+//             createdAt,
+//             updatedAt: createdAt,
+//             ...oPathFull,
+//             path: oFileInfo.pathFull.match(/.+(?=\/)/)[0],
+//             size: oFileINfo.size,
+//             lastModified: oFileINfo.lastModified,
+//         }, oPathFull).then(iID => {
+//             oFileInfo.dxID = iID;
+//         });
+//     }
+//     Promise.resolve().then(()=>{
+//         // console.time('查询hash 对应的媒体')
+//         const res = sqlite.select(`select * from media where hash='${hash}'`);
+//         // console.timeEnd('查询hash 对应的媒体')
+//         if (!res?.[0]) return;
+//         oFileInfo.infoAtDb = res[0];
+//         oFileInfo.bNameRight = res[0].name === oFileInfo.name;
+//     });
+//     oFileInfo.hash = hash;
+//     if(id) oFileInfo.dxID = id;
+// }

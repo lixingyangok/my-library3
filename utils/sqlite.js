@@ -2,7 +2,7 @@
  * @Author: Merlin
  * @Date: 2024-01-08 09:35:15
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-26 21:55:18
+ * @LastEditTime: 2024-01-27 20:06:34
  * @Description: 
  */
 import { dxDB } from "./dxDB";
@@ -86,7 +86,14 @@ const commonDatabaseFn = {
         return aRows;
     },
     // ↓ 持久化 TODO 添加节流功能
-    async persist(blob){
+    persist(blob){
+        clearTimeout(this.taskTimer);
+        const iDelay = blob ? 0 : 1000;
+        console.log("已经设定了持久化任务");
+        this.taskTimer = setTimeout(()=>this.persistExecutor(blob), iDelay);
+    },
+    // ↓持久化
+    async persistExecutor(blob){
         if (blob){
             console.log("导入数据库");
         }else{
@@ -97,24 +104,20 @@ const commonDatabaseFn = {
             blob = new Blob([exported]);
             console.timeEnd('new Blob()');
         }
-        console.log("已经设定了持久化任务");
-        clearTimeout(this.taskTimer);
-        this.taskTimer = setTimeout(async () => {
-            const createdAt = new Date();
-            const time = createdAt.toLocaleString();
-            dxDB.sqlite.add({ // 耗时小于 1ms
-                blob,
-                time, // 用于查询后展示
-                createdAt, // 用于查询最新或最旧的数据
-            }).then(res => {
-                console.log(`已经持久化, id=${res}： ${time}`);
-            });
-            const oCollection = dxDB.sqlite.orderBy('createdAt');
-            const count = await oCollection.count();
-            if (count <= 3) return;
-            const first = await oCollection.first();
-            dxDB.sqlite.delete(first.id);
-        }, 1000);
+        const createdAt = new Date();
+        const time = createdAt.toLocaleString();
+        dxDB.sqlite.add({ // 耗时小于 1ms
+            blob,
+            time, // 用于查询后展示
+            createdAt, // 用于查询最新或最旧的数据
+        }).then(res => {
+            console.log(`已经持久化, id=${res}： ${time}`);
+        });
+        const oCollection = dxDB.sqlite.orderBy('createdAt');
+        const count = await oCollection.count();
+        if (count <= 3) return;
+        const first = await oCollection.first();
+        dxDB.sqlite.delete(first.id);
     },
     // ↓ 导出
     async toExport(toCut){
