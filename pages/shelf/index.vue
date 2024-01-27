@@ -55,6 +55,7 @@
         </div>
         <div>
             <button @click="updateMediaInfo">更新异常文件</button>
+            <button @click="switchMp3">变换Mp3为其它格式</button>
         </div>
         <br/>
         <article class="directory-list">
@@ -66,12 +67,14 @@
                         'name-wrong': cur.infoAtDb && !cur.bNameRight,
                     }"
                     @click="ckickItem(i1, i2)"
-                    @mouseenter="hoverHandler(cur)"
+                    @mouseenter="hoverIn($event, cur)"
+                    @mouseleave="mediaPopperToggle(false)"
                 >
                     <template v-if="cur.kind == 'directory'">
                         <i class="fas fa-fw folder-mark fa-folder "
                             :class="{'has-media': cur.hasMedia}"
                         />
+                        <!-- hasMedia 似乎多余，没必要强调是否包含媒体 -->
                         <!-- <i class="fas fa-fw fa-check fa-xs small-check"
                             v-if="oMediaHomes[cur.sPath]"
                         /> -->
@@ -87,39 +90,8 @@
                         <i v-else class="fa-solid fa-fw fa-circle-notch fa-spin" />
                     </template>
                     <i v-else class="fas fa-fw fa-file-alt"/>
-                    <!-- 左右分界 （el-popover性能不好，利用 cur.hovered 延迟显示） -->
-                    <el-popover :width="300"
-                        v-if="cur.hovered && cur.isMedia"
-                        trigger="hover"
-                        placement="right"
-                    >
-                        <template #reference>
-                            <span class="item-name" :hash="cur.hash">
-                                {{cur.name}}
-                            </span>
-                        </template>
-                        <p>{{cur.name}}</p>
-                        <p @click="copyHash(cur.hash)"
-                            class="hash-value"
-                            :class="{'copied': cur.hash === hashCopied}"
-                        >
-                            hash: {{cur.hash}}
-                        </p>
-                        <br/>
-                        <el-button type="primary" link :key="`${i1}-${i2}`"
-                            v-if="cur.infoAtDb"
-                            @click="checkDetail(cur)"
-                        >
-                            详情
-                        </el-button>
-                        <el-button type="primary" link :key="`${i1}-${i2}`"
-                            v-if="cur.infoAtDb"
-                            @click="useAnotherMedia(cur)"
-                        >
-                            切换文件
-                        </el-button>
-                    </el-popover>
-                    <span class="item-name" v-else>
+                    <!-- 左右分界 -->
+                    <span class="item-name">
                         {{cur.name}}
                     </span>
                 </li>
@@ -155,29 +127,15 @@
                     </template>
                     <i v-else class="fas fa-file-alt"/>
                     <!-- 左右分界 -->
-                    <el-popover v-if="cur.isMedia" placement="right" trigger="hover" 
-                        :width="300"
-                    >
-                        <template #reference>
-                            <span class="item-name" :hash="cur.hash">
-                                {{cur.sItem}}
-                            </span>
-                        </template>
-                        <p>{{cur.sItem}}</p>
-                        <p>hash: {{cur.hash}}</p>
-                        <el-button type="primary" link :key="`${i1}-${i2}`"
-                            @click="checkDetail(cur)"
-                        >
-                            详情
-                        </el-button >
-                    </el-popover>
-                    <span class="item-name" v-else>
+                    <span class="item-name">
                         {{cur.sItem}}
-                    </span>
+                    </span> 
                 </li>
             </ul>
         </article>
     </section>
+
+
     <!-- 
         ▼弹窗 ▼弹窗 ▼弹窗
     -->
@@ -300,6 +258,37 @@
             </el-button>
         </section>
     </el-dialog>
+    <!-- ↓显示媒体信息的气泡 -->
+    <el-popover :title="oHoveringMedia.name"
+        v-if="oHoveringMedia.dom"
+        :virtual-ref="oHoveringMedia.dom"
+        :visible="oHoveringMedia.show"
+        :width="300"
+        :ref="takePopperDOM"
+        virtual-triggering
+        placement="right"
+        trigger="hover"
+    >
+        <p @click="copyHash(oHoveringMedia.hash)"
+            class="hash-value"
+            :class="{'copied': oHoveringMedia.hash === hashCopied}"
+        >
+            hash: {{oHoveringMedia.hash}}
+        </p>
+        <br/>
+        <el-button type="primary" link
+            v-if="oHoveringMedia.infoAtDb"
+            @click="checkDetail(oHoveringMedia)"
+        >
+            详情
+        </el-button>
+        <el-button type="primary" link
+            v-if="oHoveringMedia.infoAtDb"
+            @click="useAnotherMedia(oHoveringMedia)"
+        >
+            切换文件
+        </el-button>
+    </el-popover>
 </template>
 
 <script>
@@ -350,13 +339,13 @@ export default {
         //     aAimTo = sPath.slice(cur.length + 1).split('/');
         // }
         return {
+            // aTree: [],
             aFolderMedia: [],
             aDisks: document.body.disks,
             oConfig: window.oConfig,
             aPath,
             aRoute: [],
             aAimTo,
-            aTree: [],
             dialogVisible: false, // 用于导入的1级窗口
             bMediaDialog: false,
             aMediaHomes: [],
@@ -376,6 +365,8 @@ export default {
             aRoutesInt: [], // 1,3
             aLastFolder: [], // 某列列项
             hashCopied: '',
+            oHoveringMedia: {},
+            iHoverTimer: null,
         };
     },
     computed: {

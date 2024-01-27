@@ -49,6 +49,53 @@ const oFn01 = {
         }
         this.ckickItem(...this.aLastFolder);
     },
+    // ↓ 将媒体配对
+    switchMp3(){
+        let aLast = this.aDirectory.at(-1);
+        if (!aLast?.length) return;
+        let aItemsOld = [];
+        const oMatched = {};
+        aLast.forEach(oCur => {
+            // if (!oCur.isMedia) return oResult;
+            const iLastDot = oCur.name.lastIndexOf('.');
+            const sTail = oCur.name.slice(iLastDot + 1);
+            const sNameShorten = oCur.name.slice(0, iLastDot);
+            oCur.sNameShorten = sNameShorten;
+            if (sTail === 'mp3'){
+                aItemsOld.push(oCur);
+            }else if(['ogg'].includes(sTail)){
+                oMatched[sNameShorten] ||= [];
+                oMatched[sNameShorten].push(oCur);
+            }
+        }, {});
+        aItemsOld = aItemsOld.filter(oMedia => {
+            oMedia.aMatched = oMatched[oMedia.sNameShorten];
+            return oMedia.aMatched;
+        });
+        console.log("aItemsOld\n", aItemsOld.$dc());
+        this.changeMediaFile(
+            aItemsOld[0].infoAtDb,
+            aItemsOld[0].aMatched[0],
+        )
+    },
+    // ↓ 保存到数据库
+    async changeMediaFile(oOld, oNewMedia){
+        console.log("oOld, oNewMedia", );
+        console.log(oOld.$dc(), '\n', oNewMedia.$dc());
+        const url = URL.createObjectURL(oNewMedia.oFile)
+        const oDuration = await getMediaDuration(url);
+        if (!oNewMedia.hash) return;
+        const oNewInfo = {
+            id: oOld.id,
+            name: oNewMedia.name,
+            size: oNewMedia.size,
+            hash: oNewMedia.hash,
+            lastModified: oNewMedia.lastModified,
+            ...oDuration,
+        };
+        console.log("oNewInfo", );
+        console.log(oNewInfo);
+    },
 }
 
 
@@ -142,12 +189,7 @@ const oFn02 = {
     exportDatabase(){
         sqlite.toExport(true);
     },
-    // 👇光标停于文件上方
-    hoverHandler(oTarget){
-        if (!oTarget.isMedia) return; 
-        oTarget.hovered = true;
-    },
-    
+
     // ↓ 切换媒体文件
     async useAnotherMedia(oMedia){
         console.log(`点击列\n`, oMedia.$dc());
@@ -175,9 +217,41 @@ const oFn02 = {
     },
 };
 
+
+// ↓ 专门处理媒体气泡
+const oMediaPopper = {
+    // 👇光标停于文件上方
+    hoverIn(ev, oTarget){
+        if (!oTarget.isMedia) return; 
+        this.mediaPopperToggle(true);
+        this.oHoveringMedia = {
+            ...oTarget,
+            dom: ev.target,
+            show: true,
+        };
+    },
+    // ↓ 控制气泡可性性 01
+    mediaPopperToggle(isShow){
+        clearTimeout(this.iHoverTimer);
+        if (isShow) return;
+        this.iHoverTimer = setTimeout(()=>{
+            this.oHoveringMedia.show = false; // 用于隐藏气泡
+        }, 300);
+    },
+    // ↓ 控制气泡可性性 02
+    takePopperDOM(oPopper){
+        const {contentRef} = oPopper?.popperRef || {};
+        if (!contentRef) return;
+        contentRef.onmouseenter = ()=>this.mediaPopperToggle(true);
+        contentRef.onmouseleave = ()=>this.mediaPopperToggle(false);
+    },
+};
+
+
 export default {
     ...oFn01,
     ...oFn02,
+    ...oMediaPopper,
 };
 
 // 为文件列表填充文件信息

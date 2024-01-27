@@ -669,6 +669,7 @@ export function mainPart(){
 		for await(const [idx, cur] of aTarget.entries()) {
 			const {sPath, infoAtDb} = cur;
 			const oDuration = await getMediaDuration(getTubePath(sPath));
+			return alert("getMediaDuration 返回值已经修改，请注意");
 			await toRecordDiration(infoAtDb, oDuration);
 			cur.durationStr = oDuration.sDuration;
 			const sTips = `${sPath.split('/').pop()}：${oDuration.sDuration}`;
