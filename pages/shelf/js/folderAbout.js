@@ -56,14 +56,14 @@ const oFn01 = {
         let aItemsOld = [];
         const oMatched = {};
         aLast.forEach(oCur => {
-            // if (!oCur.isMedia) return oResult;
-            const iLastDot = oCur.name.lastIndexOf('.');
-            const sTail = oCur.name.slice(iLastDot + 1);
-            const sNameShorten = oCur.name.slice(0, iLastDot);
+            if (!oCur.isMedia) return;
+            let [sNameShorten, sTail] = oCur.name.split(/\.(?=[a-z0-9]{2,5}$)/i);
+            sTail &&= sTail.toLowerCase();
             oCur.sNameShorten = sNameShorten;
+            const usable = !oCur.infoAtDb && ['ogg'].includes(sTail);
             if (sTail === 'mp3'){
                 aItemsOld.push(oCur);
-            }else if(['ogg'].includes(sTail)){
+            }else if(usable){
                 oMatched[sNameShorten] ||= [];
                 oMatched[sNameShorten].push(oCur);
             }
@@ -324,3 +324,6 @@ async function init() {
     console.log(worker);
 }
 
+// const iLastDot = oCur.name.lastIndexOf('.');
+// const sTail = oCur.name.slice(iLastDot + 1);
+// const sNameShorten = oCur.name.slice(0, iLastDot);
