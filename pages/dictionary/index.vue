@@ -96,7 +96,7 @@ const iResult = ref(0); // 搜索结果数量
 const aResult = ref({});
 const activeName = ref(oData.aPane[0]);
 const oTab = ref();
-const sqlite = await useSqlite;
+const sqlite = await useSqlite();
 // ▼方法
 toSearch();
 async function toSearch(){

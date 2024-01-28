@@ -2,7 +2,7 @@ import {goToLounage} from '@/common/js/common-fn.js';
 import {handle2List, handle2FileObj, handleManager} from '@/common/js/fileSystemAPI.js';
 import {copyString, getMediaDuration} from '@/common/js/pure-fn.js';
 
-const sqlite = await useSqlite;
+const sqlite = await useSqlite();
 
 const oFn01 = {
     // ▼删除一项（待验证）

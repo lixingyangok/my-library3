@@ -45,7 +45,7 @@
 
 <script setup lang="js">
 
-let sqlite = await useSqlite;
+let sqlite = await useSqlite();
 let aTables = ref([]);
 const iMB = ref(0);
 

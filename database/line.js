@@ -3,10 +3,10 @@
  * @Date: 2024-01-14 21:38:06
  * @LastEditors: Merlin
  * @LastEditTime: 2024-01-20 19:26:11
- * @Description: 
+ * @Description: 本页已经废弃
  */
 
-const sqlite = await useSqlite;
+const sqlite = await useSqlite();
 
 
 export const LineDB = {

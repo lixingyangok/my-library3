@@ -9,7 +9,7 @@ import {
 } from '@/common/js/fs-fn.js';
 
 const fsp = {}; // require('node:fs/promises');
-const sqlite = await useSqlite;
+const sqlite = await useSqlite();
 
 const fnAboutDB = {
     choseRoot(sCurRoot) {

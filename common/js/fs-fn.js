@@ -110,7 +110,7 @@ export async function addAllMediaDbInfo(arr, oneByOne){
 
 // ▼查询【某1个媒体】在DB中的信息
 export async function AaddMediaInfoFromDB(oMedia){
-    const sqlite = await useSqlite;
+    const sqlite = await useSqlite();
     const {hash} = oMedia;
     const res = sqlite.select(`select * from media where hash='${hash}'`);
     if (res?.[0]){
@@ -150,7 +150,7 @@ export async function findMedia(sPath, oTarget) {
 
 // 查询：某天/某几天 的学习数据
 export async function getLearningHistory(iMediaID){
-    const sqlite = await useSqlite;
+    const sqlite = await useSqlite();
     let sql = `
         SELECT *,
             julianday('now', 'localtime') - julianday(createdAt, 'localtime') as gap

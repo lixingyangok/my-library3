@@ -2,7 +2,7 @@
  * @Author: Merlin
  * @Date: 2024-01-08 09:35:15
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-27 20:06:34
+ * @LastEditTime: 2024-01-28 15:27:03
  * @Description: 
  */
 import { dxDB } from "./dxDB";
@@ -14,40 +14,68 @@ const oTableFuns = {
     line,
 };
 
-export const useSqlite = (async ()=>{
-    if (!import.meta.client) return;
+/* 
+创建第2个数据库，用于缓存每个文件的 hash （此库不需要导出，存在本地）
+将来使用文件的 size, lastmodified 来定位文件
+
+*/
+const getSQL = (()=>{
+    let theSQL;
+    return ()=>{
+        theSQL ||= window.initSqlJs({ 
+            locateFile: ()=> `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.9.0/sql-wasm.wasm`,
+        });
+        return theSQL;
+    };
+})();
+
+async function blod2Uint8Arr(blob){
+    if (!blob?.arrayBuffer) return;
+    const arrBuffer = await blob.arrayBuffer();
+    return new Uint8Array(arrBuffer);
+}
+
+export const useSqlite = ((dbType = 'main') => {
+    if (!import.meta.client) return ()=>{};
+    const oResult = {};
+    return ()=>{
+        if (!import.meta.client) return;
+        console.log("useSqlite..");
+        oResult[dbType] ||= createOneDB(dbType);
+        return oResult[dbType];
+    };
+})();
+
+
+async function createOneDB(dbType){
     console.time('加载数据库 1');
-    const [SQL, oFirst] = await Promise.all([
-        window.initSqlJs({ 
-            locateFile: () => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.9.0/sql-wasm.wasm`,
-        }),
-        dxDB.sqlite.orderBy('createdAt').last(),
+    const [SQL, oLast] = await Promise.all([
+        getSQL(),
+        dxDB.sqlite.orderBy('updatedAt').filter(({type}) => type === dbType).last(),
     ]);
     console.timeEnd('加载数据库 1');
-    console.time('加载数据库 2');
-    let oldData = oFirst?.blob;
-    if (oldData?.arrayBuffer) {
-        oldData = await oldData.arrayBuffer();
-    }else{
-        console.log("创建空表，保存到 dxDB", );
+    if (!oLast){
+        console.log('需要从头创建', oLast);
     }
-    const Uint8Arr = oldData ? new Uint8Array(oldData) : void 0;
+    console.time('加载数据库 2');
+    const Uint8Arr = await blod2Uint8Arr(oLast?.blob);
     const sqlite = new SQL.Database(Uint8Arr);
+    sqlite.dbType = dbType;
     console.timeEnd('加载数据库 2');
     console.time('加载数据库 3');
     toAttach(sqlite);
     console.timeEnd('加载数据库 3');
-    window.sqlite = sqlite; // 用于调试
-    console.log("window.sqlite\n", window.sqlite);
+    // window.sqlite = sqlite; // 用于调试
+    // console.log("window.sqlite\n", window.sqlite);
     return sqlite;
-})();
+}
 
 
 function toAttach(sqlite){
     Object.assign(sqlite, {
         ...commonDatabaseFn,
-        tableList: [],
         tb: {},
+        tableList: [],
         taskTimer: null, // 
     });
     let aTablesAndView = sqlite.select(`
@@ -88,6 +116,7 @@ const commonDatabaseFn = {
     // ↓ 持久化 TODO 添加节流功能
     persist(blob){
         clearTimeout(this.taskTimer);
+        // 收到了 blob 说明在首次导入，0延时，
         const iDelay = blob ? 0 : 1000;
         console.log("已经设定了持久化任务");
         this.taskTimer = setTimeout(()=>this.persistExecutor(blob), iDelay);
@@ -110,10 +139,12 @@ const commonDatabaseFn = {
             blob,
             time, // 用于查询后展示
             createdAt, // 用于查询最新或最旧的数据
+            updatedAt: createdAt,
+            type: this.dbType,
         }).then(res => {
             console.log(`已经持久化, id=${res}： ${time}`);
         });
-        const oCollection = dxDB.sqlite.orderBy('createdAt');
+        const oCollection = dxDB.sqlite.orderBy('updatedAt').filter(({type}) => type === this.dbType);
         const count = await oCollection.count();
         if (count <= 3) return;
         const first = await oCollection.first();
@@ -121,8 +152,9 @@ const commonDatabaseFn = {
     },
     // ↓ 导出
     async toExport(toCut){
-        const res = await dxDB.sqlite.orderBy('createdAt').last();
-        const {blob} = res;
+        const res = await dxDB.sqlite.orderBy('updatedAt').filter(({type}) => type === this.dbType).last();
+        const {blob} = res || {};
+        if (!blob) return console.warn('无法导出');
         const iMB = toCut ? 5 : 999; // 999MB一般无法达到
         const iBatch = iMB * (1024 * 1024); // 9MB
         const iAllBatch = Math.ceil(blob.size / iBatch) || 1;
@@ -146,16 +178,17 @@ const commonDatabaseFn = {
 
 // ↓ 检查导入的数据是不是有效数据 
 export async function checkDataForDB(blob){
-    const [SQL, aBuffer] = await Promise.all([
-        window.initSqlJs({ 
-            locateFile: () => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.9.0/sql-wasm.wasm`,
-        }),
-        blob.arrayBuffer(),
+    const [SQL, Uint8Arr] = await Promise.all([
+        getSQL(),
+        blod2Uint8Arr(blob),
     ]);
-    const Uint8Arr = new Uint8Array(aBuffer);
     const sqlite = new SQL.Database(Uint8Arr);
     try{
-        const [tables] = sqlite.exec(`SELECT name FROM sqlite_master WHERE type='table'`);
+        const [tables] = sqlite.exec(`
+            SELECT name
+            FROM sqlite_master
+            WHERE type='table'
+        `);
         console.log("导入库包含表：\n", tables.values);
         return tables.values;
     }catch(err){}

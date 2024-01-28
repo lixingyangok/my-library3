@@ -15,7 +15,7 @@ import TheAction from '@/common/js/action.js';
 const oActionFn = new TheAction('reading');
 let iSearchingQ = 0;
 let isSavingToDB = false; // 保存事件防抖
-let sqlite = await useSqlite;
+let sqlite = await useSqlite();
 
 export function getKeyDownFnMap(This, sType) {
     const { oMyWave } = This;

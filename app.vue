@@ -45,13 +45,15 @@ useHead({
         src: 'https://cdn.jsdelivr.net/npm/hash-wasm@4/dist/xxhash64.umd.min.js',
     }, { // initSqlJs
         src: 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.9.0/sql-wasm.js',
-    },{
-        type: 'module',
-        src: 'https://cdn.bootcdn.net/ajax/libs/ffmpeg/0.12.6/esm/classes.js',
-    },{
-        type: 'module',
-        src:'https://cdnjs.cloudflare.com/ajax/libs/ffmpeg/0.12.10/esm/index.js',
-    }],
+    },
+    // {
+    //     type: 'module',
+    //     src: 'https://cdn.bootcdn.net/ajax/libs/ffmpeg/0.12.6/esm/classes.js',
+    // },{
+    //     type: 'module',
+    //     src:'https://cdnjs.cloudflare.com/ajax/libs/ffmpeg/0.12.10/esm/index.js',
+    // }
+    ],
 });
 
 const showing = ref(true);
@@ -73,9 +75,9 @@ if (process.client){
     //     console.log(res);
     // });
     // https://cdnjs.com/libraries/ffmpeg
-    import('https://cdn.bootcdn.net/ajax/libs/ffmpeg/0.12.6/esm/classes.js').then(res=>{
-        console.log(res.FFmpeg);
-    });
+    // import('https://cdn.bootcdn.net/ajax/libs/ffmpeg/0.12.6/esm/classes.js').then(res=>{
+    //     console.log(res.FFmpeg);
+    // });
 }
 
 </script>

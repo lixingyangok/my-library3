@@ -6,7 +6,7 @@ import {getTubePath, getDateDiff} from '@/common/js/common-fn.js';
 import {getFolderChildren, addAllMediaDbInfo} from '@/common/js/fs-fn.js';
 import {path2file} from '@/common/js/fileSystemAPI.js';
 // import {useActionStore} from '@/store/action-store.js';
-let sqlite = await useSqlite;
+let sqlite = await useSqlite();
 
 export function mainPart(){
 	// const fsp = require('node:fs/promises');
@@ -190,6 +190,7 @@ export function mainPart(){
 	});
 	// ▼ 字幕文件位置（todo 用tube管道取
 	const sSubtitleSrc = (()=>{
+		return '';
 		const arr = oData.sMediaSrc.split('.');
 		arr[arr.length-1] = 'srt';
 		return arr.join('.');
@@ -290,6 +291,7 @@ export function mainPart(){
 	}
 	// ▼取得【srt文件】的内容
 	async function getSrtFile(){
+		return []; // 疑似废弃
 		const res01 = await fetch(sSubtitleSrc).catch((err)=>{
 			oData.iSubtitle = -1; // -1 表示文件不存在
 		});
