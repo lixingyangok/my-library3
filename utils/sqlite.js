@@ -2,7 +2,7 @@
  * @Author: Merlin
  * @Date: 2024-01-08 09:35:15
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-28 15:27:03
+ * @LastEditTime: 2024-01-28 18:11:05
  * @Description: 
  */
 import { dxDB } from "./dxDB";
@@ -35,12 +35,12 @@ async function blod2Uint8Arr(blob){
     return new Uint8Array(arrBuffer);
 }
 
-export const useSqlite = ((dbType = 'main') => {
+export const useSqlite = (() => {
     if (!import.meta.client) return ()=>{};
     const oResult = {};
-    return ()=>{
+    return (dbType = 'main')=>{
         if (!import.meta.client) return;
-        console.log("useSqlite..");
+        console.log(`useSqlite => ${dbType}`);
         oResult[dbType] ||= createOneDB(dbType);
         return oResult[dbType];
     };
@@ -48,27 +48,33 @@ export const useSqlite = ((dbType = 'main') => {
 
 
 async function createOneDB(dbType){
-    console.time('加载数据库 1');
+    let iLastTime = Date.now();
     const [SQL, oLast] = await Promise.all([
         getSQL(),
         dxDB.sqlite.orderBy('updatedAt').filter(({type}) => type === dbType).last(),
     ]);
-    console.timeEnd('加载数据库 1');
-    if (!oLast){
-        console.log('需要从头创建', oLast);
-    }
-    console.time('加载数据库 2');
+    console.log(`加载数据库 ${dbType}-1: `, Date.now() - iLastTime);
+    iLastTime = Date.now();
     const Uint8Arr = await blod2Uint8Arr(oLast?.blob);
     const sqlite = new SQL.Database(Uint8Arr);
     sqlite.dbType = dbType;
-    console.timeEnd('加载数据库 2');
-    console.time('加载数据库 3');
+    console.log(`加载数据库 ${dbType}-2: `, Date.now() - iLastTime);
     toAttach(sqlite);
-    console.timeEnd('加载数据库 3');
-    // window.sqlite = sqlite; // 用于调试
-    // console.log("window.sqlite\n", window.sqlite);
+    if (!oLast?.blob){
+        console.log('需要从头建库');
+        const arr = getCreateTableSql(dbType);
+        arr.forEach(sCurSql=>{
+            sqlite.run(sCurSql);
+        });
+        console.log('已经从头建库');
+        sqlite.persist();
+    }
+    const nameOnWindow = dbType === 'main' ? 'sqlite' : 'cache';
+    window[nameOnWindow] = sqlite; // 用于调试
     return sqlite;
 }
+
+
 
 
 function toAttach(sqlite){
@@ -214,3 +220,30 @@ export async function checkDataForDB(blob){
 // UPDATE Customers
 // SET ContactName = 'Alfred Schmidt', City= 'Frankfurt'
 // WHERE CustomerID = 1;
+
+const aCacheInit = [
+    `
+        CREATE TABLE IF NOT EXISTS file (
+            id INTEGER PRIMARY KEY,
+            createdAt DATETIME NOT NULL,
+            updatedAt DATETIME NOT NULL,
+            hash VARCHAR(255) UNIQUE,
+            size INTEGER,
+            lastModified INTEGER,
+            name VARCHAR(255),
+            path VARCHAR(255),
+            pathFull VARCHAR(255)
+        );
+    `,
+];
+// ↓ 添加索引
+// CREATE INDEX idx_size ON Users(size);
+// CREATE INDEX idx_lastModified ON Users(lastModified);
+
+function getCreateTableSql(dbType){
+    if (dbType==='cache'){
+        return aCacheInit;
+    }
+    return [];
+};
+

@@ -2,7 +2,7 @@
  * @Author: 
  * @Date: 2024-01-22 22:45:22
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-27 22:11:58
+ * @LastEditTime: 2024-01-28 18:03:53
  * @Description: 
  */
 
@@ -114,7 +114,7 @@ export class TableFunction {
         // console.log("sFullSql", sFullSql);
         // console.log("thisArr", thisArr);
         const res = this.db.run(sFullSql, thisArr);
-        console.log("res", res);
+        // console.log("res", res);
         if (res) this.db.persist();
         return res;
     }

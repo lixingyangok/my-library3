@@ -3,8 +3,8 @@ import {toRefs, reactive, computed, onMounted, getCurrentInstance, watch} from '
 import {SubtitlesStr2Arr, fixTime, copyString, downloadSrt, fileToStrings, getMediaDuration, secToStr} from '@/common/js/pure-fn.js';
 import {figureOut} from './figure-out-region.js';
 import {getTubePath, getDateDiff} from '@/common/js/common-fn.js';
-import {getFolderChildren, addAllMediaDbInfo} from '@/common/js/fs-fn.js';
-import {path2file} from '@/common/js/fileSystemAPI.js';
+import {fillOneFile} from '@/common/js/fs-fn.js';
+import {path2handle, handle2List} from '@/common/js/fileSystemAPI.js';
 // import {useActionStore} from '@/store/action-store.js';
 let sqlite = await useSqlite();
 
@@ -202,8 +202,9 @@ export function mainPart(){
 		oData.oMediaInLocal = store('media') || {};
 		const {hash, pathFull} = oData.oMediaInLocal;
 		if (!hash) throw '没有hash';
-		oData.oMediaFile = await path2file(pathFull);
-		if (oData.oMediaFile){
+		const [,oMediaFile] = await path2handle(pathFull);
+		if (oMediaFile){
+			oData.oMediaFile = oMediaFile;
 			ElMessage.success('正在加载波形数据……');
 		}
 		const aRes = sqlite.select(`
@@ -384,11 +385,14 @@ export function mainPart(){
 	// ▼ 查询邻居文件列表
 	async function getNeighbors(){
 		const {path} = oData.oMediaInLocal;
-		const aList = await dxDB.file.where('path').equals(path).toArray();
-		// console.log('当前媒体邻居:', aList);
+		let [oDirHandle] = await path2handle(path, 'directory');
+		let aList = [];
+		if (oDirHandle){
+			aList = await handle2List(oDirHandle, {mediaOnly: true});
+		}
 		if (!aList?.length) return;
-		await addAllMediaDbInfo(aList, true);
-		aList.forEach((cur, idx) => {
+		for await (const [idx, cur] of aList.entries()){
+			await fillOneFile(cur);
 			const {finishedAt, id, durationStr} = cur.infoAtDb || {};
 			cur.idx_ = idx + 1;
 			cur.done_ = !!finishedAt;
@@ -397,7 +401,8 @@ export function mainPart(){
 			if (finishedAt){ // YYYY-MM-DD HH:mm:ss
 				cur.finishedAt_ = dayjs(finishedAt).format('YYYY-MM-DD HH:mm');
 			}
-		});
+		}
+		// console.log('当前媒体邻居:', aList.$dc());
 		oData.aSiblings = aList;
 		recordMediaTimeInfo(); // 检查是否所有的文件都有媒体信息
 	}
@@ -667,6 +672,7 @@ export function mainPart(){
 			type: 'warning',
 		}).catch(()=>false);
 		if (!isSure) return;
+		return alert('旧方法需要更新');
 		// await new Promise(f1 = setTimeout(f1, 600));
 		for await(const [idx, cur] of aTarget.entries()) {
 			const {sPath, infoAtDb} = cur;

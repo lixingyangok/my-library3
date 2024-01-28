@@ -2,7 +2,7 @@
  * @Author: 
  * @Date: 2024-01-10 22:32:22
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-27 21:18:40
+ * @LastEditTime: 2024-01-28 17:10:43
  * @Description: 
  */
 import {mySort} from '@/common/js/common-fn.js';
@@ -16,7 +16,12 @@ function checkMediaByName(sName){
 
 // 从文件夹 handle 返回其子元素列表
 export async function handle2List(handle, oConfig={}){
-    let {path, findingName, findingType} = oConfig;
+    let {
+        path,
+        findingName,
+        findingType,
+        mediaOnly,
+    } = oConfig;
     const directory = handle.kind == 'directory';
     if (!directory) return [];
     path &&= `${path}/${handle.name}`;
@@ -37,6 +42,7 @@ export async function handle2List(handle, oConfig={}){
         const toSkip = aSkipFormat.includes(suffix); 
         if (toSkip) continue;
         const isMedia = checkMediaByName(name); // aMediaList.includes(suffix);
+        if (mediaOnly && !isMedia) continue;
         const iTarget = (() => {
             if (kind === 'directory') return 0;
             return isMedia ? 1: 2;
@@ -83,14 +89,14 @@ export async function handle2FileObj(handle){
     return oResult;
 }
 
-// ↓通过路径找到文件
-export async function path2file(sPath){
+// ↓通过路径找到目标
+export async function path2handle(sPath, sKing='file'){
     const rootID = sPath.slice(0, 19);
     const aPath = sPath.slice(20).split('/');
     const oRoot = await dxDB.directory.get({
         createdAt: rootID,
     });
-    if (!oRoot) return;
+    if (!oRoot) return [];
     let answer = await oRoot.handle.queryPermission();
     if (answer != 'granted') {
         try{
@@ -99,23 +105,26 @@ export async function path2file(sPath){
             });
         }catch(err){
             console.log("无法申请文件权限：\n", err);
-            return;
+            return [];
         }
     }
-    if (answer != 'granted') return;
+    if (answer != 'granted') return [];
     handleManager(oRoot.handle);
     let oTargetHandle = oRoot.handle;
     for await (const [idx, cur] of aPath.entries()){
         if (idx === 0) continue;
-        const type = (idx === aPath.length-1) ? 'file' : 'directory';
+        const type = idx === aPath.length-1 ? sKing : 'directory';
         oTargetHandle = await handle2List(oTargetHandle, {
             findingName: cur,
             findingType: type,
         });
-        if (!oTargetHandle) return;
+        if (!oTargetHandle) return [];
     }
-    const oFile = await oTargetHandle.getFile();
-    return oFile;
+    let oFile;
+    if (sKing==='file'){
+        oFile = await oTargetHandle.getFile();
+    }
+    return [oTargetHandle, oFile];
 }
 
 
