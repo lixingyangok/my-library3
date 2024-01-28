@@ -17,7 +17,6 @@
 
         <section class="root-choosing" >
             <button @click="chooseRoot">选择文件夹</button>
-            <button @click="exportDatabase">导出数据库x</button>
             <br/>
             <ul>
                 <li v-for="cur, idx of aRoots" :key="idx" 
@@ -37,7 +36,6 @@
         <p>
             <!-- 当前1：{{aPath.join('/')}}<br/> -->
             当前2：{{aRoutesStr.join('/')}}<br/>
-            <!-- 目标：{{this.$route.query.sPath}} -->
         </p>
         <div class="legend" >
             图标含义：
@@ -384,9 +382,11 @@ export default {
     },
     computed: {
         aRoutesStr(){
-            return this.aRoutesInt.map((i1, i2) => {
-                return this.aDirectory[i2][i1]?.name;
+            const aResult = [...this.aRoutesInt.entries()].map(oCur => {
+                const [iColumnIdx, iItemIdx] = oCur;
+                return this.aDirectory[iColumnIdx]?.[iItemIdx]?.name;
             });
+            return aResult;
         },
     },
     created(){

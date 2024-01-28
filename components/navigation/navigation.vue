@@ -1,8 +1,8 @@
 <!--
  * @Author: 李星阳
  * @Date: 2021-12-04 15:18:43
- * @LastEditors: 
- * @LastEditTime: 2024-01-01 14:31:17
+ * @LastEditors: Merlin
+ * @LastEditTime: 2024-01-28 20:26:18
  * @Description: 
 -->
 <template>
@@ -40,6 +40,10 @@ export const routes = [{
     path: '/dictionary',
     name_: '字典',
     icon_: 'fas fa-book',
+},{
+    path: '/database',
+    name_: '数据',
+    icon_: 'fas fa-database',
 },{
     path: '/empty',
     name_: 'empty',

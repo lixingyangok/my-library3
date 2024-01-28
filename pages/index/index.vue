@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-02 20:27:04
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-20 19:36:26
+ * @LastEditTime: 2024-01-28 22:05:27
  * @Description: 
 -->
 
@@ -39,10 +39,7 @@
             总行数：{{ iAllLines.toLocaleString() }}
         </div>
         <div>
-            <label style="border: solid 1px #aaa" >
-                导入数据库
-                <input v-show="0" multiple type="file" @change="loadDbData" />
-            </label>
+
         </div>
         <!-- ▲大标题 -->
         <div class="first-list" >
@@ -213,10 +210,7 @@ export default {
         // this.getLineData();
         // this.countMediaInfo();
     },
-    mounted(){
-        // this.showChart();
-        // this.getRecordTime();
-    },  
+
     methods: {
         ...oMethods,
         async showChart(){

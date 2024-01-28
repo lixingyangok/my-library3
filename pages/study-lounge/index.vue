@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-27 14:41:43
+ * @LastEditTime: 2024-01-28 19:07:30
  * @Description: 
 -->
 <template>
@@ -230,7 +230,7 @@
                 <!-- <happyBar/> -->
                 <div class="textarea" :key="iCurLineIdx">
                     <template v-for="(word, widx) of splitSentence(oCurLine.text)">
-                        <span v-if="word" :class="word.sClassName" :key="widx">
+                        <span v-if="word.sClassName" :class="word.sClassName" :key="widx">
                             {{word.word}}
                         </span>
                         <template v-else>{{word}}</template>

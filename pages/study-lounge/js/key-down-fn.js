@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-22 22:43:07
+ * @LastEditTime: 2024-01-28 22:07:39
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
@@ -710,7 +710,6 @@ export function fnAllKeydownFn() {
         if (oResult) {
             console.log("保存后返回：", oResult);
             await afterSaved(oResult);
-            useSqlite.then(res => res.persist());
         }
         isSavingToDB = false;
     }

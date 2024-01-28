@@ -3,10 +3,7 @@ import {handle2List, handle2FileObj, handleManager} from '@/common/js/fileSystem
 import {copyString, getMediaDuration} from '@/common/js/pure-fn.js';
 import {findHash, fillOneFile} from '@/common/js/fs-fn.js';
 
-const [sqlite, cacheDB] = await Promise.all([
-    useSqlite(),
-    useSqlite('cache'),
-]);
+const sqlite = await useSqlite();
 
 const oFn01 = {
     // ▼删除一项（待验证）
@@ -28,9 +25,7 @@ const oFn01 = {
         sqlite.run(`DELETE FROM new_word WHERE mediaId=${id};`),
         sqlite.run(`DELETE FROM line WHERE mediaId=${id};`),
         sqlite.run(`DELETE FROM media WHERE id=${id};`);
-        // TODO 待修改↓
-        // await this.loadMediaInfo(id);
-        // this.getDirChildren();
+        this.ckickItem(...this.aLastFolder);
     },
     // ▼如果文件名，体积，修改时间变化了，此方法用于记录新的信息到数据库
     async updateMediaInfo(){
@@ -48,14 +43,13 @@ const oFn01 = {
                 id: infoAtDb.id,
                 name: oFile.name,
                 size: oFile.size,
-                lastModified: oFile.lastModified,
                 ...oDuration,
             });
             ElMessage.success(`文件信息更新完成：${oFile.name}`);
         }
         this.ckickItem(...this.aLastFolder);
     },
-    // ↓ 将媒体配对
+    // ↓ 将媒体配对（未完全完成）
     switchMp3(){
         let aLast = this.aDirectory.at(-1);
         if (!aLast?.length) return;
@@ -96,7 +90,6 @@ const oFn01 = {
             name: oNewMedia.name,
             size: oNewMedia.size,
             hash: oNewMedia.hash,
-            lastModified: oNewMedia.lastModified,
             ...oDuration,
         };
         console.log("oNewInfo", );
@@ -113,18 +106,18 @@ const oFn02 = {
         this.hashCopied = hash;
         ElMessage.success(`已复制 ${hash}`);
     },
+    // ↓ 添加一个根目录
     async chooseRoot(){
         let handle = await window.showDirectoryPicker({
             mode: 'readwrite',
         }).catch(err => {});
         if (!handle) return;
-        const {kind, name} = handle;
         const createdAt = dayjs().format('YYYY-MM-DD HH:mm:ss');
         const path = `${createdAt}`;
         await dxDB.directory.add({
-            name,
-            path,
+            name: handle.name,
             handle,
+            path,
             createdAt, // 当唯一键使用
         });
         this.showRootList();
@@ -154,6 +147,7 @@ const oFn02 = {
         dxDB.directory.delete(id);
         dxDB.file.where('pathFull').startsWith(path).delete();
     },
+    // ↓选择根目录
     async setRoot(idx){
         const {handle, path} = this.aRoots[idx];
         this.aRoots.forEach((cur, index)=>{
@@ -188,9 +182,6 @@ const oFn02 = {
         this.aDirectory.splice(i1+1, Infinity, arr);
         fillTheList(this.aDirectory[i1+1]);
         this.aRoutesInt.splice(i1, 1/0, i2);
-    },
-    exportDatabase(){
-        sqlite.toExport(true);
     },
 
     // ↓ 切换媒体文件
@@ -324,7 +315,6 @@ async function init() {
 //     let [hash, id] = (()=>{
 //         if (!oFileInDx) return [];
 //         const aa = oFileInfo.size == oFileInDx.size;
-//         const bb = oFileInfo.lastModified == oFileInDx.lastModified;
 //         if (!aa || !bb) return [];
 //         return [oFileInDx.hash, oFileInDx.id];
 //     })();
@@ -341,7 +331,6 @@ async function init() {
 //             ...oPathFull,
 //             path: oFileInfo.pathFull.match(/.+(?=\/)/)[0],
 //             size: oFileINfo.size,
-//             lastModified: oFileINfo.lastModified,
 //         }, oPathFull).then(iID => {
 //             oFileInfo.dxID = iID;
 //         });

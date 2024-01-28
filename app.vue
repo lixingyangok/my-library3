@@ -2,7 +2,7 @@
  * @Author: 
  * @Date: 2023-12-30 10:38:50
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-26 22:58:39
+ * @LastEditTime: 2024-01-28 20:26:53
  * @Description: 
 -->
 <template>
@@ -107,7 +107,7 @@ body > #__nuxt{
 .f5-btn{
     position: absolute;
     left: 5px;
-    top: 380px;
+    bottom: 280px;
 }
 
 </style>
