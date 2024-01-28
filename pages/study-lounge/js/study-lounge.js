@@ -388,7 +388,10 @@ export function mainPart(){
 		let [oDirHandle] = await path2handle(path, 'directory');
 		let aList = [];
 		if (oDirHandle){
-			aList = await handle2List(oDirHandle, {mediaOnly: true});
+			aList = await handle2List(oDirHandle, {
+				mediaOnly: true,
+				path: path.replace(/\/[^/]*?$/, ''), // 去除最后一段 /xxx
+			});
 		}
 		if (!aList?.length) return;
 		for await (const [idx, cur] of aList.entries()){

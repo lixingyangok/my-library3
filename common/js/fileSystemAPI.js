@@ -2,7 +2,7 @@
  * @Author: 
  * @Date: 2024-01-10 22:32:22
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-28 17:10:43
+ * @LastEditTime: 2024-01-28 22:53:29
  * @Description: 
  */
 import {mySort} from '@/common/js/common-fn.js';
@@ -17,14 +17,14 @@ function checkMediaByName(sName){
 // 从文件夹 handle 返回其子元素列表
 export async function handle2List(handle, oConfig={}){
     let {
-        path,
+        path, // handle 不知其自身的上层目录信息，需要指明，
         findingName,
         findingType,
         mediaOnly,
     } = oConfig;
     const directory = handle.kind == 'directory';
     if (!directory) return [];
-    path &&= `${path}/${handle.name}`;
+    path &&= `${path}/${handle.name}`; // 补全路径
     const aSkipFormat = ['ecdl'];
     const aResult = [
         [], // 文件夹
