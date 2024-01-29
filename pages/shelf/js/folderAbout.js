@@ -1,7 +1,7 @@
 import {goToLounage} from '@/common/js/common-fn.js';
 import {handle2List, handle2FileObj, handleManager} from '@/common/js/fileSystemAPI.js';
 import {copyString, getMediaDuration} from '@/common/js/pure-fn.js';
-import {findHash, fillOneFile} from '@/common/js/fs-fn.js';
+import {fillOneFile} from '@/common/js/fs-fn.js';
 
 const sqlite = await useSqlite();
 
@@ -36,9 +36,7 @@ const oFn01 = {
         console.log("Wrong list\n", aLast);
         for await (let [idx, val] of aLast.entries()){
             const {infoAtDb, oFile} = val;
-            const url = URL.createObjectURL(oFile)
-            const oDuration = await getMediaDuration(url);
-            console.log("oDuration", oDuration);
+            const oDuration = await getMediaDuration(oFile);
             sqlite.tb.media.updateOne({
                 id: infoAtDb.id,
                 name: oFile.name,
@@ -53,6 +51,7 @@ const oFn01 = {
     switchMp3(){
         let aLast = this.aDirectory.at(-1);
         if (!aLast?.length) return;
+        this.oFileChanging.isShowDialog = true;
         let aItemsOld = [];
         const oMatched = {};
         aLast.forEach(oCur => {
@@ -61,39 +60,41 @@ const oFn01 = {
             sTail &&= sTail.toLowerCase();
             oCur.sNameShorten = sNameShorten;
             const usable = !oCur.infoAtDb && ['ogg'].includes(sTail);
-            if (sTail === 'mp3'){
+            if (sTail === 'mp3' && oCur.infoAtDb){
                 aItemsOld.push(oCur);
             }else if(usable){
                 oMatched[sNameShorten] ||= [];
                 oMatched[sNameShorten].push(oCur);
+                getMediaDuration(oCur.oFile).then(oDuration => {
+                    Object.assign(oCur, oDuration);
+                });
             }
         }, {});
         aItemsOld = aItemsOld.filter(oMedia => {
             oMedia.aMatched = oMatched[oMedia.sNameShorten];
             return oMedia.aMatched;
         });
+        this.oFileChanging.aListMatched = aItemsOld;
         console.log("aItemsOld\n", aItemsOld.$dc());
-        this.changeMediaFile(
-            aItemsOld[0].infoAtDb,
-            aItemsOld[0].aMatched[0],
-        )
     },
     // ↓ 保存到数据库
-    async changeMediaFile(oOld, oNewMedia){
-        console.log("oOld, oNewMedia", );
-        console.log(oOld.$dc(), '\n', oNewMedia.$dc());
-        const url = URL.createObjectURL(oNewMedia.oFile)
-        const oDuration = await getMediaDuration(url);
+    async changeMediaFile(oNewMedia, idx){
         if (!oNewMedia.hash) return;
+        const oOld = this.oFileChanging.aListMatched[idx];
+        if (oOld.changingMark) return;
+        const oDuration = await getMediaDuration(oNewMedia.oFile);
+        console.log("old, new\n", oOld.$dc(), '\n', oNewMedia.$dc());
         const oNewInfo = {
-            id: oOld.id,
+            id: oOld.infoAtDb.id,
+            dir: oNewMedia.path,
             name: oNewMedia.name,
             size: oNewMedia.size,
             hash: oNewMedia.hash,
             ...oDuration,
         };
-        console.log("oNewInfo", );
-        console.log(oNewInfo);
+        sqlite.tb.media.updateOne(oNewInfo);
+        console.log("oNewInfo\n", oNewInfo.$dc());
+        oNewMedia.changingMark = '✔';
     },
 }
 
@@ -219,8 +220,16 @@ const oMediaPopper = {
     hoverIn(ev, oTarget){
         if (!oTarget.isMedia) return; 
         this.mediaPopperToggle(true);
+        const {duration} = oTarget;
+        const iMBLong = (()=>{
+            if (!duration) return 0;
+            return 1 * (duration / 60 / oTarget.sizeMB).toFixed(1);
+        })();
+        const sStarts = '★'.repeat(Math.round(iMBLong));
         this.oHoveringMedia = {
             ...oTarget,
+            iMBLong,
+            sStarts,
             dom: ev.target,
             show: true,
         };
@@ -264,28 +273,6 @@ async function fillTheList(aList){
         else fillOneFile(cur, config);
     }
 }
-
-// // 👇 取得文件
-// async function fillOneFile(oFileObject){
-//     if (!oFileObject.isMedia) return;
-//     const oInfoFromHandle = await handle2FileObj(oFileObject.handle);
-//     Object.assign(oFileObject, oInfoFromHandle);
-//     const t01 = Date.now();
-//     let hash = await findHash(oFileObject, {
-//         force: true,
-//         record: true,
-//     });
-//     oFileObject.hash = hash;
-//     const oMediaInfoInDB = sqlite.tb.media.getOne({hash});
-//     console.log("查找 Hash 和媒体记录", Date.now()-t01);
-//     if (!oMediaInfoInDB) return;
-//     oFileObject.infoAtDb = oMediaInfoInDB;
-//     oFileObject.bNameRight = [
-//         oFileObject.name === oMediaInfoInDB.name,
-//         oFileObject.size === oMediaInfoInDB.size,
-//     ].every(Boolean);
-// }
-
 
 
 async function init() {

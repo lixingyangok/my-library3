@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-27 10:57:18
+ * @LastEditTime: 2024-01-29 23:37:16
  * @Description: 
  */
 
@@ -25,12 +25,14 @@ export async function getBufferByPath(sPath){
 }
 
 // 通过文件路径得到时长（很快）偶尔与通过波形解析的时长不同
-export async function getMediaDuration(src){
-	// let sFilePath = 'C:/Users/Administrator/Desktop/书虫L2_MP3/鲁滨逊漂流记01.ogg';                     
+export async function getMediaDuration(oFile){
+	// let sFilePath = 'C:/Users/Administrator/Desktop/书虫L2_MP3/鲁滨逊漂流记01.ogg';     
+	const isFile = oFile?.constructor?.name === 'File';
+	if (!isFile) throw '入参不正确';
 	let fnResolve;
 	const oPromise = new Promise(f1 => fnResolve = f1);
 	Object.assign(new Audio(), {
-		src,
+		src: URL.createObjectURL(oFile),
 		oncanplay(ev) {
 			fnResolve({
 				duration: ev.target.duration,

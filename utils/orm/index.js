@@ -2,7 +2,7 @@
  * @Author: 
  * @Date: 2024-01-22 22:45:22
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-28 18:03:53
+ * @LastEditTime: 2024-01-29 23:13:34
  * @Description: 
  */
 
@@ -14,6 +14,7 @@ export class TableFunction {
     columns = [];
     oColumnsInfo = {};
     colChangeable = [];
+    colReadable = [];
     constructor(oParams){
         this.db = oParams.db;
         this.tbName = oParams.tbName;
@@ -23,15 +24,17 @@ export class TableFunction {
         const aCanNotChange = ['id', 'createdAt'];
         this.columns.forEach(cur=>{
             this.oColumnsInfo[cur.name] = cur;
+            this.colReadable.push(cur.name);
             if (!aCanNotChange.includes(cur.name)){
                 this.colChangeable.push(cur.name);
             }
         });
     }
     // 交集
-    #getColsArr(obj){
+    #getColsArr(obj, changeable){
         const keys = Object.keys(obj);
-        const aColName = this.colChangeable.filter((cur) => {
+        const sList = changeable ? 'colChangeable' : 'colReadable';
+        const aColName = this[sList].filter((cur) => {
             return keys.includes(cur);
         });
         return aColName;
@@ -68,7 +71,7 @@ export class TableFunction {
             sSet += params.join(', ');
         }
         if (params.constructor.name === 'Object'){
-            const aColName = this.#getColsArr(params);
+            const aColName = this.#getColsArr(params, true);
             const aSetArr = aColName.map(key => {
                 const sColType = this.oColumnsInfo[key].type;
                 let value = params[key] ?? null; // 用 null 顶替 undefined
@@ -95,7 +98,7 @@ export class TableFunction {
     }
     insertOne(oParams){
         if (!oParams) return;
-        const aColName = this.#getColsArr(oParams);
+        const aColName = this.#getColsArr(oParams, true);
         let sFullSql = `
             INSERT INTO ${this.tbName}
             (

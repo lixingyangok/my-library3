@@ -220,6 +220,31 @@
     </el-dialog> -->
     <!-- ▼媒体详情窗口 -->
     <el-dialog title="媒体详情"
+        width="880px"
+        v-model="oFileChanging.isShowDialog"
+        top="10vh"
+    >
+        <el-table :data="oFileChanging.aListMatched" style="width: 100%">
+            <el-table-column prop="name" label="文件名" />
+            <el-table-column prop="aMatched" label="替换项" >
+                <template #default="scope">
+                    <p v-for="(cur, idx) of scope.row.aMatched" :key="idx" 
+                        class="new-file-to-use"
+                        @click="changeMediaFile(cur, scope.$index)"
+                    >
+                        {{ cur.name }}
+                        <br/>
+                        {{ scope.row.infoAtDb.durationStr }}-{{ cur.durationStr }}
+                        （{{~~(cur.duration - scope.row.infoAtDb.duration)}}）
+                        {{ cur.changingMark ? ` ${cur.changingMark}` : '' }}
+                    </p>
+                </template>
+            </el-table-column>
+            <!-- <el-table-column prop="changingMark" label="状态" width="150px"/> -->
+        </el-table>
+    </el-dialog>
+    <!--  -->
+    <el-dialog title="媒体详情"
         width="550px"
         v-model="oMediaInfo.isShow"
         top="10vh"
@@ -257,6 +282,7 @@
             </el-button>
         </section>
     </el-dialog>
+
     <!-- ↓显示媒体信息的气泡 -->
     <el-popover :title="oHoveringMedia.name"
         v-if="oHoveringMedia.dom"
@@ -273,12 +299,15 @@
         </p>
         <p>
             MB long: 
-            <span v-if="oHoveringMedia?.infoAtDb?.duration">
-                {{ (oHoveringMedia.infoAtDb.duration / 60 / oHoveringMedia.sizeMB).toFixed(1) }} Min
+            <span v-if="oHoveringMedia?.duration"
+                class="mb-long"
+                :style="{'--minute': oHoveringMedia.iMBLong}"
+            >
+                {{ oHoveringMedia.iMBLong }}Min {{ oHoveringMedia.sStarts }}
             </span>
         </p>
         <p>
-            Duration: {{oHoveringMedia?.infoAtDb?.durationStr}}
+            Duration: {{oHoveringMedia.durationStr}}
         </p>
         <p @click="copyHash(oHoveringMedia.hash)"
             class="hash-value"
@@ -359,6 +388,10 @@ export default {
             aAimTo,
             dialogVisible: false, // 用于导入的1级窗口
             bMediaDialog: false,
+            oFileChanging: {
+                isShowDialog: false,
+                aListMatched: [],
+            },
             aMediaHomes: [],
             // ▼数据库中的数据
             oMediaHomes: {},

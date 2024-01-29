@@ -679,6 +679,7 @@ export function mainPart(){
 		// await new Promise(f1 = setTimeout(f1, 600));
 		for await(const [idx, cur] of aTarget.entries()) {
 			const {sPath, infoAtDb} = cur;
+			throw '计算媒体时长方法需要修改入参';
 			const oDuration = await getMediaDuration(getTubePath(sPath));
 			return alert("getMediaDuration 返回值已经修改，请注意");
 			await toRecordDiration(infoAtDb, oDuration);

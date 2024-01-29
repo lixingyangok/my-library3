@@ -2,13 +2,13 @@
  * @Author: 李星阳
  * @Date: 2022-01-22 19:31:55
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-28 18:01:10
+ * @LastEditTime: 2024-01-30 00:06:18
  * @Description: 与文件夹/文件相关的方法（纯函数）
  */
 // 本包将来可修改为，提供数据查询的包
 
 import {mySort} from './common-fn.js';
-import {secToStr} from './pure-fn.js';
+import {secToStr, getMediaDuration} from './pure-fn.js';
 import {handle2FileObj} from '@/common/js/fileSystemAPI.js';
 
 
@@ -206,13 +206,19 @@ export async function fillOneFile(oFileObject, config={}){
     const oInfoFromHandle = await handle2FileObj(oFileObject.handle);
     Object.assign(oFileObject, oInfoFromHandle);
     // const t01 = Date.now();
-    let hash = await findHash(oFileObject, {
+    let oCache = await findHash(oFileObject, {
         force: config.force,
         record: config.record,
     });
-    oFileObject.hash = hash;
-    const oMediaInfoInDB = sqlite.tb.media.getOne({hash});
+    if (!oCache) throw '没取得 hash';
+    oFileObject.hash = oCache.hash;
+    const oMediaInfoInDB = sqlite.tb.media.getOne({
+        hash: oCache.hash,
+    });
     // console.log("查找 Hash 和媒体记录", Date.now()-t01);
+    const oInfo = oMediaInfoInDB || oCache || {};
+    oFileObject.duration = oInfo.duration;
+    oFileObject.durationStr = oInfo.durationStr;
     if (!oMediaInfoInDB) return;
     oFileObject.infoAtDb = oMediaInfoInDB;
     oFileObject.bNameRight = [
@@ -236,25 +242,29 @@ export async function findHash(oParam, config={}){
     const aChash = cacheDB.tb.file.select(oQuery);
     let [oCache01, oCache02] = aChash || [];
     if (oCache01 && !oCache02){
-        return oCache01.hash; // 找到了 hash
+        return oCache01; // 找到了 hash
     }
     if (oCache02){ // 似乎很少执行到此
         console.warn(`在数据库中存在多个媒体记录`); 
     }
-    let hash = '';
+    let oResult = {};
     if ((!oCache01 || oCache02) && force){ // 找不到，或 hash 无效
-        hash = await getHash(oParam.oFile);
+        const [hash, oDuration] = await Promise.all([
+            getHash(oParam.oFile),
+            getMediaDuration(oParam.oFile),
+        ]);
+        Object.assign(oResult, {hash, ...oDuration});
         if (record){
             const toRecord = {
-                hash,
-                path: oParam.path, // 此值没有更新机制，因此有可能是旧的错值，
                 name: oParam.name,
+                path: oParam.path, // 此值没有更新机制，因此有可能是旧的错值，
                 ...oQuery,
+                ...oResult,
             };
             cacheDB.tb.file.insertOne(toRecord);
         }
     }
-    return hash;
+    return oResult;
 }
 
 

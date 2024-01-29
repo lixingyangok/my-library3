@@ -2,7 +2,7 @@
  * @Author: Merlin
  * @Date: 2024-01-08 09:35:15
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-28 22:38:31
+ * @LastEditTime: 2024-01-29 23:45:10
  * @Description: 
  */
 import { dxDB } from "./dxDB";
@@ -207,15 +207,19 @@ export async function checkDataForDB(uint8Arr){
 // WHERE CustomerID = 1;
 
 const aCacheInit = [
+    // hash 不需要 unique，因为有可能同一个文件被复制了一份，此时 lastModified 变化了但 hash 不会变
+    // 所以有可能 size=1, lastModified=2 而且 size=1, lastModified=3 指向的是同一个 hash 
     `
         CREATE TABLE IF NOT EXISTS file (
             id INTEGER PRIMARY KEY,
             createdAt DATETIME NOT NULL,
             updatedAt DATETIME NOT NULL,
-            hash VARCHAR(255) UNIQUE,
-            size INTEGER,
-            lastModified INTEGER,
-            name VARCHAR(255),
+            hash VARCHAR(255) NOT NULL,
+            size INTEGER NOT NULL,
+            lastModified INTEGER NOT NULL,
+            duration INTEGER FLOAT NOT NULL,
+            durationStr VARCHAR(8) NOT NULL,
+            name VARCHAR(255) NOT NULL,
             path VARCHAR(255),
             pathFull VARCHAR(255)
         );
