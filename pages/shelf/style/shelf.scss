@@ -184,6 +184,14 @@
     }
 }
 
+.mb-long{
+    opacity: 1;
+    // display: inline-block;
+    // background-color: #eee;
+    // width: calc(var(--minute, 1) * 60px);
+    // max-width: 200px;
+}
+
 // 气泡中的 hash 值
 .hash-value{
     line-height: 2;
@@ -196,4 +204,9 @@
     }
 }
 
-
+.new-file-to-use{
+    cursor: pointer;
+    &:hover{
+        color: blue;
+    }
+}
