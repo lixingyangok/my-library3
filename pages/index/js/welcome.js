@@ -8,10 +8,11 @@ const sqlite = await useSqlite();
 
 const oPendingDataFn = {
     async getPendingList(){
-        const aList = await fnInvoke('db', 'getMediaInfo', {
+        const aList = sqlite.tb.media.select({
             finishedAt: null,
         });
         if (!aList) return;
+        console.log("aList", aList.length);
         const {obj, arr} = this.sortThem(aList);
         this.setListOrder(arr);
         this.oPending = obj;
@@ -51,7 +52,7 @@ const oPendingDataFn = {
     // ▼计算完成率
     async setPercent(){
         for(const cur of this.aPending) {
-            const arr = await fnInvoke('db', 'getMediaInfo', {
+            const arr = await sqlite.tb.media.select({
                 dir: cur.name,
             });
             const iTotal = arr.length;
@@ -63,7 +64,6 @@ const oPendingDataFn = {
     },
     // ▼置顶
     async putToTop(oTarget){
-        // console.log('oTarget', oTarget.$dc());
         store.transact('pendingOrder', obj => {
             return {
                 ...obj,
@@ -72,7 +72,6 @@ const oPendingDataFn = {
         });
         this.setListOrder();
     },
-
 };
 
 const oRecordFn = {
@@ -89,10 +88,10 @@ const oRecordFn = {
         return aList.reverse();
     },
     async setRecordTime(){
-        const res = await fnInvoke('db', 'setClockRecord');
-        this.showChart();
         console.log('打卡返回');
-        console.log(res);
+        // const res = await fnInvoke('db', 'setClockRecord');
+        // this.showChart();
+        // console.log(res);
     },
     // ▼打卡统计
     async getRecordTime(){
@@ -113,27 +112,29 @@ const oRecordFn = {
             group by t01.lcDate
             order by t01.lcDate desc
         `;
-		const [r01, r02] = await fnInvoke('db', 'doSql', sql).catch(err=>{
-            console.log('err', err);
-        });
+		const r01 = sqlite.select(sql);
         this.aClockIn = r01;
         return r01;
     },
     // ▼总行数
     async getAllLines(){
-        const sql = ` SELECT count(*) as iCount from line `;
-        const [r01, r02] = await fnInvoke('db', 'doSql', sql).catch(err=>{
-            console.log('err', err);
-        });
+        const sql = `
+            SELECT count(*) as iCount
+            from line
+        `;
+        const r01 = sqlite.select(sql);
         if (!r01) return;
         this.iAllLines = r01[0].iCount;
     },
     // ▼统计所有媒体信息
     async countMediaInfo(){
-        const sql = ` SELECT count(*) as iCount, sum(duration) as iDuration from media `;
-        const [[r01], r02] = await fnInvoke('db', 'doSql', sql).catch(err=>{
-            console.log('err', err);
-        });
+        const sql = `
+            SELECT
+                count(*) as iCount,
+                sum(duration) as iDuration
+            from media
+        `;
+        const [r01] = sqlite.select(sql);
         if (!r01) return;
         r01.hours = (r01.iDuration / (60*60)).toFixed(1) * 1;
         this.oMedias = r01;
@@ -155,18 +156,15 @@ const oRecordFn = {
             group by t01.lcDate
             order by t01.lcDate desc
         `;
-        const [r01, r02] = await fnInvoke('db', 'doSql', sql).catch(err=>{
-            console.log('err', err);
-        });
+        const r01 = sqlite.select(sql);
         if (!r01) return;
-        console.log(`${iDays}天内录入行数：${r01.length}`);
+        console.log(`${iDays}天内录入行数：`, r01);
     },
 };
 
 const oFn_recentList = {
     delFile(oTarget){
-        console.log('oTarget', );
-        console.log(oTarget.$dc());
+        console.log('oTarget\n', oTarget.$dc());
         store.transact('oRecent', (oOldData)=>{
             Reflect.deleteProperty(oOldData, oTarget.pathFull);
         });
@@ -176,10 +174,8 @@ const oFn_recentList = {
         const oRecent = store.get('oRecent');
         if (!oRecent) return;
         const aList = Object.values(oRecent).map(cur=>{
-            const name = cur.pathFull.split('/').pop();
             return {
                 ...cur,
-                name,
                 sTime: getDateDiff(cur.iTime),
                 fPercent: Math.min(cur.fPercent, 100),
             };
@@ -187,7 +183,6 @@ const oFn_recentList = {
         aList.sort((aa,bb)=>{
             return bb.iTime - aa.iTime;
         });
-        console.log("aList", aList);
         this.aRecent = aList;
     },
 }

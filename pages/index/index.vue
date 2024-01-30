@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-02 20:27:04
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-30 21:33:12
+ * @LastEditTime: 2024-01-30 22:48:33
  * @Description: 
 -->
 
@@ -33,7 +33,7 @@
             </span>
             &nbsp;
             <el-button @click="$root.f5()">刷新</el-button>
-            &nbsp;&nbsp;
+            <br/><br/>
             文件数量：{{ oMedias.iCount}}个 / 总时长：{{ oMedias.hours}}Hrs
             &nbsp;&nbsp;
             总行数：{{ iAllLines.toLocaleString() }}
@@ -48,7 +48,7 @@
                     <el-table-column label="文件">
                         <template #default="scope">
                             <p class="folder-name">{{scope.row.name}}</p>
-                            <p class="the-first">{{scope.row.path}}</p>
+                            <p class="the-first">{{scope.row.path.split('/').slice(2).join('/')}}</p>
                         </template>
                     </el-table-column>
                     <el-table-column prop="sTime" label="时间" width="120"></el-table-column>
@@ -81,34 +81,40 @@
             <div class="box1" ref="box1"></div>
         </section>
         <!-- ▼进行中 -->
+        
         <section class="first-list" >
-            <el-table :data="aPending" stripe border style="width: 100%;">
-                <el-table-column label="文件夹">
-                    <template #default="scope">
-                        <p class="folder-name">{{scope.row.nameShort}} </p>
-                        <p class="the-first">{{scope.row.oFirst.name}} </p>
-                    </template>
-                </el-table-column>
-                <el-table-column prop="sRate" label="完成率1" width="100"/>
-                <el-table-column prop="fPercent" label="完成率2" width="250" >
-                    <template #default="scope">
-                        <el-progress :percentage="scope.row.fPercent" />
-                    </template>
-                </el-table-column>
-                <el-table-column label="操作" width="220">
-                    <template #default="scope">
-                        <el-button link @click="goToLounge(scope.row.oFirst)" >
-                            推进
-                        </el-button>
-                        <el-button link @click="goFolder(scope.row)" >
-                            访问目录
-                        </el-button>
-                        <el-button link @click="putToTop(scope.row)" >
-                            置顶
-                        </el-button>
-                    </template>
-                </el-table-column>
-            </el-table>
+            <button @click="getPendingList">
+                run getPendingList()
+            </button>
+            <client-only>
+                <el-table :data="aPending" stripe border style="width: 100%;">
+                    <el-table-column label="文件夹">
+                        <template #default="scope">
+                            <p class="folder-name">{{scope.row.nameShort}} </p>
+                            <p class="the-first">{{scope.row.oFirst.name}} </p>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="sRate" label="完成率1" width="100"/>
+                    <el-table-column prop="fPercent" label="完成率2" width="250" >
+                        <template #default="scope">
+                            <el-progress :percentage="scope.row.fPercent" />
+                        </template>
+                    </el-table-column>
+                    <el-table-column label="操作" width="220">
+                        <template #default="scope">
+                            <el-button link @click="goToLounge(scope.row.oFirst)" >
+                                推进
+                            </el-button>
+                            <el-button link @click="goFolder(scope.row)" >
+                                访问目录
+                            </el-button>
+                            <el-button link @click="putToTop(scope.row)" >
+                                置顶
+                            </el-button>
+                        </template>
+                    </el-table-column>
+                </el-table>
+            </client-only>
         </section>
         <!--  -->
         <div class="btn-bar" >
@@ -206,9 +212,9 @@ export default {
         if (!import.meta.client) return;
         // this.getPendingList();
         this.updateTheRecent();
-        // this.getAllLines();
-        // this.getLineData();
-        // this.countMediaInfo();
+        this.getAllLines();
+        this.getLineData();
+        this.countMediaInfo();
     },
 
     methods: {

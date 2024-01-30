@@ -2,7 +2,7 @@
  * @Author: 
  * @Date: 2024-01-22 22:45:22
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-29 23:13:34
+ * @LastEditTime: 2024-01-30 22:34:48
  * @Description: 
  */
 
@@ -54,10 +54,13 @@ export class TableFunction {
             const aColName = this.#getColsArr(params);
             let sWhere = aColName.map(key => {
                 let val = params[key];
+                let equal = '=';
                 if (typeof val === 'string') {
                     val = `'${val.replaceAll("'", "''")}'`;
+                }else if (val === null){
+                    [equal, val] = ['IS', 'NULL'];
                 }
-                return ` and ${key} = ${val}`;
+                return ` and ${key} ${equal} ${val}`;
             }).join(' ');
             return sWhere;
         }
