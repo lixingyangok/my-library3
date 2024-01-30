@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-22 19:31:55
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-30 00:06:18
+ * @LastEditTime: 2024-01-30 21:25:58
  * @Description: 与文件夹/文件相关的方法（纯函数）
  */
 // 本包将来可修改为，提供数据查询的包
@@ -210,7 +210,10 @@ export async function fillOneFile(oFileObject, config={}){
         force: config.force,
         record: config.record,
     });
-    if (!oCache) throw '没取得 hash';
+    if (!oCache?.hash) {
+        console.log("没有hash", oFileObject.$dc());
+        return;
+    }
     oFileObject.hash = oCache.hash;
     const oMediaInfoInDB = sqlite.tb.media.getOne({
         hash: oCache.hash,
@@ -250,7 +253,7 @@ export async function findHash(oParam, config={}){
     let oResult = {};
     if ((!oCache01 || oCache02) && force){ // 找不到，或 hash 无效
         const [hash, oDuration] = await Promise.all([
-            getHash(oParam.oFile),
+            getFileHash(oParam.oFile),
             getMediaDuration(oParam.oFile),
         ]);
         Object.assign(oResult, {hash, ...oDuration});
@@ -269,9 +272,9 @@ export async function findHash(oParam, config={}){
 
 
 // 生成文件 hash
-export async function getHash(oFile){
+export async function getFileHash(oFile){
     const arrayBuffer = await oFile.arrayBuffer();
-    const arrayData = new Uint8Array(arrayBuffer);
-    const hash = await window.hashwasm.xxhash64(arrayData);
+    const aUint8Arr = new Uint8Array(arrayBuffer);
+    const hash = await window.hashwasm.xxhash64(aUint8Arr);
     return hash;
 }

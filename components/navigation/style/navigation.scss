@@ -19,17 +19,19 @@
         text-decoration: none;
         &:hover,
         &[class~=router-link-active]{
-            // color: var(--el-color-primary-light-8);
             color: white;
+        }
+        &[class~=router-link-active]{
             background: black;
         }
     }
     .icon{
         display: block;
-        font-size: 1em;
+        font-size: 18px;
     }
     .name{
         margin: 7px 0 -2px;
+        font-size: 14px;
     }
 }
 

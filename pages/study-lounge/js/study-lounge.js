@@ -394,8 +394,11 @@ export function mainPart(){
 			});
 		}
 		if (!aList?.length) return;
-		for await (const [idx, cur] of aList.entries()){
-			await fillOneFile(cur);
+		for (const [idx, cur] of aList.entries()){
+			await fillOneFile(cur, {
+				force: true,
+				record: true,
+			});
 			const {finishedAt, id, durationStr} = cur.infoAtDb || {};
 			cur.idx_ = idx + 1;
 			cur.done_ = !!finishedAt;

@@ -37,6 +37,11 @@ export const routes = [{
     name_: '听写',
     icon_: 'fas fa-paper-plane',
 },{
+    path: '/random',
+    name: 'random',
+    name_: '随机',
+    icon_: 'fa-solid fa-door-open',
+},{
     path: '/dictionary',
     name_: '字典',
     icon_: 'fas fa-book',

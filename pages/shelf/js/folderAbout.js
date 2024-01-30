@@ -225,7 +225,12 @@ const oMediaPopper = {
             if (!duration) return 0;
             return 1 * (duration / 60 / oTarget.sizeMB).toFixed(1);
         })();
-        const sStarts = '★'.repeat(Math.round(iMBLong));
+        const sStarts = (()=>{
+            if (iMBLong < 1) return '☆';
+            let sResult = '★'.repeat(iMBLong);
+            if (iMBLong % 1 >= 0.5) sResult += '☆';
+            return sResult;
+        })();
         this.oHoveringMedia = {
             ...oTarget,
             iMBLong,
