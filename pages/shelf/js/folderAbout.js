@@ -155,7 +155,7 @@ const oFn02 = {
             cur.active = idx === index;
         });
         let answer = await handle.requestPermission({
-            mode: 'readwrite',
+            // mode: 'readwrite',
         });
         if (answer != 'granted') return;
         handleManager(handle);

@@ -2,17 +2,53 @@
  * @Author: 
  * @Date: 2024-01-10 22:32:22
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-28 22:53:29
+ * @LastEditTime: 2024-01-31 22:38:40
  * @Description: 
  */
 import {mySort} from '@/common/js/common-fn.js';
 
-const aMediaList = ['mp4', 'mp3', 'ogg', 'm4a', 'acc', 'aac', 'opus',];
+const aMediaList = ['mp3', 'ogg', 'mp4', 'm4a', 'acc', 'aac', 'opus'];
+const oMediaLib = aMediaList.reduce((oResult, sCur)=>{
+    oResult[sCur] = true;
+    return oResult;
+}, {});
 
 function checkMediaByName(sName){
     const stail = sName.split('.').pop().toLowerCase();
-    return aMediaList.includes(stail);
+    return oMediaLib[stail];
 }
+
+export async function searchFile(handle, oTarget){
+    // if (!oTarget) return;
+    let oFile = null;
+    if (handle.kind === 'directory'){
+        for await (const oItem of handle.values()){
+            oFile = await searchFile(oItem, oTarget)
+            if (oFile) return oFile;
+        }
+    }else if(handle.name === oTarget.name){
+        oFile = await handle.getFile();
+        if (oFile.size === oTarget.size){
+            // console.log("搜索目标：", oFile);
+            return oFile;
+        }
+    }
+}
+
+export async function requestPermission(handle){
+    let answer = '';
+    try{
+        answer = await handle.requestPermission();
+    }catch(err){
+        console.log("无法申请文件权限");
+    }
+    if (answer === 'granted'){
+        handleManager(handle);
+        return true;
+    }
+}
+
+
 
 // 从文件夹 handle 返回其子元素列表
 export async function handle2List(handle, oConfig={}){
@@ -97,11 +133,11 @@ export async function path2handle(sPath, sKing='file'){
         createdAt: rootID,
     });
     if (!oRoot) return [];
-    let answer = await oRoot.handle.queryPermission();
+    let answer = '';// await oRoot.handle.queryPermission();
     if (answer != 'granted') {
         try{
             answer = await oRoot.handle.requestPermission({
-                mode: 'readwrite',
+                // mode: 'readwrite',
             });
         }catch(err){
             console.log("无法申请文件权限：\n", err);
