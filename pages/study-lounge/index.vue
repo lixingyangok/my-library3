@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-28 19:07:30
+ * @LastEditTime: 2024-02-01 22:09:31
  * @Description: 
 -->
 <template>
@@ -409,7 +409,7 @@
                     :class="{gap: idx && (cur.sTail != aTxtFileList[idx-1].sTail)}"
                     @click="chooseFile(cur)"
                 >
-                    {{cur.sFileName}}
+                    {{cur.name}}
                 </li>
             </ul>
         </el-dialog>

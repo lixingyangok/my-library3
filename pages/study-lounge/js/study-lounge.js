@@ -9,7 +9,6 @@ import {path2handle, handle2List} from '@/common/js/fileSystemAPI.js';
 let sqlite = await useSqlite();
 
 export function mainPart(){
-	// const fsp = require('node:fs/promises');
 	// const oActionStore = useActionStore();
 	const sToday = window.dayjs().format('YYYY-MM-DD');
 	let isMediaChanged = false; // 是否加载了一个新的媒体
@@ -61,6 +60,7 @@ export function mainPart(){
 		isReading: false,
 		sMediaSrc: store('media')?.pathFull, // 考虑废弃
 		oMediaInLocal: store('media') || {},
+		handleMediaIn: null, // 新版
 		oMediaFile: null, // 媒体文件
 		
 		sHash: '',
@@ -202,7 +202,13 @@ export function mainPart(){
 		oData.oMediaInLocal = store('media') || {};
 		const {hash, pathFull} = oData.oMediaInLocal;
 		if (!hash) throw '没有hash';
-		const [,oMediaFile] = await path2handle(pathFull);
+		const {
+			file: oMediaFile,
+			belong: handleMediaIn,
+		} = await path2handle(pathFull);
+		oData.handleMediaIn = handleMediaIn;
+		console.log("媒体所在1", pathFull);
+		console.log("媒体所在2", handleMediaIn);
 		if (oMediaFile){
 			oData.oMediaFile = oMediaFile;
 			ElMessage.success('正在加载波形数据……');
@@ -249,22 +255,22 @@ export function mainPart(){
 			oInstance.proxy.goLine(iLineNo);
 			isMediaChanged = false; // 复位
 		}
-		oData.sReadingFile || showFileAotuly(sTxtFile);
+		// oData.sReadingFile || showFileAotuly(sTxtFile);
 		// oActionStore.getMediaRows(oData.oMediaInfo.id);
 	}
 	// ▼通过文本文件路径读取其中内容（音频的原文文件）
-	async function showFileAotuly(sTxtFile){
-		if (!sTxtFile) return;
-		oData.isShowLeft = true;
-		const sTail = sTxtFile.split('.').pop().toLowerCase();
-		const isPDF = sTail == 'pdf';
-		oData.leftType = isPDF ? 'pdf' : 'txt';
-		oData.sReadingFile = sTxtFile;
-		if (isPDF) return;
-		let fileTxt = await fsp.readFile(sTxtFile, 'utf8');
+	async function showFileAotuly(sTxtFile, fileTxt){
+		// if (!sTxtFile) return;
+		// oData.isShowLeft = true;
+		// const sTail = sTxtFile.split('.').pop().toLowerCase();
+		// const isPDF = sTail == 'pdf';
+		// oData.leftType = isPDF ? 'pdf' : 'txt';
+		// oData.sReadingFile = sTxtFile;
+		// if (isPDF) return;
+		// var fileTxt = await 'fsp'.readFile(sTxtFile, 'utf8');
 		const aArticle = (()=>{
 			let aResult = [];
-			if (sTail=='srt') {
+			if ('sTail' === 'srt') {
 				aResult = SubtitlesStr2Arr(fileTxt);
 				aResult = aResult.map(cur => cur.text.trim()); //.filter(Boolean);
 			}else{
@@ -385,7 +391,7 @@ export function mainPart(){
 	// ▼ 查询邻居文件列表
 	async function getNeighbors(){
 		const {path} = oData.oMediaInLocal;
-		let [oDirHandle] = await path2handle(path, 'directory');
+		let {handle: oDirHandle} = await path2handle(path, 'directory');
 		let aList = [];
 		if (oDirHandle){
 			aList = await handle2List(oDirHandle, {
@@ -505,23 +511,25 @@ export function mainPart(){
 	// ▼打开文本
 	async function openTxt(){
 		oData.isShowFileList = true;
-		const dir = oData.oMediaInfo.dir.replaceAll('/', '\\');
-		let aItems = await fsp.readdir(dir);
-		aItems = aItems.map(cur => {
-			const sTail = cur.split('.').pop().toLowerCase();
+		console.log("oData.handleMediaIn", oData.handleMediaIn);
+		let aItems = await handle2List(oData.handleMediaIn);
+		aItems &&= aItems.map(cur => {
+			const sTail = cur.name.split('.').pop().toLowerCase();
+			const aFormat = ['pdf', 'srt', 'ass', 'txt'];
 			return {
+				...cur,
 				sTail,
-				sFileName: cur,
-				sFullPath: `${dir}/${cur}`.replaceAll('\\', '/'),
-				bStay: ['pdf', 'srt', 'ass', 'txt'].includes(sTail),
+				bStay: aFormat.includes(sTail),
+				// sFullPath: `${dir}/${cur}`.replaceAll('\\', '/'),
 			};
 		}).filter(cur => {
 			return cur.bStay;
 		}).sort((aa, bb)=>{
 			return aa.sTail.localeCompare(bb.sTail);
 		});
+		console.log('aItems\n', aItems);
 		oData.aTxtFileList = aItems;
-		console.log('aItems', aItems);
+		return;
 		// ▼旧的
 		// oData.leftType = 'txt';
 		// justCopy(); // 媒体文件更路径
@@ -632,7 +640,24 @@ export function mainPart(){
 	}
 	// ▼点击文本文件后打开文件的方法（保存学习记录）
 	async function chooseFile(oTarget){
-		// oData.isShowFileList = false; // 关闭窗口
+		oData.isShowFileList = false; // 关闭窗口
+		this.isShowLeft = true;
+		this.leftType = 'txt';
+		const oFile = await oTarget.handle.getFile();
+		console.log('oTarget', 	oTarget.$dc());
+		console.log('oFile', 	oFile);
+		let fnResolve;
+		const oPromise = new Promise(f1=> fnResolve=f1);
+		Object.assign(new FileReader(), {
+			onload(event){
+				const fileContent = event.target.result;
+				fnResolve(fileContent);
+			},
+		}).readAsText(oFile);
+		const text = await oPromise;
+		// console.log("text\n", text);
+		showFileAotuly('', text);
+		return;
 		const {sFullPath} = oTarget;
 		store.transact('oRecent', (oldData) => {
             const old = store('media') || {

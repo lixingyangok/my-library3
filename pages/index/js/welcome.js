@@ -13,23 +13,7 @@ const oPendingDataFn = {
             finishedAt: null,
         });
         if (!aList) return;
-        const aDir = await dxDB.directory.toArray();
-        console.log("aList", aList);
-        let oFound = null;
-        const oAim = aList[~~(Math.random() * 100)];
-        console.log("开始搜索：", oAim.dir);
-        console.log("开始搜索：", oAim.name);
-        for (const oDir of aDir){
-            const res = await requestPermission(oDir.handle);
-            if (!res) continue;
-            console.time('搜索文件');
-            oFound = await searchFile(oDir.handle, oAim);
-            console.timeEnd('搜索文件');
-            console.log("oFound", oFound || '没有');
-            // if (oFound) break;
-        }
-        return;
-        const {obj, arr} = this.sortThem([aList]);
+        const {obj, arr} = this.sortThem(aList);
         this.setListOrder(arr);
         this.oPending = obj;
         this.aPending = arr;
@@ -217,9 +201,29 @@ const oVisitFn = {
         });
     },
     // ▼访问学习页
-    goToLounge(oTarget){
-        // const {dir, name} = oTarget;
-        // const sPath = `${dir}/${name}`;
+    async goToLounge(oTarget){
+        if (!oTarget.pathFull){
+            const aDir = await dxDB.directory.toArray();
+            for (const oDir of aDir){
+                const res = await requestPermission(oDir.handle);
+                if (!res) continue;
+                console.time('搜索文件');
+                const oFound = await searchFile({
+                    handle: oDir.handle,
+                    target: oTarget,
+                    path: oDir.path,
+                });
+                console.timeEnd('搜索文件');
+                if (oFound) {
+                    oTarget.path = oFound.path;
+                    oTarget.pathFull = oFound.pathFull;
+                    break;
+                }
+            }
+            if (!oTarget.pathFull){
+                return console.log('找不到目标');
+            }
+        }
         console.log('oTarget', oTarget.$dc());
         goToLounage(oTarget);
     },

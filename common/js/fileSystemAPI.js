@@ -2,7 +2,7 @@
  * @Author: 
  * @Date: 2024-01-10 22:32:22
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-31 22:38:40
+ * @LastEditTime: 2024-02-01 21:44:50
  * @Description: 
  */
 import {mySort} from '@/common/js/common-fn.js';
@@ -18,19 +18,28 @@ function checkMediaByName(sName){
     return oMediaLib[stail];
 }
 
-export async function searchFile(handle, oTarget){
-    // if (!oTarget) return;
+export async function searchFile(oConfig){
+    let { handle, target, path, } = oConfig;
     let oFile = null;
+    const pathFull = `${path}/${handle.name}`;
     if (handle.kind === 'directory'){
         for await (const oItem of handle.values()){
-            oFile = await searchFile(oItem, oTarget)
+            oFile = await searchFile({
+                handle: oItem,
+                target,
+                path: pathFull,
+            });
             if (oFile) return oFile;
         }
-    }else if(handle.name === oTarget.name){
+    }else if(handle.name === target.name){
         oFile = await handle.getFile();
-        if (oFile.size === oTarget.size){
-            // console.log("搜索目标：", oFile);
+        if (oFile.size === target.size){
+            oFile.path = path;
+            oFile.pathFull = pathFull;
+            console.log("文件名+体积相同：", path);
             return oFile;
+        }else{
+            console.log("同名，体积不同：", path);
         }
     }
 }
@@ -126,14 +135,14 @@ export async function handle2FileObj(handle){
 }
 
 // ↓通过路径找到目标
-export async function path2handle(sPath, sKing='file'){
+export async function path2handle(sPath, sKind='file'){
     const rootID = sPath.slice(0, 19);
     const aPath = sPath.slice(20).split('/');
     const oRoot = await dxDB.directory.get({
         createdAt: rootID,
     });
     if (!oRoot) return [];
-    let answer = '';// await oRoot.handle.queryPermission();
+    let answer = '';// await oRoot.handle.queryPermission(); // 似乎没必要查之后再询问，直接问
     if (answer != 'granted') {
         try{
             answer = await oRoot.handle.requestPermission({
@@ -146,21 +155,30 @@ export async function path2handle(sPath, sKing='file'){
     }
     if (answer != 'granted') return [];
     handleManager(oRoot.handle);
+    let topLevel = null;
     let oTargetHandle = oRoot.handle;
     for await (const [idx, cur] of aPath.entries()){
         if (idx === 0) continue;
-        const type = idx === aPath.length-1 ? sKing : 'directory';
+        const type = idx === aPath.length-1 ? sKind : 'directory';
         oTargetHandle = await handle2List(oTargetHandle, {
             findingName: cur,
             findingType: type,
         });
+        if (idx === aPath.length-2){
+            topLevel = oTargetHandle;
+        }
         if (!oTargetHandle) return [];
     }
     let oFile;
-    if (sKing==='file'){
+    if (sKind==='file'){
         oFile = await oTargetHandle.getFile();
     }
-    return [oTargetHandle, oFile];
+    return {
+        handle: oTargetHandle,
+        belong: topLevel,
+        file: oFile,
+        root: oRoot,
+    };
 }
 
 

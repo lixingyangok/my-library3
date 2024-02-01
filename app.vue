@@ -2,7 +2,7 @@
  * @Author: 
  * @Date: 2023-12-30 10:38:50
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-28 20:26:53
+ * @LastEditTime: 2024-02-01 21:27:21
  * @Description: 
 -->
 <template>
@@ -62,7 +62,9 @@ const oIns = getCurrentInstance();
 function f5(){
     showing.value = false;
     oIns.proxy.$nextTick(()=>{
-        showing.value = true;
+        setTimeout(()=>{
+            showing.value = true;
+        }, 100);
     });
 }
 

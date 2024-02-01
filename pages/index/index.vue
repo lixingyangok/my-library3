@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-02 20:27:04
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-30 22:48:33
+ * @LastEditTime: 2024-02-01 21:23:22
  * @Description: 
 -->
 
@@ -48,7 +48,7 @@
                     <el-table-column label="文件">
                         <template #default="scope">
                             <p class="folder-name">{{scope.row.name}}</p>
-                            <p class="the-first">{{scope.row.path.split('/').slice(2).join('/')}}</p>
+                            <p class="the-first">{{scope.row?.path?.split('/').slice(2).join('/')}}</p>
                         </template>
                     </el-table-column>
                     <el-table-column prop="sTime" label="时间" width="120"></el-table-column>
@@ -210,13 +210,14 @@ export default {
     },
     created(){
         if (!import.meta.client) return;
-        // this.getPendingList();
         this.updateTheRecent();
+    },
+    mounted(){
         this.getAllLines();
         this.getLineData();
         this.countMediaInfo();
+        setTimeout(this.getPendingList, 1_000);
     },
-
     methods: {
         ...oMethods,
         async showChart(){
