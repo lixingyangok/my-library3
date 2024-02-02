@@ -71,6 +71,7 @@ export default function(){
         toDraw();
     }
     function toPause(){
+        oDom?.oAudio?.pause(); // 本职工作放在首行
         if (oData.playing) {
             const {currentTime} = oDom.oAudio;
             setTimeout(() => {
@@ -79,8 +80,7 @@ export default function(){
                 // oBarInfo.setStatus(false, iDuration);
             });
         }
-        clearInterval(oData.playing);
-        oDom?.oAudio?.pause();
+        cancelAnimationFrame(oData.playing);
         oData.playing = false;
     }
     // ▲外部方法 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
@@ -196,7 +196,7 @@ export default function(){
         // console.log('画面已被清空');
 	}
 	function toPlay(iType=0, oEv={}) {
-		clearInterval(oData.playing); // 把之前播放的关闭
+        cancelAnimationFrame(oData.playing);
         oDom.oAudio ||= document.getElementById('media-player');
         const {currentTime} = oDom.oAudio;
 		const playFrom = (() => {
@@ -214,22 +214,19 @@ export default function(){
         //     lineId: oCurLine.value.id || null, // 断句期间可能没有 ID 
         //     isSpaceDown: oEv.keyCode === 32, // 记录是否由空格触发
         // });
-		oDom.oPointer.left = `${playFrom * oData.fPerSecPx}px`;
+        oDom.oPointer.left = `${playFrom * oData.fPerSecPx}px`;
 		oDom.oAudio.currentTime = playFrom;
 		oDom.oAudio.play();
-        // ▼ 每秒执行 x 次，似乎60帧即可
-        oData.playing = setInterval(toMovePointer, ~~(1000 / 60));
-        // oBarInfo.setStatus(true);
+        oData.playing = requestAnimationFrame(toMovePointer);
 	}
     // ▼移动光标，
     function toMovePointer(){
-        // console.log('toMovePointer runing');
-        const { style } = oDom.oPointer;
         if (!oDom.oAudio || !oCurLine.value) return toPause(); // 似乎不会至此
         const { currentTime: cTime } = oDom.oAudio;
         const {end} = oCurLine.value;
         if ((cTime < end) && oData.playing) {
-            return style.left = cTime * oData.fPerSecPx + 'px';
+            oDom.oPointer.style.left = cTime * oData.fPerSecPx + 'px';
+            return requestAnimationFrame(toMovePointer);
         }
         toPause();
     }

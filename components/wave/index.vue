@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-03 10:09:58
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-13 18:37:36
+ * @LastEditTime: 2024-02-02 23:20:53
  * @Description: 
 -->
 <template>
@@ -12,7 +12,6 @@
             v-show="(mediaPath || '').endsWith('.mp4')"
             :style="{width: '200px'}"
             :src="mediaSrc"
-            v-if="mediaSrc"
         ></video>
         <section class="my-wave-bar" ref="oMyWaveBar"
             :class="sWaveBarClassName"
@@ -24,8 +23,8 @@
                 ref="oViewport"
                 @mousewheel="wheelOnWave"
                 @scroll="waveWrapScroll"
-                @contextmenu="clickOnWave"
-                @mousedown="mouseDownFn"
+                AAAcontextmenu="clickOnWave"
+                AAAmousedown="mouseDownFn"
             >
                 <div class="long-bar" ref="oLongBar"
                     :style="{width: `${(iFinalDuration + 0.6) * fPerSecPx}px`}"
@@ -39,7 +38,10 @@
                             <span v-show="(cur % 2 == 0) || iPerSecPx >= 50">{{~~(cur/60)}}'{{cur%60}}</span>
                         </li>
                     </ul>
-                    <ul class="region-ul">
+                    <ul class="region-ul"
+                        @contextmenu="clickOnWave"
+                        @mousedown="mouseDownFn"
+                    >
                         <li v-for="(cur, idx) of aGapRegions" :key="idx" 
                             class="region" :class="cur.idx === iCurLineIdx ? 'cur' : ''"
                             :style="{

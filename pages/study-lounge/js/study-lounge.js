@@ -511,7 +511,6 @@ export function mainPart(){
 	// ▼打开文本
 	async function openTxt(){
 		oData.isShowFileList = true;
-		console.log("oData.handleMediaIn", oData.handleMediaIn);
 		let aItems = await handle2List(oData.handleMediaIn);
 		aItems &&= aItems.map(cur => {
 			const sTail = cur.name.split('.').pop().toLowerCase();
@@ -520,7 +519,6 @@ export function mainPart(){
 				...cur,
 				sTail,
 				bStay: aFormat.includes(sTail),
-				// sFullPath: `${dir}/${cur}`.replaceAll('\\', '/'),
 			};
 		}).filter(cur => {
 			return cur.bStay;
@@ -529,11 +527,7 @@ export function mainPart(){
 		});
 		console.log('aItems\n', aItems);
 		oData.aTxtFileList = aItems;
-		return;
-		// ▼旧的
-		// oData.leftType = 'txt';
-		// justCopy(); // 媒体文件更路径
-		// oDom.oTxtInput.click(); 
+		// oDom.oTxtInput.click(); // 旧的 
 	}
 	// ▼ 打开 txt （在左侧显示）
 	async function getArticleFile(ev){
@@ -641,13 +635,15 @@ export function mainPart(){
 	// ▼点击文本文件后打开文件的方法（保存学习记录）
 	async function chooseFile(oTarget){
 		oData.isShowFileList = false; // 关闭窗口
+		if (oTarget.sTail != 'txt') {
+			return alert('非 txt 无法处理');
+		}
 		this.isShowLeft = true;
 		this.leftType = 'txt';
 		const oFile = await oTarget.handle.getFile();
-		console.log('oTarget', 	oTarget.$dc());
-		console.log('oFile', 	oFile);
+		console.log('oTarget', 	oTarget.$dc(), oFile);
 		let fnResolve;
-		const oPromise = new Promise(f1=> fnResolve=f1);
+		const oPromise = new Promise(f1 => fnResolve = f1);
 		Object.assign(new FileReader(), {
 			onload(event){
 				const fileContent = event.target.result;
@@ -655,20 +651,42 @@ export function mainPart(){
 			},
 		}).readAsText(oFile);
 		const text = await oPromise;
-		// console.log("text\n", text);
-		showFileAotuly('', text);
-		return;
-		const {sFullPath} = oTarget;
+		showTxtAtLeft(text); // showFileAotuly(sFullPath);
 		store.transact('oRecent', (oldData) => {
             const old = store('media') || {
                 startAt: new Date() * 1, // 记录开始时间
             };
             oldData[store('media').pathFull] = {
                 ...old,
-				sTxtFile: sFullPath,
+				hasText: true,
             };
         });
-		showFileAotuly(sFullPath);
+		const createdAt = new Date();
+		dxDB.text.put({
+            createdAt,
+            updatedAt: createdAt,
+			content: text,
+        }, {
+			mediaId: oTarget.mediaId,
+		}).then(id => {
+            console.log("文本已经保存", id);
+        });
+	}
+	// ▼通过文本文件路径读取其中内容（音频的原文文件）
+	async function showTxtAtLeft(fileTxt){
+		const aArticle = (()=>{
+			let aResult = [];
+			if ('sTail' === 'srt') {
+				aResult = SubtitlesStr2Arr(fileTxt);
+				aResult = aResult.map(cur => cur.text.trim()); //.filter(Boolean);
+			}else{
+				aResult = fileTxt.split('\n');
+			}
+			aResult = aResult.map(cur => cur.replace(/，\s{0,2}/g, ', '));
+			return aResult;
+		})();
+		ElMessage.success(`取得文本 ${aArticle.length} 行`);
+		oData.aArticle = Object.freeze(aArticle);
 	}
 	// ▼ 保存媒体时长信息 GaP
 	async function dealMediaTimeGaP(oMediaInfo, oMediaBuffer){
