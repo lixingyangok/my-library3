@@ -351,24 +351,26 @@ export default function(){
 	}
     // ▼定位滚动条
     function rollTheWave(iNewLeft){
-		clearInterval(oData.scrollTimer);
+        cancelAnimationFrame(oData.scrollTimer);
         const {oViewport, oLongBar} = oDom;
 		const iOldVal = oViewport['scrollLeft'];
 		if (~~iOldVal === ~~iNewLeft) return;
         iNewLeft = Math.max(0, iNewLeft);
         iNewLeft = Math.min(iNewLeft, oLongBar.offsetWidth - oViewport.offsetWidth);
 		// if ('不要动画') return (oViewport['scrollLeft'] = iNewLeft);
-		const [iTakeTime, iTimes] = [400, 40]; // 走完全程耗时, x毫秒走一步
+		const [iTakeTime, iTimes] = [1200, 50]; // 走完全程耗时, x毫秒走一步
 		const iOneStep = ~~((iNewLeft - iOldVal) / (iTakeTime / iTimes)); // 步长
-		oData.scrollTimer = setInterval(()=>{
-			let iAimTo = oViewport['scrollLeft'] + iOneStep;
+        function fnSetter(){
+            let iAimTo = oViewport['scrollLeft'] + iOneStep;
             const needStop = iNewLeft > iOldVal ? (iAimTo >= iNewLeft) : (iAimTo <= iNewLeft);
+            oViewport['scrollLeft'] = needStop ? iNewLeft: iAimTo;
 			if (needStop){
-				clearInterval(oData.scrollTimer);
-				iAimTo = iNewLeft;
-			}
-			oViewport['scrollLeft'] = iAimTo;
-		}, iTimes);
+                cancelAnimationFrame(oData.scrollTimer);
+			}else{
+                requestAnimationFrame(fnSetter);
+            }
+        }
+		oData.scrollTimer = requestAnimationFrame(fnSetter);
 	}
     function moveToFirstLine(){
         const canGo = iFinalDuration.value && props.aLineArr.length;

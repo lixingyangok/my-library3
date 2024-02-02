@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-03 10:09:58
  * @LastEditors: Merlin
- * @LastEditTime: 2024-02-02 23:20:53
+ * @LastEditTime: 2024-02-02 23:52:30
  * @Description: 
 -->
 <template>
@@ -164,6 +164,8 @@ export default {
     },
     beforeUnmount(){
         this.toPause();
+        console.log("this.scrollTimer", this.scrollTimer);
+        cancelAnimationFrame(this.scrollTimer);
     },
 };
 </script>
