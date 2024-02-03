@@ -138,6 +138,7 @@ export async function handle2FileObj(handle){
 export async function path2handle(sPath, sKind='file'){
     const rootID = sPath.slice(0, 19);
     const aPath = sPath.slice(20).split('/');
+    const dxDB = await useDexie();
     const oRoot = await dxDB.directory.get({
         createdAt: rootID,
     });

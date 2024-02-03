@@ -3,7 +3,10 @@ import {handle2List, handle2FileObj, handleManager} from '@/common/js/fileSystem
 import {copyString, getMediaDuration} from '@/common/js/pure-fn.js';
 import {fillOneFile} from '@/common/js/fs-fn.js';
 
-const sqlite = await useSqlite();
+const [sqlite, dxDB] = await Promise.all([
+    useSqlite(),
+    useDexie(),
+]);
 
 const oFn01 = {
     // ▼删除一项（待验证）

@@ -5,7 +5,7 @@
  * @LastEditTime: 2024-01-13 22:58:35
  * @Description: 这是智能断句的模块
  */
-import {getPeaks, fixTime} from '../../../common/js/pure-fn.js';
+import {getPeaks, fixTime} from '@/common/js/pure-fn.js';
 
 
 // 智能断句的方法

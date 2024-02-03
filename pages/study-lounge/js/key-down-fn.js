@@ -6,9 +6,9 @@
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
-import { fixTime } from '../../../common/js/pure-fn.js';
-import { figureOut } from './figure-out-region.js';
+import { fixTime } from '@/common/js/pure-fn.js';
 import TheAction from '@/common/js/action.js';
+import { figureOut } from './figure-out-region.js';
 
 // import {useBarInfo} from '@/store/happy-bar.js';
 // const oBarInfo = useBarInfo();

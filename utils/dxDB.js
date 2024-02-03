@@ -2,25 +2,27 @@
  * @Author: Merlin
  * @Date: 2024-01-07 21:07:28
  * @LastEditors: Merlin
- * @LastEditTime: 2024-02-02 22:03:00
+ * @LastEditTime: 2024-02-03 13:24:20
  * @Description: 
  */
 
-export const dxDB = (()=>{
-    if (!import.meta.client) return;
-    // 新建一个名为 xx 的库，如果已经存在，就会连接上 作者：西芹术士 https://www.bilibili.com/read/cv15712691/ 出处：bilibili
-    const myDB = new window.Dexie("dxDB");
-    // ↓ 每次修改建库参数需要加大版本号
-    myDB.version(18).stores({
-        // 表名：索引列,（非索引列不需要添加
-        text: '++id, &mediaId, createdAt, updatedAt, type', // type=pdf|txt
-        sqlite: "++id, createdAt, updatedAt, type", // type=main|cache
-        directory: '++id, createdAt',
-    });
-    return myDB;
+export const useDexie = (()=>{
+    if (!import.meta.client) return ()=>{};
+    let dxDB = null;
+    return async ()=>{
+        if (dxDB || !import.meta.client) return dxDB;
+        const {Dexie} = await import('https://cdn.jsdelivr.net/npm/dexie@3.2.4/+esm');
+        dxDB = new Dexie("dxDB");
+        // ↓ 每次修改建库参数需要加大版本号
+        dxDB.version(18).stores({
+            // 表名：索引列,（非索引列不需要添加
+            text: '++id, &mediaId, createdAt, updatedAt, type', // type=pdf|txt
+            sqlite: "++id, createdAt, updatedAt, type", // type=main|cache
+            directory: '++id, createdAt',
+        });
+        if (typeof window === 'object'){
+            window.dxDB = dxDB; // 便于调试
+        }
+        return dxDB;
+    };
 })();
-
-if (import.meta.client){
-    window.dxDB = dxDB; // 用于测试
-}
-

@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-22 19:31:55
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-30 21:25:58
+ * @LastEditTime: 2024-02-03 14:43:28
  * @Description: 与文件夹/文件相关的方法（纯函数）
  */
 // 本包将来可修改为，提供数据查询的包
@@ -242,6 +242,10 @@ export async function findHash(oParam, config={}){
         size: oParam.size,
         lastModified: oParam.lastModified,
     };
+    if (!oParam.size || !oParam.lastModified){
+        console.log("注意，没有文件体积信息", oParam);
+        return {};
+    }
     const aChash = cacheDB.tb.file.select(oQuery);
     let [oCache01, oCache02] = aChash || [];
     if (oCache01 && !oCache02){

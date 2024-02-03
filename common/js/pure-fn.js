@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-29 23:37:16
+ * @LastEditTime: 2024-02-03 14:12:12
  * @Description: 
  */
 
@@ -92,7 +92,8 @@ export function getFakeBuffer(buffer){
 		// console.log(`遍历次数 ${(length / iLeap / 10_000).toFixed(2)} 万`);
 		for (let idx = 0; idx < length; idx += iLeap) {
 			const cur = aChannel[idx];
-			// ChatGPT: 在JavaScript中，Int8Array 是一种类型化数组（TypedArray），属于 ECMAScript 2015（ES6）引入的一部分。Int8Array 是用来表示 8 位带符号整数的数组。这意味着每个元素占用 8 位（一个字节），表示的整数范围是从 -128 到 127。
+			// ChatGPT: 在JavaScript中，Int8Array 是一种类型化数组（TypedArray），属于 ECMAScript 2015（ES6）引入的一部分
+			// Int8Array 是用来表示 8 位带符号整数的数组。这意味着每个元素占用 8 位（一个字节），表示的整数范围是从 -128 到 127。
 			aResult.push(cur * (cur > 0 ? 127 : 128)); // 范围：-128 to 127
 		}
 		return Int8Array.from(aResult);

@@ -6,7 +6,11 @@ import {getTubePath, getDateDiff} from '@/common/js/common-fn.js';
 import {fillOneFile} from '@/common/js/fs-fn.js';
 import {path2handle, handle2List} from '@/common/js/fileSystemAPI.js';
 // import {useActionStore} from '@/store/action-store.js';
-let sqlite = await useSqlite();
+
+const [sqlite, dxDB] = await Promise.all([
+	useSqlite(),
+	useDexie(),
+]);
 
 export function mainPart(){
 	// const oActionStore = useActionStore();

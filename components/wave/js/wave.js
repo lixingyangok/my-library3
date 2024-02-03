@@ -358,8 +358,8 @@ export default function(){
         iNewLeft = Math.max(0, iNewLeft);
         iNewLeft = Math.min(iNewLeft, oLongBar.offsetWidth - oViewport.offsetWidth);
 		// if ('不要动画') return (oViewport['scrollLeft'] = iNewLeft);
-		const [iTakeTime, iTimes] = [1200, 50]; // 走完全程耗时, x毫秒走一步
-		const iOneStep = ~~((iNewLeft - iOldVal) / (iTakeTime / iTimes)); // 步长
+		const [iTakeTime, iTimes] = [800, 60]; // 走完全程耗时, x毫秒走一步
+		const iOneStep = ~~((iNewLeft - iOldVal) / (iTakeTime / iTimes)); // 步长 px
         function fnSetter(){
             let iAimTo = oViewport['scrollLeft'] + iOneStep;
             const needStop = iNewLeft > iOldVal ? (iAimTo >= iNewLeft) : (iAimTo <= iNewLeft);

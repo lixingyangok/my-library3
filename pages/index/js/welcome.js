@@ -203,6 +203,7 @@ const oVisitFn = {
     // ▼访问学习页
     async goToLounge(oTarget){
         if (!oTarget.pathFull){
+            const dxDB = await useDexie();
             const aDir = await dxDB.directory.toArray();
             for (const oDir of aDir){
                 const res = await requestPermission(oDir.handle);

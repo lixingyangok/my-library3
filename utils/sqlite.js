@@ -2,10 +2,10 @@
  * @Author: Merlin
  * @Date: 2024-01-08 09:35:15
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-29 23:45:10
+ * @LastEditTime: 2024-02-03 15:07:24
  * @Description: 
  */
-import { dxDB } from "./dxDB";
+import { useDexie } from "./dxDB";
 import {saveFile} from '@/common/js/fileSystemAPI.js';
 import {line} from './orm/line.js';
 import {TableFunction} from './orm/index.js';
@@ -33,23 +33,38 @@ export const useSqlite = (() => {
     const oResult = {};
     return (dbType = 'main')=>{
         if (!import.meta.client) return;
+        if (['main', 'cache'].includes(dbType) === false){
+            return console.error('库名不正确');
+        }
         oResult[dbType] ||= createOneDB(dbType);
         return oResult[dbType];
     };
 })();
 
 
+let myWorker = ()=>{};
+if (import.meta.client){
+    const oURL = new URL('worker01.js', import.meta.url);
+    myWorker = new Worker(oURL.href, {
+        type: 'module',
+    });
+    window.myWorker = myWorker;
+}
+
 async function createOneDB(dbType){
     let iLastTime = Date.now();
-    const [SQL, oLast] = await Promise.all([
+    const [SQL, dxDB] = await Promise.all([
         getSQL(),
-        dxDB.sqlite.orderBy('updatedAt').filter(({type}) => type === dbType).last(),
+        useDexie(),
     ]);
-    console.log(`加载数据库 ${dbType}-1: `, Date.now() - iLastTime);
+    const oLast = await dxDB.sqlite.orderBy('updatedAt').filter(cur => {
+        return cur.type === dbType;
+    }).last();
+    console.log(`加载数据库 ${dbType}-s1: `, Date.now() - iLastTime);
     iLastTime = Date.now();
     const sqlite = new SQL.Database(oLast?.uint8Arr);
     sqlite.dbType = dbType;
-    console.log(`加载数据库 ${dbType}-2: `, Date.now() - iLastTime);
+    console.log(`加载数据库 ${dbType}-s2: `, Date.now() - iLastTime);
     toAttach(sqlite);
     if (!oLast?.uint8Arr){
         console.log('需要从头建库');
@@ -113,32 +128,23 @@ const commonDatabaseFn = {
         clearTimeout(this.taskTimer);
         // 收到了 uint8Arr 说明在首次导入，0延时，
         const iDelay = uint8Arr ? 0 : 1000;
-        console.log("已经设定了持久化任务");
-        this.taskTimer = setTimeout(()=>this.persistExecutor(uint8Arr), iDelay);
+        console.log(`${this.dbType}: 已经设定了持久化任务`);
+        this.taskTimer = setTimeout(() => {
+            this.persistExecutor(uint8Arr);
+        }, iDelay);
     },
     // ↓持久化
     async persistExecutor(uint8Arr){
         if (uint8Arr){
             console.log("导入数据库");
         }
-        const createdAt = new Date();
-        const time = createdAt.toLocaleString();
-        console.time('保存 sqlite 到 indexedDB');
-        dxDB.sqlite.add({ // 耗时小于 1ms
-            uint8Arr: uint8Arr || this.export(),
-            time, // 用于查询后展示
-            createdAt, // 用于查询最新或最旧的数据
-            updatedAt: createdAt,
-            type: this.dbType,
-        }).then(res => {
-            console.timeEnd('保存 sqlite 到 indexedDB');
-            console.log(`🎉 已经持久化, id=${res}： ${time}`);
+        myWorker.postMessage({
+            command: 'updateSqlite',
+            data: { // 耗时小于 1ms
+                uint8Arr: uint8Arr || this.export(),
+                dbType: this.dbType,
+            },
         });
-        const oCollection = dxDB.sqlite.orderBy('updatedAt').filter(({type}) => type === this.dbType);
-        const count = await oCollection.count();
-        if (count <= 3) return;
-        const first = await oCollection.first();
-        dxDB.sqlite.delete(first.id);
     },
     // ↓ 导出到本地（如导出 Uint8Array 格式的数据 Navicat 可直接调用
     async toExport(toCut){
