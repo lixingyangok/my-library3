@@ -164,7 +164,6 @@ export default {
     },
     beforeUnmount(){
         this.toPause();
-        console.log("this.scrollTimer", this.scrollTimer);
         cancelAnimationFrame(this.scrollTimer);
     },
 };

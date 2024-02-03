@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-02 20:27:04
  * @LastEditors: Merlin
- * @LastEditTime: 2024-02-01 21:23:22
+ * @LastEditTime: 2024-02-02 23:23:08
  * @Description: 
 -->
 
@@ -216,7 +216,7 @@ export default {
         this.getAllLines();
         this.getLineData();
         this.countMediaInfo();
-        setTimeout(this.getPendingList, 1_000);
+        // setTimeout(this.getPendingList, 1_000);
     },
     methods: {
         ...oMethods,
