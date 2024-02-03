@@ -142,7 +142,7 @@ export default function(){
     }
     // ▼使Dom滚动条横向滚动
 	function scrollToFn(deltaY) {
-		const iOneStepLong = 350; // 步长
+		const iOneStepLong = 150; // 步长
         const {oViewport, oLongBar} = oDom;
 		const iMax = oLongBar.offsetWidth - oViewport.offsetWidth;
 		let newVal = (() => {
@@ -164,6 +164,7 @@ export default function(){
         const halfHeight = oCanvasDom.height / 2;
         const Context = oCanvasDom.getContext('2d');
         let idx = 0;
+        // Context.fillStyle = '#64ff64'; // 100, 255, 100
         Context.fillStyle = '#55c655';
         while (idx < fCanvasWidth) {
             const cur1 = aPeaksData[idx * 2] * iHeight | 0; // 下退转整形

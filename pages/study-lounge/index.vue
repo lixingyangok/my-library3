@@ -108,9 +108,9 @@
                 @pipe="bufferReceiver"
                 @setTimeTube="setTime"
             />
-            <!-- <TodayHistory ref="oTodayBar"
+            <TodayHistory ref="oTodayBar"
                 :iMediaID="oMediaInfo.id"
-            /> -->
+            />
             <section class="wave-below">
                 <!-- <div class="practice-record" >
                     <span>练习次数：{{ (oActionStore.oMediaActionSum.iSecLong / oMediaInfo.duration).toFixed(2)}}次</span>
@@ -422,16 +422,16 @@ import {mainPart} from './js/study-lounge.js';
 import {getKeyDownFnMap, fnAllKeydownFn} from './js/key-down-fn.js';
 import {registerKeydownFn, getTubePath} from '@/common/js/common-fn.js';
 import dictionaryVue from '../dictionary/index.vue';
-// import TodayHistory from '@/components/today-history/today-history.vue';
+import TodayHistory from '@/components/today-history/today-history.vue';
 // import dayTrack from '@/components/day-track/day-track.vue';
 // import happyBar from '@/components/happy-bar/happy-bar.vue';
 
 export default {
     name: 'study-lounge',
     components: {
-        // dayTrack,
         dictionaryVue,
-        // TodayHistory,
+        TodayHistory,
+        // dayTrack,
         // happyBar,
     },
     setup(){

@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-22 19:31:55
  * @LastEditors: Merlin
- * @LastEditTime: 2024-02-03 14:43:28
+ * @LastEditTime: 2024-02-03 21:24:58
  * @Description: 与文件夹/文件相关的方法（纯函数）
  */
 // 本包将来可修改为，提供数据查询的包
@@ -149,7 +149,6 @@ export async function findMedia(sPath, oTarget) {
 
 // 查询：某天/某几天 的学习数据
 export async function getLearningHistory(iMediaID){
-    const sqlite = await useSqlite();
     let sql = `
         SELECT *,
             julianday('now', 'localtime') - julianday(createdAt, 'localtime') as gap
@@ -163,7 +162,8 @@ export async function getLearningHistory(iMediaID){
     if (iMediaID){
         sql += `and mediaId = ${iMediaID}`;
     }
-    const res = await sqlite(sql);
+    const sqlite = await useSqlite();
+    const res = await sqlite.select(sql);
     return res;
 }
 

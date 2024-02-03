@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-28 22:07:39
+ * @LastEditTime: 2024-02-03 22:46:09
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
@@ -595,15 +595,22 @@ export function fnAllKeydownFn() {
     }
     let inputTimer = null;
     let candidateTimer = null;
+    let iCleared = 0;
     // ▼处理用户输入
     function inputHandler(ev) {
-        clearTimeout(inputTimer);
-        clearTimeout(candidateTimer);
+        if (++iCleared <= 2){ // 连续击键2次，执行 clear，第3次要放行
+            clearTimeout(inputTimer);
+            clearTimeout(candidateTimer);
+        }else{
+            iCleared = 0; // 归零，表示再有输入事件需要清理
+        }
         const Backspace = ev.inputType == "deleteContentBackward";
         const isLetter = ev.data?.match(/[a-z]/i);
-        // console.log('输入了 =', ev.data);
-        const iTimes = isLetter ? 300 : 0; // 如果输入了非字母，立即匹配左侧字幕
-        inputTimer = setTimeout(()=>{
+        console.log("输入了：", ev.data);
+        //  ↓ iCleared 如果是0，无延时执行
+        //  ↓ 如果输入了非字母，立即匹配左侧字幕
+        const iTimes = iCleared && (isLetter ? 250 : 0);
+        inputTimer = setTimeout(() => {
             recordHistory();
             setLeftLine();
         }, iTimes);
