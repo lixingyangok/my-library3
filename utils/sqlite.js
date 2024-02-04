@@ -2,7 +2,7 @@
  * @Author: Merlin
  * @Date: 2024-01-08 09:35:15
  * @LastEditors: Merlin
- * @LastEditTime: 2024-02-03 15:07:24
+ * @LastEditTime: 2024-02-04 18:20:55
  * @Description: 
  */
 import { useDexie } from "./dxDB";
@@ -73,6 +73,8 @@ async function createOneDB(dbType){
             arr.forEach(sCurSql => sqlite.run(sCurSql));
             console.log('已经从头建库');
             sqlite.persist();
+            alert('数据库已经初始化，需要刷新');
+            location.reload();
         }
     }
     const nameOnWindow = dbType === 'main' ? 'sqlite' : 'cache';

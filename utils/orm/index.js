@@ -2,7 +2,7 @@
  * @Author: 
  * @Date: 2024-01-22 22:45:22
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-30 22:34:48
+ * @LastEditTime: 2024-02-04 20:15:04
  * @Description: 
  */
 
@@ -99,6 +99,12 @@ export class TableFunction {
             else this.insertOne(cur);
         });
     }
+    saveOne(obj){
+        if (obj.id) {
+            return this.updateOne(obj);
+        }
+        return this.insertOne(obj);
+    }
     insertOne(oParams){
         if (!oParams) return;
         const aColName = this.#getColsArr(oParams, true);
@@ -120,13 +126,14 @@ export class TableFunction {
         // console.log("sFullSql", sFullSql);
         // console.log("thisArr", thisArr);
         const res = this.db.run(sFullSql, thisArr);
-        // console.log("res", res);
-        if (res) this.db.persist();
-        return res;
+        var id = this.db.exec("SELECT last_insert_rowid();")[0].values[0][0];
+        if (id) this.db.persist();
+        return id;
     }
     insert(arr){
         if (!arr?.length) return;
-        forEach(cur => this.insertOne(cur));
+        const aRes = arr.map(cur => this.insertOne(cur));
+        return aRes;
     }
     // ▲ 新增 ============================================================ 
     // ▼ 删除 ============================================================ 
@@ -147,20 +154,21 @@ export class TableFunction {
         return res;
     }
     deleteById(id){
-        console.log("deleteById", id);
         let toDelArr = [];
-        if (typeof params === 'number'){
+        if (typeof id === 'number'){
             toDelArr.push(id);
-        }else if(id.constructor.name === 'Array'){
+        }else if(id?.constructor?.name === 'Array'){
             toDelArr = id;
         }else{
+            console.error('无法删除', id);
             return;
         }
-        const res = this.db.exec(`
+        const del_sql = `
             delete from ${this.tbName}
             where id in (${toDelArr.join(',')})
-        `);
-        console.log("res", res);
+        `;
+        console.log("del_sql\n", del_sql);
+        const res = this.db.run(del_sql);
         if (res) this.db.persist();
         return true;
     }
@@ -195,9 +203,9 @@ export class TableFunction {
             where id = ${oParams.id}
         `;
         // console.log("修改语句：\n", sql);
-        const res = this.db.run(sql);
-        if (res) this.db.persist();
-        return res;
+        this.db.run(sql);
+        this.db.persist();
+        return;
     }
     // ▼ 查询方法 ------------------------------------------------------
     select(params, onlyOne){

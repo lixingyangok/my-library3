@@ -2,7 +2,7 @@
  * @Author: Merlin
  * @Date: 2024-02-04 15:59:59
  * @LastEditors: Merlin
- * @LastEditTime: 2024-02-04 16:52:34
+ * @LastEditTime: 2024-02-04 22:33:59
  * @Description: 
 -->
 <template>
@@ -15,48 +15,82 @@
         <el-button type="primary">
             添加短文/文章/书籍
         </el-button>
+        <ul class="article-list" >
+            <li v-for="(cur, idx) of aArtile" :key="cur.id" >
+                中文标题：{{ cur.titleZh }}
+                <br/>
+                英文标题：{{ cur.titleEn }}
+                <br/>
+                <el-button link type="primary"
+                    @click="oFn.read(cur)"
+                >
+                    阅读
+                </el-button>
+                <el-button link type="primary"
+                    @click="oFn.editeArtile(cur)"
+                >
+                    修改
+                </el-button>
+                <el-button link type="primary"
+                    @click=oFn.delArtile(cur)
+                >
+                    删除
+                </el-button>
+            </li>
+        </ul>
+        <hr/>
+        <article class="article" >
+            <section v-for="(aRows, idx) of aSection" :key="idx">
+                <span class="sentence" v-for="(oLine, idx) of aRows" :key="oLine.id" >
+                    <!-- {{ idx ? '&nbsp;': '' }} -->
+                    {{ oLine.text }}
+                </span>
+            </section>
+        </article>
     </div>
     <!--  -->
     <el-dialog
-        title="Tips"
+        title="添加"
         width="900px"
-
+        top="10vh"
         v-model="dialogVisible"
     >
         <el-form :model="addingForm"
             label-width="80px"
         >
             <el-form-item label="中文名">
-                <el-input v-model="addingForm.titleCn" />
+                <el-input v-model="addingForm.titleZh" />
             </el-form-item>
             <el-form-item label="英文名">
                 <el-input v-model="addingForm.titleEn" />
             </el-form-item>
             <el-form-item label="描述">
                 <el-input v-model="addingForm.desc" type="textarea" 
-                    :autosize="{ minRows: 3, maxRows: 6 }"
+                    :autosize="{ minRows: 2, maxRows: 4 }"
                     maxlangth="800"
                 />
             </el-form-item>
             <el-form-item label="笔记">
                 <el-input v-model="addingForm.note" type="textarea" 
-                    :autosize="{ minRows: 3, maxRows: 6 }"
+                    :autosize="{ minRows: 2, maxRows: 4 }"
                     maxlangth="800"
                 />
             </el-form-item>
-            <el-form-item label="正文">
+            <el-form-item label="正文"
+                v-if="addingForm.id > 0 === false"
+            >
                 <el-input v-model="addingForm.article" type="textarea" 
-                    :autosize="{ minRows: 10, maxRows: 20 }"
+                    :autosize="{ minRows: 5, maxRows: 15 }"
                 />
             </el-form-item>
         </el-form>
         <!--  -->
         <template #footer>
             <div class="dialog-footer">
-                <el-button @click="dialogVisible = false">
+                <el-button @click="dialogVisible = false" >
                     Cancel
                 </el-button>
-                <el-button type="primary" @click="oFn.save2DB">
+                <el-button type="primary" @click="oFn.clickSave">
                     Confirm
                 </el-button>
             </div>
@@ -65,16 +99,36 @@
 </template>
 
 <script setup>
+import { onMounted } from 'vue';
 import {useFn} from './js/study.js';
 
-
-
 const dialogVisible = ref(false);
+const aArtile = reactive([]);
+const addingFormEmpty = Object.freeze({
+    id: null,
+    titleZh: '',
+    titleEn: '',
+    note: '',
+    desc: '',
+    article: getTxt(),
+});
+
+const aSection = reactive([]);
+const aLines = reactive([]);
+
 const addingForm = reactive({
+    ...addingFormEmpty,
     article: getTxt(),
 });
 
 const oFn = useFn();
+
+console.log('oFn1')
+onMounted(async ()=>{
+    console.log('oFn2')
+    console.log(oFn)
+    oFn.getArticleList();
+});
 
 
 function getTxt(){

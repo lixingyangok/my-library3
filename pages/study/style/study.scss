@@ -1,3 +1,28 @@
 .top-box{
     padding: 20px;
 }
+.article-list{
+    margin: 20px 0 0;
+    display: grid;
+    gap: 20px;
+    grid-template-columns: repeat(3, 1fr); /* 3列，每列宽度相同 */
+    li{
+        padding: 20px;
+        border: solid 1px #ccc;
+    }
+}
+
+.article{
+    line-height: 1.8;
+    & > section{
+        min-height: 0.5em;
+        .sentence{
+            display: inline;
+            background: #eee;
+            border-radius: 6px;
+            padding: 2px 3px;
+            // &::after{ content: "  "; }
+            margin-right: 0.5em;
+        }
+    }
+}
