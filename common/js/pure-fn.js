@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: Merlin
- * @LastEditTime: 2024-02-03 14:12:12
+ * @LastEditTime: 2024-02-03 15:45:48
  * @Description: 
  */
 
@@ -98,9 +98,9 @@ export function getFakeBuffer(buffer){
 		}
 		return Int8Array.from(aResult);
 	})();
-	console.log(`buffer.sampleRate: ${buffer.sampleRate}`, buffer.sampleRate/iLeap);
 	const fChannelSize = (aChannelData_.byteLength / 1024 / 1024).toFixed(2);
-	console.log(`波形信息体积：${fChannelSize}MB`);
+	console.log(`buffer.sampleRate: ${buffer.sampleRate}`, buffer.sampleRate/iLeap);
+	console.log(`压缩后波形体积：${fChannelSize}MB`);
 	return {
 		...buffer_,
 		length: aChannelData_.length,

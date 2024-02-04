@@ -2,7 +2,7 @@
  * @Author: Merlin
  * @Date: 2024-02-03 11:38:12
  * @LastEditors: Merlin
- * @LastEditTime: 2024-02-03 22:48:02
+ * @LastEditTime: 2024-02-03 15:09:29
  * @Description: 
  */
 import { useDexie } from "./dxDB";
@@ -28,7 +28,7 @@ const fnLib = {
         const dxDB = await useDexie();
         const createdAt = new Date();
         const time = createdAt.toLocaleString();
-        console.time(`Web worker: 保存 ${dbType} 到 indexedDB`);
+        console.time(`Web worker: ${dbType} 已经保存到 indexedDB`);
         const rowID = await dxDB.sqlite.add({
             type: dbType,
             uint8Arr,
@@ -36,9 +36,9 @@ const fnLib = {
             createdAt,
             updatedAt: createdAt,
         });
-        console.timeEnd(`Web worker: 保存 ${dbType} 到 indexedDB`);
-        console.log(`Web worker: ${dbType} 已经持久化 | ID=${rowID} | Time=${time}`);
-        // ↓ id 是自增的，所以删除值最小的一行（最旧的数据）
+        console.timeEnd(`Web worker: ${dbType} 已经保存到 indexedDB`);
+        console.log(`Web worker: row id=${rowID} | time=${time}`);
+        // id 是自增的，所以删除值最小的一行（最旧的数据）
         const oCollection = dxDB.sqlite.orderBy('id').filter(cur => {
             return cur.type === dbType;
         });
