@@ -1,0 +1,46 @@
+
+{cid: 0, name: 'id', type: 'INTEGER', notnull: 0, dflt_value: null, …}
+{cid: 6, name: 'createdAt', type: 'DATETIME', notnull: 1, dflt_value: null, …}
+{cid: 7, name: 'updatedAt', type: 'DATETIME', notnull: 1, dflt_value: null, …}
+
+
+
+// 外键
+{cid: 1, name: 'groupId', type: 'INTEGER', notnull: 1, dflt_value: null, …}
+
+type: 'sentence/article/book'
+
+{cid: 4, name: 'lang', type: 'VARCHAR(10)', notnull: 0, dflt_value: null, …}
+{cid: 4, name: 'text', type: 'VARCHAR(255)', notnull: 0, dflt_value: null, …}
+{'trans', type: 'VARCHAR(900)', notnull: 0, dflt_value: null, …}
+
+{cid: 8, name: 'filledAt', type: 'DATETIME', notnull: 0, dflt_value: null, …}
+
+
+key_word: 'happy,good,自由,' 
+tag: '1,2,3' // 生词难懂，熟词难懂，听不出，写不出
+
+
+
+
+// 事发背景：公交车到达了，电梯到达了，
+// 我到了，
+// 译文
+
+
+
+// 一句中文的多种表达方案
+译文列*2
+笔记
+
+{'note', type: 'VARCHAR(255)', notnull: 0, dflt_value: null, …}
+
+// 多个译文入库时用特殊符号分割开，
+
+getMiddleNumber(){
+
+}
+
+
+start: '空/换行/空格'
+

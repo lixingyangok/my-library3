@@ -29,8 +29,14 @@ export const routes = [{
     // icon_: 'fas fa-poll',
 },{
     path: '/shelf',
-    name_: '书架',
-    icon_: 'fas fa-folder-open',
+    name_: '媒体',
+    icon_: 'fa-solid fa-circle-play',
+},{
+    path: '/study',
+    name_: '文本',
+    // icon_: 'fas fa-folder-open',
+    icon_: 'fa-solid fa-book-open',
+    
 },{
     path: '/study-lounge',
     name: 'studyLounge',
