@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: Merlin
- * @LastEditTime: 2024-02-05 21:57:54
+ * @LastEditTime: 2024-02-05 22:20:44
  * @Description: 
 -->
 <template>
@@ -304,18 +304,16 @@
             <!-- ▼ -->
             <!-- <dayTrack ref="oDayTrack" /> -->
         </section>
+        <!-- ↑列2 ↓列3 -->
+        <dictionaryVue
+            class="dictionary"
+            v-show="isShowDictionary"
+            :word="sSearching"
+        ></dictionaryVue>
         <!--
             ▼弹出窗口 ■■■■■■■■
             ▼弹出窗口 ■■■■■■■■
-            ▼弹出窗口 ■■■■■■■■
-            ▼弹出窗口 ■■■■■■■■
-            ▼弹出窗口 ■■■■■■■■
-            ▼弹出窗口 ■■■■■■■■
         -->
-        <dictionaryVue
-            v-model:dialogVisible="isShowDictionary"
-            :word="sSearching"
-        ></dictionaryVue>
         <!-- ▼单词表 -->
         <el-dialog title="单词表" v-model="isShowNewWords">
             <div class="new-words-search-bar" >

@@ -1,3 +1,10 @@
+/*
+ * @Author: 
+ * @Date: 2024-01-21 17:59:23
+ * @LastEditors: Merlin
+ * @LastEditTime: 2024-02-05 22:18:57
+ * @Description: 
+ */
 
 // ▼切分句子
 // export function splitSentence(sWord, sKey){
@@ -17,7 +24,7 @@ export function groupThem(arr){
     const aResult = [];
     for (const cur of arr){
         let oLastOne = aResult.at(-1) || {};
-        if (oLastOne.dir == cur.dir){
+        if (oLastOne.aList && (oLastOne.dir == cur.dir)){
             oLastOne.aList.push(cur);
         }else{
             aResult.push({dir: cur.dir, aList: [cur]});
@@ -25,6 +32,7 @@ export function groupThem(arr){
     }
     return aResult;
 }
+
 
 // ▼切割句子
 export function splitSentence(text, sKey){

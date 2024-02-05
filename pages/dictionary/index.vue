@@ -2,13 +2,13 @@
  * @Author: 李星阳
  * @Date: 2022-01-23 18:49:41
  * @LastEditors: Merlin
- * @LastEditTime: 2024-02-05 21:57:46
+ * @LastEditTime: 2024-02-05 22:27:18
  * @Description: 
 -->
 <template>
-    <article class="outer-dom">
+    <article class="outer-dom" >
         <div class="search-bar">
-            <input v-model="sKey" @input="toSearch"/>
+            <input v-model="sKey" @input="delaySearch"/>
             <button @click="toSearch">
                 搜索
             </button>
@@ -21,7 +21,7 @@
         <ul class="result-list">
             <li class="one-dir" v-for="(cur,idx) of aResult" :key="idx">
                 <h3 class="dir-name" >
-                    {{cur.dir.split('/').slice(2).join(' > ')}}
+                    {{(cur?.dir||'').split('/').slice(2).join(' > ')}}
                 </h3>
                 <ul class="one-file" >
                     <li class="one-sentence" v-for="(item, i02) of cur.aList" :key="i02"
@@ -54,9 +54,13 @@ import {secToStr} from '@/common/js/pure-fn.js';
 
 const props = defineProps({
     dialogVisible: Boolean,
-    word: { type: String, default: '', },
+    word: {
+        type: String,
+        default: ''
+    },
 });
 const emit = defineEmits(['update:dialogVisible']);
+
 const isShowSelf = computed({
     get: () => {
         return props.dialogVisible;
@@ -71,6 +75,12 @@ const sKey = ref(''); // 可填入测试用的搜索关键字
 const iResult = ref(0); // 搜索结果数量
 const aResult = ref({});
 const sqlite = await useSqlite();
+
+let timer = null;
+function delaySearch(){
+    clearTimeout(timer);
+    timer = setTimeout(toSearch, 400);
+}
 
 toSearch();
 async function toSearch(){
@@ -87,7 +97,7 @@ async function toSearch(){
             FROM line left join media
             ON line.mediaId = media.id ${sWhere}
             ORDER BY media.dir, media.name, line.start
-            limit 50
+            limit 35
 		`);
         console.timeEnd('搜索单词');
         const aCount = sqlite.select(`
@@ -103,7 +113,7 @@ async function toSearch(){
 watch(
     isShowSelf,
     (newVal, oldVal) => {
-        if (!newVal) return fnInvoke('BrowserView', 'hide');
+        if (!newVal) return;
         if (props.word.trim()) sKey.v = props.word.trim();
         toSearch();
     },

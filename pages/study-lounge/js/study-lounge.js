@@ -338,7 +338,7 @@ export function mainPart(){
 	}
 	// ▼打开字典窗口
 	function toCheckDict(){
-		oData.isShowDictionary = true;
+		oData.isShowDictionary = !oData.isShowDictionary;
 	}
 	// ▼切换单词类型
 	async function changeWordType(oWord){

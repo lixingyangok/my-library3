@@ -1,6 +1,8 @@
 // ▼页面模式的外套
 .outer-dom{
     padding: 20px 20px 20px;
+    display: flex;
+    flex-flow: column nowrap;
     height: 100%;
     // ▼关闭弹出窗口的动画
     ::v-deep(.dialog-fade-enter-active),
@@ -17,6 +19,7 @@
     border-bottom: solid 1px #ccc;
     padding: 0 0 10px;
     margin: 0 0 20px;
+    flex: 0 0 auto;
     & > *{
         height: 28px;
         display: inline-block;
@@ -25,9 +28,9 @@
 }
 
 
-
 .result-list{
-    height: 100%;
+    overflow-y: auto;
+    flex: 1 1 auto;
     .dir{
         color: #999;
     }
@@ -43,7 +46,7 @@
 }
 
 ul.one-file{
-    margin: 0 50px 20px 20px;
+    margin: 0 20px 20px 20px;
 }
 
 li.one-dir{
@@ -53,9 +56,9 @@ li.one-dir{
     li.one-sentence{
         margin: 0 0 0 0;
         p{
-            line-height: 2;
-            margin: 0 0 0 30px;
             cursor: pointer;
+            line-height: 1.5;
+            margin: 0 0 0.8em 0px;
             &:hover{
                 background-color: #f2f4fb;
             }
@@ -65,7 +68,7 @@ li.one-dir{
 
 time.start{
     margin: 0 8px 0 0;
-    opacity: 0.5;
+    opacity: 0.4;
 }
 
 span.one-word{
