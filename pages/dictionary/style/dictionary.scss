@@ -12,67 +12,21 @@
     }
 }
 
-// ▼窗口模式的外套
-.outer-dom ::v-deep(.el-dialog__body){
-    height: calc(100vh - var(--top) * 2 - 30px);
-    box-sizing: border-box;
-    padding: 20px;
-}
-.outer-dom ::v-deep(.el-dialog__body),
-.dict_model{
-    display: flex;
-    flex-direction: column;
-}
-.dict_model{
-    height: 100%;
-}
 
 .search-bar{
-    border: solid 1px #eee;
-    margin: 0 0 10px;
-    &>*{
+    border-bottom: solid 1px #ccc;
+    padding: 0 0 10px;
+    margin: 0 0 20px;
+    & > *{
         height: 28px;
         display: inline-block;
         vertical-align: middle;
     }
 }
 
-.tabs_wrap{
-    flex-grow: 1;
-    overflow-y: auto;
-    // box-shadow: 0px 0px 3px red inset;
-    // box-shadow: 0px 0px 3px blue;
-    ::v-deep(.el-tabs__content){
-        height: var(--page-height);
-        overflow-y: auto;
-    }
-    .el-tabs{
-        height: 100%;
-        --el-tabs-header-height: 30px;
-        ::v-deep(.el-tabs__header){
-            margin: 0 0 10px;
-        }
-        ::v-deep(.el-tabs__content){
-            height: calc(100% - 10px - var(--el-tabs-header-height));
-        }
-        .el-tab-pane{
-            border: solid 1px #ccc;
-        }
-        .el-tab-pane, 
-        .el-tab-pane > *{
-            height: 100%;
-            box-sizing: border-box;
-            // box-shadow: 0px 0px 3px blue;
-        }
-    }
-}
 
-.baidu{
-    height: var(--page-height);
-}
 
 .result-list{
-    // margin: 20px 0 0;
     height: 100%;
     .dir{
         color: #999;

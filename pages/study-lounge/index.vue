@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: Merlin
- * @LastEditTime: 2024-02-01 22:09:31
+ * @LastEditTime: 2024-02-05 21:57:54
  * @Description: 
 -->
 <template>
@@ -313,7 +313,6 @@
             ▼弹出窗口 ■■■■■■■■
         -->
         <dictionaryVue
-            beDialog
             v-model:dialogVisible="isShowDictionary"
             :word="sSearching"
         ></dictionaryVue>
