@@ -2,7 +2,7 @@
  * @Author: 
  * @Date: 2024-01-22 22:45:22
  * @LastEditors: Merlin
- * @LastEditTime: 2024-02-04 20:15:04
+ * @LastEditTime: 2024-02-06 21:51:53
  * @Description: 
  */
 
@@ -208,14 +208,14 @@ export class TableFunction {
         return;
     }
     // ▼ 查询方法 ------------------------------------------------------
-    select(params, onlyOne){
+    select(params, tail){
         if (!params) return console.warn('no params');
         let sql = `
             select * from ${this.tbName} 
             where 1 = 1
             ${this.#getWhereSql(params)}
         `;
-        if (onlyOne) sql += ` limit 1`; 
+        if (tail) sql += ` ${tail}`; 
         const arr = this.db.select(sql);
         // console.log("sql\n", sql);
         // console.log("result\n", arr);
@@ -226,7 +226,7 @@ export class TableFunction {
         if (typeof params === 'number'){
             params = {id: params}
         }
-        const [res] = this.select(params, true);
+        const [res] = this.select(params, ' limit 1');
         return res;
     }
 }

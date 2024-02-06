@@ -2,7 +2,7 @@
  * @Author: Merlin
  * @Date: 2024-02-04 18:34:13
  * @LastEditors: Merlin
- * @LastEditTime: 2024-02-04 22:18:45
+ * @LastEditTime: 2024-02-06 22:17:09
  * @Description: 
  */
 const sqlite = await useSqlite();
@@ -90,15 +90,21 @@ export const useFn = () => {
             oIns.setupState.aArtile.splice(0, 1/0, ...arr);
         },
         async read(oArticle){
+            const sWhere = ` articleId = ${oArticle.id}`;
             const arr = sqlite.select(`
                 select 
                     id, articleId, articleRowNo,
                     follow, readTimes, text
-
                 from line
-                where articleId = ${oArticle.id}
+                where ${sWhere}
                 order by articleRowNo
+                limit 10
+                offset 0
             `);
+            const [oResult={}] = sqlite.select(`
+                select count(*) as count from line where ${sWhere}
+            `);
+            console.log("count", oResult.count);
             const aSection = [];
             arr.forEach(oCur => {
                 if (!oCur.follow) aSection.push([]);
