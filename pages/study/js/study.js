@@ -2,7 +2,7 @@
  * @Author: Merlin
  * @Date: 2024-02-04 18:34:13
  * @LastEditors: Merlin
- * @LastEditTime: 2024-02-06 22:17:09
+ * @LastEditTime: 2024-02-07 20:21:08
  * @Description: 
  */
 const sqlite = await useSqlite();
@@ -90,23 +90,14 @@ export const useFn = () => {
             oIns.setupState.aArtile.splice(0, 1/0, ...arr);
         },
         async read(oArticle){
-            const sWhere = ` articleId = ${oArticle.id}`;
-            const arr = sqlite.select(`
-                select 
-                    id, articleId, articleRowNo,
-                    follow, readTimes, text
-                from line
-                where ${sWhere}
-                order by articleRowNo
-                limit 10
-                offset 0
-            `);
-            const [oResult={}] = sqlite.select(`
-                select count(*) as count from line where ${sWhere}
-            `);
-            console.log("count", oResult.count);
+            const oResult = sqlite.tb.line.getPage({
+                articleId: oArticle.id,
+            }, {
+                column: 'id, articleId, articleRowNo, follow, readTimes, text',
+                tail: 'order by articleRowNo',
+            });
             const aSection = [];
-            arr.forEach(oCur => {
+            oResult.rows.forEach(oCur => {
                 if (!oCur.follow) aSection.push([]);
                 aSection.at(-1).push(oCur)
             }, []);

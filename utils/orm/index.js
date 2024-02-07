@@ -2,7 +2,7 @@
  * @Author: 
  * @Date: 2024-01-22 22:45:22
  * @LastEditors: Merlin
- * @LastEditTime: 2024-02-06 21:51:53
+ * @LastEditTime: 2024-02-07 20:59:22
  * @Description: 
  */
 
@@ -220,6 +220,44 @@ export class TableFunction {
         // console.log("sql\n", sql);
         // console.log("result\n", arr);
         return arr;
+    }
+    getPage(params, oConfig={}){
+        if (!params) return console.warn('no params');
+        const sWhere = this.#getWhereSql(params);
+        const {
+            tail='',
+            column='',
+            pageSize=20,
+            pageIndex=1,
+        } = oConfig;
+        const sColumn = (()=>{
+            if (!column.length) return '*';
+            if (typeof column === 'string') return column;
+            if (column.constructor.name === 'Array') return column.join(', ');
+            return '*';
+        })();
+        let sql = `
+            select ${sColumn}
+            from ${this.tbName} 
+            where 1 = 1 ${sWhere} ${oConfig.sql || ''}
+            ${tail}
+            limit ${pageSize}
+            offset ${pageSize * (pageIndex-1)}
+        `;
+        const rows = this.db.select(sql);
+        const [pageInfo] = this.db.select(`
+            select count(*) as total
+            from ${this.tbName} 
+            where 1 = 1 ${sWhere}
+        `);
+        // console.log("oInfo\n", pageInfo);
+        return {
+            rows,
+            total: pageInfo.total,
+            pageSize,
+            pageIndex,
+            pageQuantity: Math.ceil(pageInfo.total / pageSize),
+        };
     }
     getOne(params){
         if (!params) return console.warn('no params');

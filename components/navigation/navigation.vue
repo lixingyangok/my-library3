@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-04 15:18:43
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-28 20:26:18
+ * @LastEditTime: 2024-02-07 21:41:03
  * @Description: 
 -->
 <template>
@@ -30,10 +30,16 @@ export const routes = [{
 },{
     path: '/shelf',
     name_: '媒体',
-    icon_: 'fa-solid fa-circle-play',
+    icon_: 'fa-solid fa-circle-play', // 媒体图标
+    // icon_: 'fa-solid fa-folder-open',
 },{
     path: '/study',
     name_: '文本',
+    // icon_: 'fa-solid fa-window-restore',
+    icon_: 'fa-solid fa-box-archive',
+},{
+    path: '/reading',
+    name_: '阅读',
     // icon_: 'fas fa-folder-open',
     icon_: 'fa-solid fa-book-open',
     
@@ -41,7 +47,7 @@ export const routes = [{
     path: '/study-lounge',
     name: 'studyLounge',
     name_: '听写',
-    icon_: 'fas fa-paper-plane',
+    icon_: 'fa-solid fa-pen-nib',
 },{
     path: '/random',
     name: 'random',
