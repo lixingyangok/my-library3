@@ -2,15 +2,15 @@
  * @Author: Merlin
  * @Date: 2024-02-07 21:12:39
  * @LastEditors: Merlin
- * @LastEditTime: 2024-02-08 19:35:12
+ * @LastEditTime: 2024-02-08 20:26:57
  * @Description: 
 -->
 <template>
     <div class="page-body">
-        <section class='at-left' >
-            <div>
-                
-            </div>
+        <section class='at-left' 
+            v-if="0"
+        >
+            <div> asdf </div>
         </section>
         <!-- ↑左栏，↓中部 -->
         <section class="at-center" >
@@ -24,21 +24,26 @@
             </div>
             <div class="article " >
                 <!-- <p v-for="cur of 222" :key="cur"> {{ cur }} </p> -->
-                <article class="sentence-box">
-                    <div v-for="(aRows, idx) of aSection" :key="idx"
+                <article class="section-box">
+                    <section v-for="(aRows, idx) of aParagraph" :key="idx"
                         class="paragraph"
+                        :class="{
+                            empty: aRows.length===1 && !aRows[0].text,
+                        }"
                     >
-                        <span v-for="(oLine, idx) of aRows" :key="oLine.id"
+                        <p v-for="(oLine, idx) of aRows" :key="oLine.id"
                             class="sentence"
                         >
                             {{ oLine.text }}
-                        </span>
-                    </div>
+                        </p>
+                    </section>
                 </article>
                 <!-- 分界 -->
                 <div class="page-box">
                     <el-pagination
-                        v-for="(sCurLayout, idx) of pager" :key="idx"
+                        v-for="(sCurLayout, idx) of pager"
+                        :key="idx"
+                        hide-on-single-page
                         :small="!true"
                         :background="false"
                         v-model:current-page="oArticleInfo.pageIndex"
@@ -63,7 +68,7 @@
 <script setup>
 import dictionaryVue from '../dictionary/index.vue';
 
-const aSection = ref([]);
+const aParagraph = ref([]);
 const oArticleInfo = ref(
     import.meta.client ? store('article') : {}
 );
@@ -115,7 +120,7 @@ async function showPage(){
         arr.at(-1).push(oCur)
     }, []);
     console.log("oResult\n", oResult.$dc());
-    aSection.value = arr;
+    aParagraph.value = arr;
 }
 
 function handleSizeChange(pageSize){
@@ -128,6 +133,7 @@ function handleSizeChange(pageSize){
 function handleCurrentChange(pageIndex){
     console.log("pageIndex", pageIndex);
     oArticleInfo.value.pageIndex = pageIndex;
+    document.querySelectorAll('.main-part')[0].scrollTop=0;
     showPage();
 }
 
