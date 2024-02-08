@@ -1,39 +1,61 @@
+
 .page-body{
+    --width: 800px;
+    --padding-x: 80px;
     position: relative;
     min-height: 100%;
-    --padding-x: 100px;
-    --width: 900px;
     background-color: #f6f7f9;
+    display: flex;
+    justify-content: center;
+    padding: 0 20px;
+    .at-left, .at-right{
+        flex-shrink: 1;
+        background-color: #eee;
+        // border: solid 1px blue;
+        margin: 0;
+        width: 500px;
+        // max-width: 500px;
+        max-height: 100vh;
+        position: sticky;
+        top: 0;
+        bottom: 0;
+        & > *{
+            // width: inherit;
+            // width: calc((100% - var(--width)) * 0.5 - 100px);
+            box-sizing: border-box;
+        }
+    }
+    .at-center{
+        max-width: var(--width);
+        flex: 1 1 var(--width);
+        margin: 0 20px;
+    }
+    .at-left{
+        max-width: 400px;
+        flex-shrink: 1.5;
+    }
 }
+
 
 .title{
     box-sizing: border-box;
-    position: absolute;
+    position: sticky;
     background-color: #a78a62;
     height: 100px;
     top: 0;
-    left: calc((100% - var(--width)) /2);
-    width: var(--width);
+    // left: calc((100% - var(--width)) /2);
+    // width: var(--width);
     padding: 10px var(--padding-x);
 }
-
-.full-wide{
-    width: 100%;
-}
-
 
 .article{
     box-sizing: border-box;
     display: block;
-    width: var(--width);
-    padding: 180px var(--padding-x) 350px;
-    margin: 0 auto;
+    // width: var(--width);
+    padding: 100px var(--padding-x) 350px;
     background-color: #fff7e9;
-    min-height: 100vh;
+    min-height: 200vh;
     box-shadow: 0px 0px 20px rgba(0, 100, 0, 0.1);
-}
-
-.article{
     line-height: 2;
     & > section{
         min-height: 0.5em;
@@ -49,3 +71,4 @@
         }
     }
 }
+

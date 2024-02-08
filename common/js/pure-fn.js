@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: Merlin
- * @LastEditTime: 2024-02-03 15:45:48
+ * @LastEditTime: 2024-02-08 14:49:11
  * @Description: 
  */
 
@@ -33,7 +33,7 @@ export async function getMediaDuration(oFile){
 	const oPromise = new Promise(f1 => fnResolve = f1);
 	Object.assign(new Audio(), {
 		src: URL.createObjectURL(oFile),
-		oncanplay(ev) {
+		ondurationchange(ev) {
 			fnResolve({
 				duration: ev.target.duration,
 				durationStr: secToStr(ev.target.duration),
