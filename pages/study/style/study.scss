@@ -11,18 +11,3 @@
         border: solid 1px #ccc;
     }
 }
-
-.article{
-    line-height: 1.8;
-    & > section{
-        min-height: 0.5em;
-        .sentence{
-            display: inline;
-            background: #eee;
-            border-radius: 6px;
-            padding: 2px 3px;
-            // &::after{ content: "  "; }
-            margin-right: 0.5em;
-        }
-    }
-}

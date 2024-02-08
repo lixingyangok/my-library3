@@ -90,19 +90,8 @@ export const useFn = () => {
             oIns.setupState.aArtile.splice(0, 1/0, ...arr);
         },
         async read(oArticle){
-            const oResult = sqlite.tb.line.getPage({
-                articleId: oArticle.id,
-            }, {
-                column: 'id, articleId, articleRowNo, follow, readTimes, text',
-                tail: 'order by articleRowNo',
-            });
-            const aSection = [];
-            oResult.rows.forEach(oCur => {
-                if (!oCur.follow) aSection.push([]);
-                aSection.at(-1).push(oCur)
-            }, []);
-            console.log("aSection", aSection.$dc());
-            oIns.setupState.aSection.splice(0, 1/0, ...aSection);
+            console.log("oArticle", oArticle.$dc());
+            store('article', oArticle);
         },
     };
     return oFn;

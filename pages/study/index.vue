@@ -32,6 +32,11 @@
                     修改
                 </el-button>
                 <el-button link type="primary"
+                    
+                >
+                    追加文本
+                </el-button>
+                <el-button link type="primary"
                     @click=oFn.delArtile(cur)
                 >
                     删除
@@ -40,12 +45,7 @@
         </ul>
         <hr/>
         <article class="article" >
-            <section v-for="(aRows, idx) of aSection" :key="idx">
-                <span class="sentence" v-for="(oLine, idx) of aRows" :key="oLine.id" >
-                    <!-- {{ idx ? '&nbsp;': '' }} -->
-                    {{ oLine.text }}
-                </span>
-            </section>
+            
         </article>
     </div>
     <!--  -->
