@@ -43,15 +43,24 @@
     background-color: #a78a62;
     min-height: 80px;
     top: 0;
-    // left: calc((100% - var(--width)) /2);
-    // width: var(--width);
     padding: 20px var(--padding-x);
     display: flex;
     flex-flow: column nowrap;
     align-items: center;
     justify-content: center;
-    font-weight: bold;
-    font-size: 18px;
+    h1{
+        font-weight: bold;
+        font-size: 18px;
+    }
+    .btn-group{
+        position: absolute;
+        right: 10px;
+        bottom: 3px;
+        // transform: translateY(101%);
+        button{
+            color: white;
+        }
+    }
 }
 
 .article{
@@ -86,6 +95,16 @@
         &:nth-child(1){
             margin-left: 2em;
         }
+        &[class~=reading]{
+            color: blue;
+        }
+        .word-has-read{
+            text-decoration: underline;
+        }
+    }
+    p.sentence[class~=line-has-read], 
+    .word-has-read{
+        text-decoration: underline;
     }
     &[class~=empty]{
         p.sentence{
