@@ -98,24 +98,27 @@
         .word{
             display: inline;
             position: relative;
-            opacity: 0.5;
+            opacity: 0.6;
             text-decoration: none;
             background-image: linear-gradient(#f0f2f5, #f0f2f5);
             background-repeat: no-repeat;
             background-position: bottom left;
             background-size: 0 100%;
+            filter: blur(2px);
             // & + .word{
             //     &::before{
             //         content: " ";
             //     }
             // }
         }
+        &[class ~= has-read-line],
         &[class ~= reading-line]{
             .word{
                 // transition-property: background-size;
                 // transition-duration: 150ms;
                 // transition-timing-function: linear;
                 opacity: 1;
+                filter: blur(0);
             }
         }
         &[class~=reading-line],

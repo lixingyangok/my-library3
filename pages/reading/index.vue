@@ -2,7 +2,7 @@
  * @Author: Merlin
  * @Date: 2024-02-07 21:12:39
  * @LastEditors: Merlin
- * @LastEditTime: 2024-02-12 15:50:00
+ * @LastEditTime: 2024-02-12 21:36:13
  * @Description: 
 -->
 <template>
@@ -35,6 +35,7 @@
                     <el-button link @click="toReplaceTargetWords">
                         替换
                     </el-button >
+                    readTimes: {{ oArticleInfo.readTimes }}
                 </div>
             </div>
             <div class="article " >
@@ -51,6 +52,7 @@
                             class="sentence"
                             :class="{
                                 'reading-line': oLine.reading,
+                                'has-read-line': oLine.readTimes > oArticleInfo.readTimes,
                             }"
                             @click.alt="sentenceEditing($event, oLine)"
                             @click.ctrl="sentenceMarking($event, oLine)"
@@ -108,6 +110,10 @@
             <p>
                 {{ oSentence.oLine.text }}
             </p>
+            <br/>
+            <el-button link AAAAclick="setAsNewChapter">
+                从此阅读
+            </el-button>
             <el-button link @click="setAsNewChapter">
                 设为章节标记
             </el-button>
@@ -201,17 +207,23 @@ const aParagraph4Show = computed(()=>{
 const pager = [
     'total, sizes, jumper',
     'prev, pager, next',
-]
+];
 
 onMounted(()=>{
     init();
+    showArticleInfo();
 });
 
 
 async function showArticleInfo(){
-    const oInfo = sqlite.tb.article.getOne({
-        mediaId: oArticleInfo.value.id,
+    const oInfo = sqlite.tb.media.getOne({
+        id: oArticleInfo.value.id,
     });
+    console.log("媒体信息：", oInfo.$dc());
+    oArticleInfo.value = {
+        ...oArticleInfo.value,
+        ...oInfo,
+    }
 }
 
 async function init(){
@@ -223,7 +235,7 @@ async function init(){
         pageSize: oArticleInfo.value.pageSize,
         pageIndex: oArticleInfo.value.pageIndex,
     });
-    console.log("oResult\n", oResult.$dc());
+    console.log("媒体行：\n", oResult.$dc());
     const oArticleInfoNew = {
         ...oArticleInfo.value,
         ...oResult,
@@ -251,7 +263,7 @@ function handleCurrentChange(pageIndex){
 
 function continueRead(){
     const idx = aLinesFlat.value.findIndex(cur => {
-        return !cur.readTimes;
+        return cur.readTimes <= oArticleInfo.value.readTimes;
     });
 }
 
@@ -278,20 +290,27 @@ function readNextLine(iDirection){
 // ↓步进步退
 function readNextWord(iDirection){
     const iStepLong = iDirection * 2;
+    const iStep01 = Math.abs(iStepLong) === 2 ? 1 : 0;
     const iMax = oLineReading.value.textArr.length - 1; 
     let iLineIndex = aReading.value[0];
     let iWordIndex = aReading.value[1] + iStepLong;
+    // let iWordIndex = Math.max(1, aReading.value[1] + iStepLong);
     if (iWordIndex < 0) {
-        if (aReading.value[1] === 0){ // 位于句首
+        if (aReading.value[1] <= 0){ // 位于句首
             iLineIndex = Math.max(0, iLineIndex - 1);
-            const iPre = Math.max(0, aReading.value[0]-1);
-            iWordIndex = aLinesFlat.value[iPre].textArr.length - 1;
+            if (aReading.value[0] > 0){
+                const iPre = Math.max(0, aReading.value[0]-1);
+                iWordIndex = aLinesFlat.value[iPre].textArr.length - 1;
+            }else{
+                iWordIndex = iStep01;
+            }
         }else{
-            iWordIndex = 0;
+            iWordIndex = iStep01;
         }
     }else if (iWordIndex > iMax) { 
         if (aReading.value[1] === iMax){ // 位于句尾
-            iWordIndex = 0;
+            setLine(oLineReading.value.$dc()); // 设为已读
+            iWordIndex = iStep01;
             iLineIndex = Math.min(
                 iLineIndex + 1,
                 aLinesFlat.value.length - 1,
@@ -300,11 +319,33 @@ function readNextWord(iDirection){
             iWordIndex = iMax;
         }
     }
+    // iWordIndex = Math.max(1, iWordIndex);
     aReading.value[0] = iLineIndex;
     aReading.value[1] = iWordIndex;
 }
 
+// ↓ 设定为已读
+function setLine(oLineReadingDC){
+    // console.log("阅读完毕：\n", oLineReadingDC);
+    const {readTimes: iArticleReadTimes } = oArticleInfo.value;
+    if (oLineReadingDC.readTimes > iArticleReadTimes) {
+        return;
+    }
+    const readTimes = iArticleReadTimes + 1;
+    const bRes = sqlite.tb.line.updateOne({
+        id: oLineReadingDC.id,
+        lastTimeReadAt: Date.now(),
+        readTimes,
+    });
+    if (!bRes) return;
+    const oTargetLine = aLinesFlat.value.find(cur=>{
+        return cur.id=== oLineReadingDC.id;
+    });
+    // if (!oTargetLine) return;
+    oTargetLine.readTimes = readTimes; 
+}
 
+// ↓修改行
 function sentenceEditing(ev, oLine){
     const {currentTarget} = ev;
     const range = window.getSelection().getRangeAt(0)

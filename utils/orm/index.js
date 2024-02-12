@@ -207,7 +207,7 @@ export class TableFunction {
         // console.log("修改语句：\n", sql);
         this.db.run(sql);
         this.db.persist();
-        return;
+        return true;
     }
     // ▼ 查询方法 ------------------------------------------------------
     select(params, tail){
