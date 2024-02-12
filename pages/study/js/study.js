@@ -2,7 +2,7 @@
  * @Author: Merlin
  * @Date: 2024-02-04 18:34:13
  * @LastEditors: Merlin
- * @LastEditTime: 2024-02-12 15:56:37
+ * @LastEditTime: 2024-02-12 17:12:44
  * @Description: 
  */
 const sqlite = await useSqlite();
@@ -14,23 +14,39 @@ export const useFn = () => {
     const oFn = {
         // ↓ 显示窗口
         showAddingDialog(){
-            const {addingForm, addingFormEmpty} = oIns.setupState;
+            const {oArticleForm, oArticleFormEmpty} = oIns.setupState;
             oInstance.setupState.dialogVisible = true;
-            Object.assign(addingForm, {
-                ...addingFormEmpty,
+            Object.assign(oArticleForm, {
+                ...oArticleFormEmpty,
             });
         },
         // ↓点击保存
         async clickSave(){
-            const {addingForm, addingFormEmpty} = oIns.setupState;
-            const mediaId = await oFn.saveArticle(addingForm);
-            const inserting = !addingForm.id && mediaId > 0;
+            const {oArticleForm, oArticleFormEmpty} = oIns.setupState;
+            const isAppending = !!oArticleForm.appending;
+            let mediaId = oArticleForm.id;
+            let iRowNoFrom = 0;
+            if (isAppending){
+                const [res] = sqlite.select(`
+                    select max(articleRowNo) as maxRowNo
+                    from line
+                    where mediaId = ${mediaId}
+                `);
+                iRowNoFrom = res.maxRowNo;
+                console.log("iRowNoFrom:", iRowNoFrom);
+                if (!iRowNoFrom) return alert('没有行号');
+            }else{
+                mediaId = await oFn.saveArticle(oArticleForm);
+            }
+            const inserting = !oArticleForm.id && mediaId > 0;
             console.log("正在", inserting ? '新增': '修改');
-            if (!inserting) return;
-            if (!addingForm?.article?.split) return;
+            if (!isAppending && !inserting){
+                return;
+            }
+            if (!oArticleForm?.article?.split) return;
             // oIns.setupState.dialogVisible = false;
             const aLines = [];
-            const aSectionArr = addingForm.article.trim().split('\n');
+            const aSectionArr = oArticleForm.article.trim().split('\n');
             aSectionArr.forEach((oSection, idx01) => {
                 const sTrimed = (oSection || '').trim();
                 const arr = sTrimed.split(/(?<=[.!?])\s/);
@@ -38,7 +54,7 @@ export const useFn = () => {
                     const oRow = {
                         mediaId,
                         text: sLine.trim(),
-                        articleRowNo: aLines.length + 1,
+                        articleRowNo: (iRowNoFrom + 1) + aLines.length,
                     };
                     if (idx02) oRow.follow = 1; // 1 = 与前一句同在一段内
                     aLines.push(oRow);
@@ -46,6 +62,7 @@ export const useFn = () => {
             });
             console.log("aLines", aLines);
             sqlite.tb.line.insert(aLines);
+            oIns.setupState.dialogVisible = false;
         },
         // ↓ 存入数据库
         async saveArticle(oForm){
@@ -59,9 +76,9 @@ export const useFn = () => {
         async editeArtile(oForm){
             console.log("oForm", oForm);
             oIns.setupState.dialogVisible = true;
-            const {addingForm} = oIns.setupState;
-            Object.keys(addingForm).forEach(key=>{
-                addingForm[key] = oForm[key];
+            const {oArticleForm} = oIns.setupState;
+            Object.keys(oArticleForm).forEach(key=>{
+                oArticleForm[key] = oForm[key];
             });
         },
         async delArtile(oArticle){
@@ -93,6 +110,13 @@ export const useFn = () => {
         async read(oArticle){
             console.log("oArticle", oArticle.$dc());
             store('article', oArticle);
+            const oRouter = useRouter();
+            console.log("oRouter", oRouter);
+            oRouter.push('/reading');
+        },
+        addMore(oForm){
+            oFn.editeArtile(oForm);
+            oIns.setupState.oArticleForm.appending = true;
         },
     };
     return oFn;

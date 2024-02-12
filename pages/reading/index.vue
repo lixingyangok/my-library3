@@ -111,7 +111,7 @@
             <el-button link @click="setAsNewChapter">
                 设为章节标记
             </el-button>
-            <el-button link AAclick="setAsNewChapter">
+            <el-button link @click="delOneLine(oSentence.oLine)">
                 删除
             </el-button>
         </el-tour-step>
@@ -123,6 +123,7 @@
 <script setup>
 import dictionaryVue from '../dictionary/index.vue';
 import {ElTourStep} from 'element-plus'
+import {registerKeydownFn} from '@/common/js/common-fn.js';
 
 const sqlite = import.meta.client && await useSqlite();
 const oArticleInfo = ref(
@@ -266,9 +267,10 @@ function keyDown(ev){
 function readNextLine(iDirection){
     let iLineIndex = aReading.value[0] + iDirection;
     if (iLineIndex < 0) iLineIndex = 0;
-    if (iLineIndex > aLinesFlat.length-1){
-        iLineIndex = aLinesFlat.length-1
+    if (iLineIndex > aLinesFlat.value.length - 1){
+        iLineIndex = aLinesFlat.value.length - 1;
     }
+    console.log("iLineIndex", iLineIndex);
     aReading.value[0] = iLineIndex;
     aReading.value[1] = 0;
 }
@@ -347,7 +349,7 @@ function toFindTargetWord(){
     oReExp.value = sReExp01;
 }
 
-// ↓
+// ↓替换（删除）目标文字
 function toReplaceTargetWords(){
     if (!oReExp.value) return;
     const arr = aLinesCom.value.filter(cur=>{
@@ -365,6 +367,12 @@ function toReplaceTargetWords(){
     init();
 }
 
+// ↓删除
+function delOneLine(oLine){
+    sqlite.tb.line.deleteById(oLine);
+    init();
+    oSentence.value.visible = false;
+}
 
 onMounted(()=>{
     document.addEventListener('keydown', keyDown);

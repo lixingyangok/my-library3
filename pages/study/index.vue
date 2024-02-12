@@ -2,7 +2,7 @@
  * @Author: Merlin
  * @Date: 2024-02-04 15:59:59
  * @LastEditors: Merlin
- * @LastEditTime: 2024-02-04 22:33:59
+ * @LastEditTime: 2024-02-12 17:04:09
  * @Description: 
 -->
 <template>
@@ -10,10 +10,10 @@
         <el-button type="primary"
             @click="oFn.showAddingDialog"
         >
-            添加
+            添加短文/文章/书籍
         </el-button>
         <el-button type="primary">
-            添加短文/文章/书籍
+            添加句子
         </el-button>
         <ul class="article-list" >
             <li v-for="(cur, idx) of aArtile" :key="cur.id" >
@@ -32,7 +32,7 @@
                     修改
                 </el-button>
                 <el-button link type="primary"
-                    
+                    @click="oFn.addMore(cur)"
                 >
                     追加文本
                 </el-button>
@@ -50,36 +50,82 @@
     </div>
     <!--  -->
     <el-dialog
-        title="添加"
+        title="添加短文/文章/书籍"
         width="900px"
         top="10vh"
         v-model="dialogVisible"
     >
-        <el-form :model="addingForm"
+        <el-form :model="oArticleForm"
             label-width="80px"
         >
-            <el-form-item label="中文名">
-                <el-input v-model="addingForm.titleZh" />
+            <el-form-item label="句子">
+                <el-input v-model="oArticleForm.note" type="textarea" 
+                    :autosize="{ minRows: 2, maxRows: 4 }"
+                    maxlangth="800"
+                />
             </el-form-item>
-            <el-form-item label="英文名">
-                <el-input v-model="addingForm.titleEn" />
+            <el-form-item label="句子语种">
+                中文/英文
             </el-form-item>
-            <el-form-item label="描述">
-                <el-input v-model="addingForm.desc" type="textarea" 
+            <el-form-item label="译文">
+                <el-input v-model="oArticleForm.note" type="textarea" 
                     :autosize="{ minRows: 2, maxRows: 4 }"
                     maxlangth="800"
                 />
             </el-form-item>
             <el-form-item label="笔记">
-                <el-input v-model="addingForm.note" type="textarea" 
+                <el-input v-model="oArticleForm.note" type="textarea" 
                     :autosize="{ minRows: 2, maxRows: 4 }"
                     maxlangth="800"
                 />
             </el-form-item>
+        </el-form>
+        <template #footer>
+            <div class="dialog-footer">
+                <el-button @click="dialogVisible = false" >
+                    Cancel
+                </el-button>
+                <el-button type="primary" @click="oFn.clickSave">
+                    Confirm
+                </el-button>
+            </div>
+        </template>
+    </el-dialog>
+    <!--  -->
+    <el-dialog
+        title="添加短文/文章/书籍"
+        width="900px"
+        top="10vh"
+        v-model="dialogVisible"
+    >
+        <el-form :model="oArticleForm"
+            label-width="80px"
+        >
+            <template v-if="!oArticleForm.appending">
+                <el-form-item label="中文名">
+                    <el-input v-model="oArticleForm.titleZh" />
+                </el-form-item>
+                <el-form-item label="英文名">
+                    <el-input v-model="oArticleForm.titleEn" />
+                </el-form-item>
+                <el-form-item label="描述">
+                    <el-input v-model="oArticleForm.desc" type="textarea" 
+                        :autosize="{ minRows: 2, maxRows: 4 }"
+                        maxlangth="800"
+                    />
+                </el-form-item>
+                <el-form-item label="笔记">
+                    <el-input v-model="oArticleForm.note" type="textarea" 
+                        :autosize="{ minRows: 2, maxRows: 4 }"
+                        maxlangth="800"
+                    />
+                </el-form-item>
+            </template>
+            <!-- 分界 -->
             <el-form-item label="正文"
-                v-if="addingForm.id > 0 === false"
+                v-if="oArticleForm.appending || (oArticleForm.id > 0 === false)"
             >
-                <el-input v-model="addingForm.article" type="textarea" 
+                <el-input v-model="oArticleForm.article" type="textarea" 
                     :autosize="{ minRows: 5, maxRows: 15 }"
                 />
             </el-form-item>
@@ -104,21 +150,22 @@ import {useFn} from './js/study.js';
 
 const dialogVisible = ref(false);
 const aArtile = reactive([]);
-const addingFormEmpty = Object.freeze({
+const oArticleFormEmpty = Object.freeze({
     id: null,
     titleZh: '',
     titleEn: '',
     note: '',
     desc: '',
-    article: getTxt(),
+    article: '',
+    appending: false,
 });
 
 const aSection = reactive([]);
 const aLines = reactive([]);
 
-const addingForm = reactive({
-    ...addingFormEmpty,
-    article: getTxt(),
+const oArticleForm = reactive({
+    ...oArticleFormEmpty,
+    // article: getTxt(),
 });
 
 const oFn = useFn();

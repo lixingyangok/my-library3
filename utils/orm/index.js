@@ -2,7 +2,7 @@
  * @Author: 
  * @Date: 2024-01-22 22:45:22
  * @LastEditors: Merlin
- * @LastEditTime: 2024-02-07 20:59:22
+ * @LastEditTime: 2024-02-12 17:00:52
  * @Description: 
  */
 
@@ -153,15 +153,17 @@ export class TableFunction {
         if (res) this.db.persist();
         return res;
     }
-    deleteById(id){
+    deleteById(vParam){
         let toDelArr = [];
-        if (typeof id === 'number'){
-            toDelArr.push(id);
-        }else if(id?.constructor?.name === 'Array'){
-            toDelArr = id;
-        }else{
-            console.error('无法删除', id);
-            return;
+        if (typeof vParam === 'number'){
+            toDelArr.push(vParam);
+        }else if(vParam?.constructor?.name === 'Array'){
+            toDelArr = vParam;
+        }else if(vParam?.constructor?.name === 'Object'){
+            toDelArr.push(vParam.id);
+        }
+        if (!toDelArr.length){
+            return alert('无法删除');
         }
         const del_sql = `
             delete from ${this.tbName}

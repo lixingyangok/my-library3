@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-03 10:09:58
  * @LastEditors: Merlin
- * @LastEditTime: 2024-02-02 23:52:30
+ * @LastEditTime: 2024-02-12 16:04:36
  * @Description: 
 -->
 <template>
@@ -78,7 +78,7 @@
 <script>
 import { toRefs, computed } from 'vue';
 import w01, {getKeyDownFnMap} from './js/wave.js';
-import {registerKeydownFn} from '../../common/js/common-fn.js'
+import {registerKeydownFn} from '@/common/js/common-fn.js'
 
 export default {
     name: 'my-wave-bar',
