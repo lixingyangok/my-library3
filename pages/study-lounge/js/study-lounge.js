@@ -347,7 +347,7 @@ export function mainPart(){
 			id: oWord.id,
 			type: oWord.type === 1 ? 2 : 1
 		});
-		if (!res) return ElMessage.error('保存未成功');
+		// if (!res) return ElMessage.error('保存未成功');
 		// console.log('修改反馈', res);
 		getNewWords();
 	}
@@ -593,7 +593,7 @@ export function mainPart(){
 			id,
 			finishedAt,
 		});
-		if (!res) return;
+		// if (!res) return;
 		ElMessage.success('状态变更成功');
 		await getNeighbors();
 		setFolderInfo();
