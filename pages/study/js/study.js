@@ -2,7 +2,7 @@
  * @Author: Merlin
  * @Date: 2024-02-04 18:34:13
  * @LastEditors: Merlin
- * @LastEditTime: 2024-02-07 20:21:08
+ * @LastEditTime: 2024-02-12 15:56:37
  * @Description: 
  */
 const sqlite = await useSqlite();
@@ -23,8 +23,8 @@ export const useFn = () => {
         // ↓点击保存
         async clickSave(){
             const {addingForm, addingFormEmpty} = oIns.setupState;
-            const articleId = await oFn.saveArticle(addingForm);
-            const inserting = !addingForm.id && articleId > 0;
+            const mediaId = await oFn.saveArticle(addingForm);
+            const inserting = !addingForm.id && mediaId > 0;
             console.log("正在", inserting ? '新增': '修改');
             if (!inserting) return;
             if (!addingForm?.article?.split) return;
@@ -36,7 +36,7 @@ export const useFn = () => {
                 const arr = sTrimed.split(/(?<=[.!?])\s/);
                 arr.forEach((sLine, idx02)=>{
                     const oRow = {
-                        articleId,
+                        mediaId,
                         text: sLine.trim(),
                         articleRowNo: aLines.length + 1,
                     };
@@ -52,7 +52,7 @@ export const useFn = () => {
             console.log("oForm", );
             console.log(oForm.$dc());
             // const sqlite = await useSqlite();
-            const id = sqlite.tb.article.saveOne(oForm);
+            const id = sqlite.tb.media.saveOne(oForm);
             oFn.getArticleList();
             return id;
         },
@@ -78,14 +78,15 @@ export const useFn = () => {
             ).catch(xx=>xx);
             console.log("answer:", confirm);
             if (confirm != 'confirm') return;
-            sqlite.tb.article.deleteById(oArticle.id);
+            sqlite.tb.media.deleteById(oArticle.id);
             oFn.getArticleList();
         },
         async getArticleList(){
             // const sqlite = await useSqlite();
             const arr = sqlite.select(`
                 select *
-                from article
+                from media
+                where hash is null
             `);
             oIns.setupState.aArtile.splice(0, 1/0, ...arr);
         },

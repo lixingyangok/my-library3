@@ -48,6 +48,7 @@
     flex-flow: column nowrap;
     align-items: center;
     justify-content: center;
+    z-index: 2;
     h1{
         font-weight: bold;
         font-size: 20px;
@@ -89,21 +90,32 @@
         transition: all 0.3s;
         max-width: 100%;
         font-size: 18px;
+        position: relative;
+        &:focus-visible{
+            outline: none;
+            text-decoration: underline;
+        }
         .word{
             display: inline;
             position: relative;
-            // 
+            opacity: 0.5;
             text-decoration: none;
-            background-image: linear-gradient(red, red);
+            background-image: linear-gradient(#f0f2f5, #f0f2f5);
             background-repeat: no-repeat;
             background-position: bottom left;
-            background-size: 0 2px;
+            background-size: 0 100%;
+            // & + .word{
+            //     &::before{
+            //         content: " ";
+            //     }
+            // }
         }
         &[class ~= reading-line]{
             .word{
-                transition-property: background-size;
-                transition-duration: 150ms;
-                transition-timing-function: linear;
+                // transition-property: background-size;
+                // transition-duration: 150ms;
+                // transition-timing-function: linear;
+                opacity: 1;
             }
         }
         &[class~=reading-line],
@@ -114,7 +126,13 @@
             margin-left: 2em;
         }
         .word-has-read{
-            background-size: 100% 2px;
+            background-size: 100% 100%;
+            opacity: 1;
+        }
+        .matched{
+            background-color: red;
+            color: white;
+            opacity: 1;
         }
     }
 

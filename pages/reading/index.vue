@@ -2,7 +2,7 @@
  * @Author: Merlin
  * @Date: 2024-02-07 21:12:39
  * @LastEditors: Merlin
- * @LastEditTime: 2024-02-09 14:23:41
+ * @LastEditTime: 2024-02-12 15:50:00
  * @Description: 
 -->
 <template>
@@ -27,6 +27,14 @@
                     </el-button >
                     <el-button link >开始阅读</el-button >
                     {{ aReading.join(', ') }}
+                    <!-- [\u4e00-\u9fa5] -->
+                    <input type="text" v-model="sReExp"/>
+                    <el-button link @click="toFindTargetWord">
+                        定位目标
+                    </el-button >
+                    <el-button link @click="toReplaceTargetWords">
+                        替换
+                    </el-button >
                 </div>
             </div>
             <div class="article " >
@@ -37,20 +45,29 @@
                         :class="{
                             empty: aRows.length === 1 && !aRows[0].text,
                         }"
+                        
                     >
                         <p v-for="(oLine, i02) of aRows" :key="oLine.id"
                             class="sentence"
                             :class="{
                                 'reading-line': oLine.reading,
                             }"
+                            @click.alt="sentenceEditing($event, oLine)"
+                            @click.ctrl="sentenceMarking($event, oLine)"
+                            :data-sentence="oLine.text"
                         >
-                            <span v-for="(sWord, i03) of oLine.textArr" :key="i03"
+                            <span v-for="(vWord, i03) of (oLine.textMatchedArr || oLine.textArr)"
+                                :key="i03"
                                 class="word"
                                 :class="{
                                     'word-has-read': oLine.reading && i03 <= aReading[1],
+                                    'matched': vWord.isMatched,
                                 }"
                             >
-                                {{(i03 ? ' ' : '') + sWord}}
+                                {{
+                                    ((i03 && !vWord.text) ? ' ' : '') +
+                                    (vWord.text || vWord)
+                                }}
                             </span>
                         </p>
                     </section>
@@ -79,24 +96,86 @@
             <dictionaryVue ></dictionaryVue>
         </div>
     </div>
+
+
+    <el-tour :mask="true"
+        v-model="oSentence.visible"
+    >
+        <el-tour-step :target="oSentence.dom"
+            title="操作"
+            placement="top"
+        >
+            <p>
+                {{ oSentence.oLine.text }}
+            </p>
+            <el-button link @click="setAsNewChapter">
+                设为章节标记
+            </el-button>
+            <el-button link AAclick="setAsNewChapter">
+                删除
+            </el-button>
+        </el-tour-step>
+        <template #indicators></template>
+    </el-tour>
 </template>
 
 
 <script setup>
 import dictionaryVue from '../dictionary/index.vue';
+import {ElTourStep} from 'element-plus'
 
+const sqlite = import.meta.client && await useSqlite();
 const oArticleInfo = ref(
     import.meta.client ? store('article') : {}
 );
 const aReading = ref([0, 0]);
 const aLinesFlat = ref([]);
+const sReExp = ref('');
+const oReExp = ref(null);
+
+
+const oSentence = ref({
+    visible: false,
+    dom: null,
+    oLine: {},
+});
+
 const aLinesCom = computed(() => {
     return aLinesFlat.value.map((cur, idx)=>{
         const isReading = aReading.value[0] === idx;
         cur.reading = isReading;
+        cur.textMatchedArr = separate(cur.text);
         return cur;
     });
 });
+
+function separate(text){
+    if (!oReExp.value) return null;
+    var iEndAt = 0;
+    var arr = [];
+    text.replace(oReExp.value, (sMatched, iStart, sWhole)=>{
+        const thisPice = sWhole.slice(iEndAt, iStart);
+        const aPushTo = [{
+            text: thisPice,
+        }, {
+            text: sMatched,
+            isMatched: true,
+        }];
+        if (iStart === 0 || iStart === iEndAt) {
+            aPushTo.shift();
+        }
+        arr.push(...aPushTo);
+        iEndAt = iStart + sMatched.length;    
+    });
+    if (!arr.length) return null;
+    if (iEndAt < text.length){
+        arr.push({
+            text: text.slice(iEndAt),
+        });
+    }
+    return arr;
+}
+
 const oLineReading = computed(()=>{
     return aLinesCom.value.find((cur, idx)=>{
         return idx === aReading.value[0];
@@ -117,33 +196,33 @@ const aParagraph4Show = computed(()=>{
 });
 
 
+
 const pager = [
     'total, sizes, jumper',
     'prev, pager, next',
 ]
 
 onMounted(()=>{
-    showPage();
+    init();
 });
 
 
 async function showArticleInfo(){
-    const sqlite = await useSqlite();
     const oInfo = sqlite.tb.article.getOne({
-        articleId: oArticleInfo.value.id,
+        mediaId: oArticleInfo.value.id,
     });
 }
 
-async function showPage(){
-    const sqlite = await useSqlite();
+async function init(){
     const oResult = sqlite.tb.line.getPage({
-        articleId: oArticleInfo.value.id,
+        mediaId: oArticleInfo.value.id,
     }, {
-        column: 'id, articleId, articleRowNo, follow, readTimes, text',
+        column: 'id, mediaId, articleRowNo, follow, readTimes, text, chapterMark',
         tail: 'order by articleRowNo',
         pageSize: oArticleInfo.value.pageSize,
         pageIndex: oArticleInfo.value.pageIndex,
     });
+    console.log("oResult\n", oResult.$dc());
     const oArticleInfoNew = {
         ...oArticleInfo.value,
         ...oResult,
@@ -160,13 +239,13 @@ async function showPage(){
 
 function handleSizeChange(pageSize){
     oArticleInfo.value.pageSize = pageSize;
-    showPage();
+    init();
 }
 
 function handleCurrentChange(pageIndex){
     oArticleInfo.value.pageIndex = pageIndex;
     document.querySelectorAll('.main-part')[0].scrollTop=0;
-    showPage();
+    init();
 }
 
 function continueRead(){
@@ -194,10 +273,12 @@ function readNextLine(iDirection){
     aReading.value[1] = 0;
 }
 
+// ↓步进步退
 function readNextWord(iDirection){
+    const iStepLong = iDirection * 2;
     const iMax = oLineReading.value.textArr.length - 1; 
     let iLineIndex = aReading.value[0];
-    let iWordIndex = aReading.value[1] + (iDirection * 1);
+    let iWordIndex = aReading.value[1] + iStepLong;
     if (iWordIndex < 0) {
         if (aReading.value[1] === 0){ // 位于句首
             iLineIndex = Math.max(0, iLineIndex - 1);
@@ -221,6 +302,68 @@ function readNextWord(iDirection){
     aReading.value[1] = iWordIndex;
 }
 
+
+function sentenceEditing(ev, oLine){
+    const {currentTarget} = ev;
+    const range = window.getSelection().getRangeAt(0)
+    console.log("currentTarget", currentTarget);
+    console.log("range", range);
+    oSentence.value.dom = currentTarget;
+    oSentence.value.oLine = oLine;
+    currentTarget.setAttribute('contenteditable', true)
+    currentTarget.focus();
+}
+
+
+// ↓显示气泡窗口
+function sentenceMarking(ev, oLine){
+    const {currentTarget} = ev;
+    console.log("currentTarget\n", currentTarget);
+    oSentence.value.dom = currentTarget;
+    oSentence.value.oLine = oLine;
+    oSentence.value.visible = true;
+}
+
+// ↓设为章节标记
+function setAsNewChapter(){
+    const { oLine}= oSentence.value;
+    console.log("oLine", oLine.$dc());
+    sqlite.tb.line.updateOne({
+        id: oLine.id,
+        chapterMark: oLine.chapterMark ? 0 : 1,
+    })
+}
+
+// ↓匹配替换项
+function toFindTargetWord(){
+    let sReExp01 = sReExp.value;
+    if (!sReExp01) {
+        oReExp.value = null;
+        return;
+    }
+    // /^\d+$/.test('1')
+    sReExp01 = new RegExp(sReExp01, 'g');
+    console.log("sReExp01", sReExp01);
+    oReExp.value = sReExp01;
+}
+
+// ↓
+function toReplaceTargetWords(){
+    if (!oReExp.value) return;
+    const arr = aLinesCom.value.filter(cur=>{
+        return cur.textMatchedArr;
+    }).map(cur=>{
+        return {
+            id: cur.id,
+            text: cur.text.replaceAll(oReExp.value, ''),
+        };
+    });
+    console.log('arr', arr.$dc());
+    arr.forEach(cur=>{
+        sqlite.tb.line.updateOne(cur);
+    });
+    init();
+}
 
 
 onMounted(()=>{
