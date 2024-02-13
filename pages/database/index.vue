@@ -42,7 +42,8 @@ async function loadDbData(ev){
     const uint8Arr = new Uint8Array(aArrayBuffer);
     const aTables = await checkDataForDB(uint8Arr);
     if (!aTables?.length) return;
-    console.log(aTables.flat());
+    console.log('导入数据表：', aTables.flat());
+
     const sqlite = await useSqlite();
     sqlite.persist(uint8Arr);
 }

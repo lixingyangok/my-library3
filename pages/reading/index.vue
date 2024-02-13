@@ -2,100 +2,115 @@
  * @Author: Merlin
  * @Date: 2024-02-07 21:12:39
  * @LastEditors: Merlin
- * @LastEditTime: 2024-02-12 21:36:13
+ * @LastEditTime: 2024-02-13 16:41:00
  * @Description: 
 -->
 <template>
     <div class="page-body">
-        <section class='at-left' 
-            v-if="0"
-        >
-            <div> asdf </div>
-        </section>
-        <!-- ↑左栏，↓中部 -->
-        <section class="at-center" >
-            <div class="title " >
-                <h1 v-if="oArticleInfo.titleEn">
-                    {{ oArticleInfo.titleEn }}
-                </h1>
-                <h1 v-if="oArticleInfo.titleZh">
-                    {{ oArticleInfo.titleZh }}
-                </h1>
-                <div class="btn-group" >
-                    <el-button link @click="continueRead">
-                        继续阅读
-                    </el-button >
-                    <el-button link >开始阅读</el-button >
-                    {{ aReading.join(', ') }}
-                    <!-- [\u4e00-\u9fa5] -->
-                    <input type="text" v-model="sReExp"/>
-                    <el-button link @click="toFindTargetWord">
-                        定位目标
-                    </el-button >
-                    <el-button link @click="toReplaceTargetWords">
-                        替换
-                    </el-button >
-                    readTimes: {{ oArticleInfo.readTimes }}
+        <div class="article-container">
+            <section class='at-left' 
+                v-if="0"
+            >
+                <div> asdf </div>
+            </section>
+            <!-- ↑左栏，↓中部 -->
+            <section class="at-center" >
+                <div class="title " >
+                    <h1 v-if="oArticleInfo.titleEn">
+                        {{ oArticleInfo.titleEn }}
+                    </h1>
+                    <h1 v-if="oArticleInfo.titleZh">
+                        {{ oArticleInfo.titleZh }}
+                    </h1>
+                    <div class="btn-group" >
+                        <el-button link @click="continueRead">
+                            继续阅读
+                        </el-button >
+                        <el-button link >开始阅读</el-button >
+                        {{ aReading.join(', ') }}
+                        <el-autocomplete
+                            clearable
+                            v-model="sReExp"
+                            :fetch-suggestions="querySearch"
+                            @select="handleSelect"
+                        />
+                        <el-button link @click="toFindTargetWord">
+                            定位目标
+                        </el-button >
+                        <el-button link @click="toReplaceTargetWords">
+                            替换
+                        </el-button >
+                    </div>
                 </div>
-            </div>
-            <div class="article " >
-                <article class="section-box">
-                    <section v-for="(aRows, i01) of aParagraph4Show"
-                        :key="i01"
-                        class="paragraph"
-                        :class="{
-                            empty: aRows.length === 1 && !aRows[0].text,
-                        }"
-                        
-                    >
-                        <p v-for="(oLine, i02) of aRows" :key="oLine.id"
-                            class="sentence"
+                <div class="article " >
+                    <article class="section-box">
+                        <section v-for="(aRows, i01) of aParagraph4Show"
+                            :key="i01"
+                            class="paragraph"
                             :class="{
-                                'reading-line': oLine.reading,
-                                'has-read-line': oLine.readTimes > oArticleInfo.readTimes,
+                                empty: aRows.length === 1 && !aRows[0].text,
                             }"
-                            @click.alt="sentenceEditing($event, oLine)"
-                            @click.ctrl="sentenceMarking($event, oLine)"
-                            :data-sentence="oLine.text"
+                            
                         >
-                            <span v-for="(vWord, i03) of (oLine.textMatchedArr || oLine.textArr)"
-                                :key="i03"
-                                class="word"
+                            <p v-for="(oLine, i02) of aRows" :key="oLine.id"
+                                class="sentence"
                                 :class="{
-                                    'word-has-read': oLine.reading && i03 <= aReading[1],
-                                    'matched': vWord.isMatched,
+                                    'reading-line': oLine.reading,
+                                    'has-read-line': oLine.readTimes > oArticleInfo.readTimes,
                                 }"
+                                @click.alt="sentenceEditing($event, oLine)"
+                                @click.ctrl="sentenceMarking($event, oLine)"
+                                :data-sentence="oLine.text"
                             >
-                                {{
-                                    ((i03 && !vWord.text) ? ' ' : '') +
-                                    (vWord.text || vWord)
-                                }}
-                            </span>
-                        </p>
-                    </section>
-                </article>
-                <!-- 分界 -->
-                <div class="page-box">
-                    <el-pagination
-                        v-for="(sCurLayout, idx) of pager"
-                        :key="idx"
-                        hide-on-single-page
-                        :small="!true"
-                        :background="false"
-                        v-model:current-page="oArticleInfo.pageIndex"
-                        v-model:page-size="oArticleInfo.pageSize"
-                        :total="oArticleInfo.total || 1"
-                        :page-sizes="[20, 40, 60, 80, 100]"
-                        :layout="sCurLayout"
-                        @size-change="handleSizeChange"
-                        @current-change="handleCurrentChange"
-                    />
+                                <span v-for="(vWord, i03) of (oLine.textMatchedArr || oLine.textArr)"
+                                    :key="i03"
+                                    class="word"
+                                    :class="{
+                                        'word-has-read': oLine.reading && i03 <= aReading[1],
+                                        'matched': vWord.isMatched,
+                                    }"
+                                >
+                                    {{
+                                        ((i03 && !vWord.text) ? ' ' : '') +
+                                        (vWord.text || vWord)
+                                    }}
+                                </span>
+                            </p>
+                        </section>
+                    </article>
+                    <!-- 分界 -->
+                    <div class="page-box">
+                        <el-pagination
+                            v-for="(sCurLayout, idx) of pager"
+                            :key="idx"
+                            hide-on-single-page
+                            :small="!true"
+                            :background="false"
+                            v-model:current-page="oArticleInfo.pageIndex"
+                            v-model:page-size="oArticleInfo.pageSize"
+                            :total="oArticleInfo.total || 1"
+                            :page-sizes="[20, 40, 60, 80, 100]"
+                            :layout="sCurLayout"
+                            @size-change="handleSizeChange"
+                            @current-change="handleCurrentChange"
+                        />
+                    </div>
                 </div>
+            </section>
+            <!-- ↑正文 ↓字典 -->
+            <div class='at-right'>
+                <dictionaryVue ></dictionaryVue>
             </div>
-        </section>
-        <!-- ↑正文 ↓字典 -->
-        <div class='at-right'>
-            <dictionaryVue ></dictionaryVue>
+        </div>
+        <!-- ↓ -->
+        <div class="status-bar">
+            <div class="bar-left">
+                <span>阅读行：{{hasReadInfo.lines}}</span>
+                <span>阅读字数：{{hasReadInfo.words}}</span>
+            </div>
+            <div class="bar-right">
+
+            </div>
         </div>
     </div>
 
@@ -131,6 +146,10 @@ import dictionaryVue from '../dictionary/index.vue';
 import {ElTourStep} from 'element-plus'
 import {registerKeydownFn} from '@/common/js/common-fn.js';
 
+const pager = [
+    'total, sizes, jumper',
+    'prev, pager, next',
+];
 const sqlite = import.meta.client && await useSqlite();
 const oArticleInfo = ref(
     import.meta.client ? store('article') : {}
@@ -139,7 +158,10 @@ const aReading = ref([0, 0]);
 const aLinesFlat = ref([]);
 const sReExp = ref('');
 const oReExp = ref(null);
-
+const hasReadInfo = ref({
+    lines: 0,
+    words: 0,
+});
 
 const oSentence = ref({
     visible: false,
@@ -183,12 +205,12 @@ function separate(text){
     return arr;
 }
 
+// ↓当前行
 const oLineReading = computed(()=>{
-    return aLinesCom.value.find((cur, idx)=>{
-        return idx === aReading.value[0];
-    });
+    return aLinesCom.value[
+        aReading.value[0]
+    ];
 });
-
 
 const aParagraph4Show = computed(()=>{
     const arr = [];
@@ -203,16 +225,6 @@ const aParagraph4Show = computed(()=>{
 });
 
 
-
-const pager = [
-    'total, sizes, jumper',
-    'prev, pager, next',
-];
-
-onMounted(()=>{
-    init();
-    showArticleInfo();
-});
 
 
 async function showArticleInfo(){
@@ -230,7 +242,7 @@ async function init(){
     const oResult = sqlite.tb.line.getPage({
         mediaId: oArticleInfo.value.id,
     }, {
-        column: 'id, mediaId, articleRowNo, follow, readTimes, text, chapterMark',
+        column: 'id, mediaId, articleRowNo, follow, readTimes, text, chapterMark, lastTimeReadAt',
         tail: 'order by articleRowNo',
         pageSize: oArticleInfo.value.pageSize,
         pageIndex: oArticleInfo.value.pageIndex,
@@ -249,33 +261,42 @@ async function init(){
     });
 }
 
-
+// 修改每页行数量
 function handleSizeChange(pageSize){
     oArticleInfo.value.pageSize = pageSize;
     init();
+    store('article', oArticleInfo.value.$dc());
 }
 
+// 翻页
 function handleCurrentChange(pageIndex){
+    aReading.value = [0, 0];
     oArticleInfo.value.pageIndex = pageIndex;
     document.querySelectorAll('.main-part')[0].scrollTop=0;
     init();
+    store('article', oArticleInfo.value.$dc());
 }
 
+// ↓继续阅读
 function continueRead(){
-    const idx = aLinesFlat.value.findIndex(cur => {
-        return cur.readTimes <= oArticleInfo.value.readTimes;
-    });
+    let idx = 0;
+    let prev = aLinesFlat.value[0];
+    for(const [iKey, oLine] of aLinesFlat.value.entries()){
+        if (!oLine.lastTimeReadAt){
+            idx = iKey;
+            break;
+        }
+        const iReadAt = new Date(oLine.lastTimeReadAt).getTime();
+        if (iReadAt > new Date(prev.lastTimeReadAt).getTime()){
+            idx = iKey;
+        }
+    }
+    console.log("继续阅读行：", idx);
+    aReading.value = [idx, 0];
 }
 
-function keyDown(ev){
-    const {key} = ev;
-    console.log("key:", key);
-    if (key=='d') readNextWord(1);
-    else if (key=='a') readNextWord(-1);
-    else if (key=='w') readNextLine(-1);
-    else if (key=='s') readNextLine(1);
-}
 
+// ↓ 上一行/下一行
 function readNextLine(iDirection){
     let iLineIndex = aReading.value[0] + iDirection;
     if (iLineIndex < 0) iLineIndex = 0;
@@ -287,17 +308,22 @@ function readNextLine(iDirection){
     aReading.value[1] = 0;
 }
 
-// ↓步进步退
+// ↓ 上一词/下一词
 function readNextWord(iDirection){
-    const iStepLong = iDirection * 2;
-    const iStep01 = Math.abs(iStepLong) === 2 ? 1 : 0;
-    const iMax = oLineReading.value.textArr.length - 1; 
+    const iStep = 2; // 走1或2
+    const iStepLong = iDirection * iStep;
+    const iStep01 = iStep === 2 ? 1 : 0;
+    const iWordsMax = oLineReading.value.textArr.length - 1; 
     let iLineIndex = aReading.value[0];
     let iWordIndex = aReading.value[1] + iStepLong;
     // let iWordIndex = Math.max(1, aReading.value[1] + iStepLong);
+    console.log("当前行", oLineReading.value.$dc());
+    const atEmptyLine = !oLineReading.value.text;
     if (iWordIndex < 0) {
-        if (aReading.value[1] <= 0){ // 位于句首
+        if (atEmptyLine || (aReading.value[1] <= iStep)){ // 位于句首
             iLineIndex = Math.max(0, iLineIndex - 1);
+            const {text} = aLinesFlat.value[iLineIndex];
+            console.log("text", text);
             if (aReading.value[0] > 0){
                 const iPre = Math.max(0, aReading.value[0]-1);
                 iWordIndex = aLinesFlat.value[iPre].textArr.length - 1;
@@ -307,25 +333,30 @@ function readNextWord(iDirection){
         }else{
             iWordIndex = iStep01;
         }
-    }else if (iWordIndex > iMax) { 
-        if (aReading.value[1] === iMax){ // 位于句尾
-            setLine(oLineReading.value.$dc()); // 设为已读
-            iWordIndex = iStep01;
-            iLineIndex = Math.min(
-                iLineIndex + 1,
-                aLinesFlat.value.length - 1,
-            );
+    }else if (iWordIndex > iWordsMax) { 
+        if (atEmptyLine || (aReading.value[1] === iWordsMax)){ // 位于句尾
+            setLineAsRead(oLineReading.value.$dc()); // 设为已读
+            iLineIndex++;
+            const maxLine = aLinesFlat.value.length - 1;
+            if (iLineIndex > maxLine){
+                iLineIndex = maxLine;
+                ElMessage.success('是否前往下一页');
+                iWordIndex = iWordsMax;
+            }else{
+                iWordIndex = iStep01;
+            }
         }else{
-            iWordIndex = iMax;
+            iWordIndex = iWordsMax;
         }
     }
     // iWordIndex = Math.max(1, iWordIndex);
+    console.log("行-字", iLineIndex, iWordIndex);
     aReading.value[0] = iLineIndex;
     aReading.value[1] = iWordIndex;
 }
 
 // ↓ 设定为已读
-function setLine(oLineReadingDC){
+function setLineAsRead(oLineReadingDC){
     // console.log("阅读完毕：\n", oLineReadingDC);
     const {readTimes: iArticleReadTimes } = oArticleInfo.value;
     if (oLineReadingDC.readTimes > iArticleReadTimes) {
@@ -338,12 +369,40 @@ function setLine(oLineReadingDC){
         readTimes,
     });
     if (!bRes) return;
+    if (oLineReadingDC.text){
+        ElMessage.success('已读+1');
+    }
     const oTargetLine = aLinesFlat.value.find(cur=>{
         return cur.id=== oLineReadingDC.id;
     });
-    // if (!oTargetLine) return;
     oTargetLine.readTimes = readTimes; 
+    checkLinesReadOfToday();
 }
+
+
+// ↓统计阅读量
+function checkLinesReadOfToday(){
+    // julianday(lastTimeReadAt, 'localtime') - date('now', 'start of day') as gap
+    let sql = `
+        SELECT
+            text,
+            mediaId,
+            datetime(lastTimeReadAt, 'localtime') as lastTimeReadAt,
+            julianday(lastTimeReadAt, 'localtime') - julianday(date('now', 'localtime'))  as gap
+        FROM "line"
+        where gap > 0
+    `;
+    const res = sqlite.select(sql);
+    let count = 0;
+    res.forEach(cur=>{
+        if (!cur.text) return;
+        count += cur.text.split(/\s+/).length;
+    });
+    hasReadInfo.value.lines = res.length;
+    hasReadInfo.value.words = count;
+    console.log("当天阅读：\n", res.$dc());
+}
+
 
 // ↓修改行
 function sentenceEditing(ev, oLine){
@@ -408,19 +467,44 @@ function toReplaceTargetWords(){
     init();
 }
 
-// ↓删除
+
+// ↓删除行
 function delOneLine(oLine){
     sqlite.tb.line.deleteById(oLine);
     init();
     oSentence.value.visible = false;
 }
 
+// ↓提供候选项
+function querySearch(str, callback){
+    // [\u4e00-\u9fa5]
+    const arr01 = [{
+        value: /[\u4e00-\u9fa5]/.toString(),
+    }]
+    callback(arr01);
+}
+function handleSelect(newVal){
+    console.log("newVal", newVal);
+}
+
+const withNothing = [
+    { key: 'w', name: '上一句', fn:()=> readNextLine(-1)},
+    { key: 's', name: '下一句', fn:()=> readNextLine(1)},
+    { key: 'a', name: '上一字', fn:()=> readNextWord(-1)},
+    { key: 'd', name: '下一字', fn:()=> readNextWord(1)},
+];
+const oFnObj = [...withNothing].reduce((oResult, cur) => {
+    oResult[cur.key] = cur.fn;
+    return oResult;
+}, {});
+
 onMounted(()=>{
-    document.addEventListener('keydown', keyDown);
+    init();
+    showArticleInfo();
+    checkLinesReadOfToday();
+    registerKeydownFn(oFnObj);
 });
-onBeforeUnmount(()=>{
-    document.removeEventListener('keydown', keyDown);
-});
+
 
 </script>
 
