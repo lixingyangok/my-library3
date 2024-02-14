@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-09 17:59:23
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-25 21:39:53
+ * @LastEditTime: 2024-02-14 18:00:57
  * @Description: 
  */
 
@@ -173,3 +173,109 @@ export function getDateDiff(dateTimeStamp){
     }
     return "刚刚";
 }
+
+
+export function getVoiceList(){
+    var aLang = ['en-US', 'en-GB', 'zh-CN']; // 保存中英语言
+    var aExclude = ['Yunxia', 'Xiaoyi', 'Ana']; // 排除童声
+    var aAllVoices = window.speechSynthesis.getVoices();
+    var aResult = aAllVoices.filter(cur => {
+        const aa = aLang.includes(cur.lang);
+        const bb = !aExclude.includes(cur.name);
+        return aa && bb;
+    });
+    var aOnline = aResult.filter(cur => { // 找到线上声音
+        return !cur.localService;
+    }); 
+    if (aOnline.length){
+        aResult = aOnline;
+    }
+    aResult.forEach(cur => {
+        let nameShort = cur.name.replace('Microsoft ', '');
+        nameShort = nameShort.replace(/\sOnline \(.+/, '');
+        cur.nameShort = nameShort;
+        cur.note = oVoiceNote[nameShort] || {};
+        return cur;
+    });
+    // aResult.sort((aa, bb)=>{
+    //     return aa.lang.localeCompare(bb.lang);
+    // });
+    console.log("aResult\n", aResult);
+    return aResult;
+}
+
+
+// text += 'Let me tell you that nothing is further from the truth.The world is full of very rich people who are as miserable as if they were living in hell.We have read stories about movie stars who committed suicide or died from drugs.Quite clearly, money is not the only answer to all problems.';
+var text = '许多人认为当他们富有，取得成功时，幸福自然就会随之而来。我告诉你:事实并非如此';
+var text = 'Many people think that when they become rich and successful, happiness will naturally follow.'; 
+// text += '世界上有很多富人，但是他们却很痛苦，犹如生活在地狱中。我们都读过影星自杀或死于吸毒的故事。显而易见，钱不是解决所有问题的答案。通过不正当手段获得的财富并不能带来幸福。抽到奖券也不会带来幸福;赌博也不会带给你幸福。';
+
+// var oMsg = Object.assign(new SpeechSynthesisUtterance(), {
+//     voice: getVoice(text, 'Jenny'),
+//     lang: 'zh-CN', // lang 
+//     volume: 100,
+//     rate: 0.9, // 速度
+//     pitch: 1, // 值大音尖
+//     text,
+// });
+
+// window.speechSynthesis.speak(oMsg); 
+// window.speechSynthesis.pause();
+
+
+var aList = [
+    "Microsoft Christopher Online (Natural) - English (United States)", // 男
+    "Microsoft Eric Online (Natural) - English (United States)", // 男
+    "Microsoft Guy Online (Natural) - English (United States)", // 男，感情激昂
+    "Microsoft Roger Online (Natural) - English (United States)", // 男，感情
+    "Microsoft Steffan Online (Natural) - English (United States)", // 男，感情
+    "Microsoft Jenny Online (Natural) - English (United States)", // 女 2021 年，微软推出了 Jenny Multilingual 具备“自动语言预测功能
+    "Microsoft Michelle Online (Natural) - English (United States)", // 女
+    "Microsoft Aria Online (Natural) - English (United States)", // 女
+    // 
+    "Microsoft Yunxi Online (Natural) - Chinese (Mainland)", // 男，常见播音
+    "Microsoft Yunjian Online (Natural) - Chinese (Mainland)", // 男
+    "Microsoft Yunyang Online (Natural) - Chinese (Mainland)", // 男
+    "Microsoft Xiaoxiao Online (Natural) - Chinese (Mainland)", // 女
+    // 
+    "Microsoft Libby Online (Natural) - English (United Kingdom)",
+    "Microsoft Maisie Online (Natural) - English (United Kingdom)",
+    "Microsoft Ryan Online (Natural) - English (United Kingdom)", // Ryan 具备“自动语言预测功能
+    "Microsoft Sonia Online (Natural) - English (United Kingdom)",
+    "Microsoft Thomas Online (Natural) - English (United Kingdom)",
+];
+
+var aExclude = [
+    "Microsoft Yunxia Online (Natural) - Chinese (Mainland)", // 中，男童声
+    "Microsoft Xiaoyi Online (Natural) - Chinese (Mainland)", // 中，女童声
+    "Microsoft Ana Online (Natural) - English (United States)", // 英，女童声
+];
+
+
+const oVoiceNote = {
+    Ava: {sex: '女性', desc: ''},
+    Andrew: {sex: '男性', desc: ''},
+    Emma: {sex: '女性', desc: ''},
+    Brian: {sex: '男性', desc: ''},
+    Ana: {sex: '女性', desc: '童声'},
+    Aria: {sex: '女性', desc: ''},
+    Christopher: {sex: '男性', desc: ''},
+    Eric: {sex: '男性', desc: ''},
+    Guy: {sex: '男性', desc: ''},
+    Jenny: {sex: '女性', desc: ''},
+    Michelle: {sex: '女性', desc: ''},
+    Roger: {sex: '男性', desc: ''},
+    Steffan: {sex: '男性', desc: ''},
+    Libby: {sex: '女性', desc: ''},
+    Maisie: {sex: '女性', desc: '童声'},
+    Ryan: {sex: '男性', desc: ''},
+    Sonia: {sex: '女性', desc: ''},
+    Thomas: {sex: '男性', desc: ''},
+    Xiaoxiao: {sex: '女性', desc: ''},
+    Yunjian: {sex: '男性', desc: ''},
+    Yunxi: {sex: '男性', desc: ''},
+    Xiaoyi: {sex: '女性', desc: '童声'},
+    Yunxia: {sex: '女性', desc: '童声'},
+    Yunyang: {sex: '男性', desc: ''},
+};
+

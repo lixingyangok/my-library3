@@ -2,7 +2,7 @@
  * @Author: Merlin
  * @Date: 2024-02-07 21:12:39
  * @LastEditors: Merlin
- * @LastEditTime: 2024-02-13 16:41:00
+ * @LastEditTime: 2024-02-14 17:52:14
  * @Description: 
 -->
 <template>
@@ -109,7 +109,39 @@
                 <span>阅读字数：{{hasReadInfo.words}}</span>
             </div>
             <div class="bar-right">
-
+                <ClientOnly>
+                    <el-select v-model="sEnVoiceName"
+                        placeholder="Select"
+                        style="width: 160px"
+                        size="small"
+                    >
+                        <el-option-group v-for="group in aLangOptions.en"
+                            :key="group.label"
+                            :label="group.label"
+                        >
+                            <el-option v-for="item in group.options"
+                                :key="item.value"
+                                :label="item.name"
+                                :value="item.name"
+                            />
+                        </el-option-group>
+                    </el-select>
+            
+                    <el-select v-model="sZhVoiceName"
+                        placeholder="Select"
+                        style="width: 160px"
+                        size="small"
+                    >
+                        <el-option v-for="item in aLangOptions.zh"
+                            :key="item.value"
+                            :label="item.name"
+                            :value="item.name"
+                        />
+                    </el-select>
+                </ClientOnly>
+                <el-button link @click="drawerShowing=true">
+                    drawerShowing
+                </el-button>
             </div>
         </div>
     </div>
@@ -138,18 +170,92 @@
         </el-tour-step>
         <template #indicators></template>
     </el-tour>
+    <!--  -->
+    <el-drawer v-model="drawerShowing">
+        <template #header>
+            <h4>set title by slot 123</h4>
+        </template>
+        <template #default>
+            <div class="one-lang"
+                v-for="(curLang, idx) of aVoiceTypeList" :key="idx"
+            >
+                <h3>{{ curLang.title }}</h3>
+                <ul>
+                    <li v-for="(item, i02) of curLang.list" :key="item.name"
+                        :title="item.name"
+                        @click="tryVoice(item)"
+                    >
+                        {{ item.nameShort }}
+                        {{ item.note.sex }}
+                        {{ item.note.desc }}
+                    </li>
+                </ul>
+            </div>
+        </template>
+        <!-- <template #footer>
+            <div style="flex: auto">
+                <el-button @click="drawerShowing=false">cancel</el-button>
+                <el-button type="primary" @click="drawerShowing=false">confirm</el-button>
+            </div>
+        </template> -->
+    </el-drawer>
 </template>
 
 
 <script setup>
 import dictionaryVue from '../dictionary/index.vue';
 import {ElTourStep} from 'element-plus'
-import {registerKeydownFn} from '@/common/js/common-fn.js';
+import {registerKeydownFn, getVoiceList} from '@/common/js/common-fn.js';
 
 const pager = [
     'total, sizes, jumper',
     'prev, pager, next',
 ];
+const sEnVoiceName = ref('');
+const sZhVoiceName = ref('');
+const drawerShowing= ref(false);
+const aVoiceList = ref([]);
+const aVoiceTypeList = computed(()=>{
+    const aResult = [{
+        lang: 'en-US',
+        title: '美式英语',
+        list: [],
+    },{
+        lang: 'en-GB',
+        title: '英式英语',
+        list: [],
+    },{
+        lang: 'zh-',
+        title: '中文',
+        list: [],
+    }];
+    aResult.forEach(cur => {
+        cur.list = aVoiceList.value.filter(item => {
+            return item.lang.includes(cur.lang);
+        });
+    });
+    return aResult;
+});
+
+const aLangOptions = computed(()=>{
+    const en = [
+        {
+            label: '美式英语',
+            options:  aVoiceList.value.filter(cur=> cur.lang.includes('en-US')),
+        }, {
+            label: '英式英语',
+            options:  aVoiceList.value.filter(cur=> cur.lang.includes('en-GB')),
+        },
+    ];
+    const zh = aVoiceList.value.filter(cur=> {
+        return cur.lang.includes('zh-');
+    });
+    return {en, zh};
+});
+
+
+
+
 const sqlite = import.meta.client && await useSqlite();
 const oArticleInfo = ref(
     import.meta.client ? store('article') : {}
@@ -487,6 +593,23 @@ function handleSelect(newVal){
     console.log("newVal", newVal);
 }
 
+function tryVoice(voice){
+    console.log('voice')
+    console.log(voice)
+    var text = '许多人认为当他们富有，取得成功时，幸福自然就会随之而来。我告诉你:事实并非如此';
+    var text = 'Many people think that when they become rich and successful, happiness will naturally follow.'; 
+    var text = 'hello，你好'; 
+    var oMsg = Object.assign(new SpeechSynthesisUtterance(), {
+        voice,
+        volume: 100,
+        rate: 1, // 速度
+        pitch: 1, // 值大音尖
+        text,
+    });
+    window.speechSynthesis.speak(oMsg);
+}
+
+
 const withNothing = [
     { key: 'w', name: '上一句', fn:()=> readNextLine(-1)},
     { key: 's', name: '下一句', fn:()=> readNextLine(1)},
@@ -498,11 +621,18 @@ const oFnObj = [...withNothing].reduce((oResult, cur) => {
     return oResult;
 }, {});
 
+
+
+import.meta.client && getVoiceList(); // 有必要触发
+
 onMounted(()=>{
     init();
     showArticleInfo();
     checkLinesReadOfToday();
     registerKeydownFn(oFnObj);
+    setTimeout(()=>{
+        aVoiceList.value = getVoiceList();
+    }, 200);
 });
 
 
