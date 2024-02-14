@@ -2,20 +2,105 @@
  * @Author: Merlin
  * @Date: 2024-02-04 18:34:13
  * @LastEditors: Merlin
- * @LastEditTime: 2024-02-12 17:12:44
+ * @LastEditTime: 2024-02-14 15:46:50
  * @Description: 
  */
 const sqlite = await useSqlite();
 
 export const useFn = () => {
-    const oInstance = getCurrentInstance();
     const oIns = getCurrentInstance();
 
+    const oSentenceFn = {
+        // ↓显示窗口
+        showSentenceDialog(){
+            const {
+                oSentenceForm,
+                oVisibleControl,
+                oSentenceFormEmpty,
+                oSentenceFormRef,
+                oTrans,
+            } = oIns.setupState;
+            Object.assign(oSentenceForm, oSentenceFormEmpty.$dc());
+            oVisibleControl.sentenceDialog = true;
+        },
+        // ↓添加更多译文
+        addMoreTrans(){
+            const {oSentenceForm, oTrans} = oIns.setupState;
+            if (oSentenceForm.aTrans.length >= 3){
+                return console.log('3 is enough');
+            }
+            oSentenceForm.aTrans.push({...oTrans});
+        },
+        // ↓删除译文
+        delOneTrans(idx){
+            const {oSentenceForm, oSentenceFormEmpty} = oIns.setupState;
+            if (oSentenceForm.aTrans.length <= 1){
+                return console.log('at last one');
+            }
+            oSentenceForm.aTrans.splice(idx, 1);
+        },
+        // ↓保存句子
+        async saveSentence(isContinue){
+            const {
+                oSentenceForm,
+                oVisibleControl,
+                oSentenceFormEmpty,
+                oSentenceFormRef,
+            } = oIns.setupState;
+            const isOK = await oSentenceFormRef.validate().catch(err=>{
+
+            });
+            console.log("isOK", isOK);
+            if (!isOK) return;
+            const trans = oSentenceForm.aTrans.map(cur => {
+                return cur.tranText.trim();
+            }).filter(Boolean).join('||');
+            const oForm = {
+                ...oSentenceForm,
+                aTrans: undefined, // 删除
+                trans,
+            };
+            console.log("oForm", oForm.$dc());
+            if (!oForm.text) return;
+            // return;
+            const res = sqlite.tb.line.saveOne(oForm);
+            if (!res) return;
+            ElMessage.success('已经保存');
+            Object.assign(oSentenceForm, oSentenceFormEmpty.$dc());
+            oFn.getSentence();
+            oVisibleControl.sentenceDialog = !!isContinue;
+        },
+        // ↓查询句子
+        getSentence(){
+            const {oLine} = oIns.setupState;
+            const oResult = sqlite.tb.line.getPage({
+                mediaId: null,
+                articleRowNo: null,
+            },{
+                pageIndex: 1,
+                pageSize: 100,
+            });
+            oResult.rows.forEach(cur=>{
+                cur.aTrans = cur.trans.split('||');
+            });
+            console.log("oResult\n", oResult.$dc());
+            oLine.rows = oResult.rows;
+        },
+        delSentence(oTarget, idx){
+            const {oLine} = oIns.setupState;
+            console.log("oTarget", oTarget.$dc());
+            const res = sqlite.tb.line.deleteById(oTarget);
+            if (!res) return;
+            oLine.rows.splice(idx, 1);
+        },
+    };
+
     const oFn = {
+        ...oSentenceFn,
         // ↓ 显示窗口
         showAddingDialog(){
             const {oArticleForm, oArticleFormEmpty} = oIns.setupState;
-            oInstance.setupState.dialogVisible = true;
+            oIns.setupState.oVisibleControl.articleDialog = true;
             Object.assign(oArticleForm, {
                 ...oArticleFormEmpty,
             });
@@ -26,6 +111,9 @@ export const useFn = () => {
             const isAppending = !!oArticleForm.appending;
             let mediaId = oArticleForm.id;
             let iRowNoFrom = 0;
+            if (!oArticleForm.titleZh){
+                return console.log('no titleZh');
+            }
             if (isAppending){
                 const [res] = sqlite.select(`
                     select max(articleRowNo) as maxRowNo
@@ -44,7 +132,7 @@ export const useFn = () => {
                 return;
             }
             if (!oArticleForm?.article?.split) return;
-            // oIns.setupState.dialogVisible = false;
+            // oIns.setupState.oVisibleControl.articleDialog = false;
             const aLines = [];
             const aSectionArr = oArticleForm.article.trim().split('\n');
             aSectionArr.forEach((oSection, idx01) => {
