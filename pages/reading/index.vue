@@ -2,7 +2,7 @@
  * @Author: Merlin
  * @Date: 2024-02-07 21:12:39
  * @LastEditors: Merlin
- * @LastEditTime: 2024-02-14 17:52:14
+ * @LastEditTime: 2024-02-14 18:25:28
  * @Description: 
 -->
 <template>
@@ -180,16 +180,23 @@
                 v-for="(curLang, idx) of aVoiceTypeList" :key="idx"
             >
                 <h3>{{ curLang.title }}</h3>
-                <ul>
-                    <li v-for="(item, i02) of curLang.list" :key="item.name"
+                <div v-for="sex of ['M', 'F']" :key="sex"
+                    class="sex-type"
+                >
+                    <i class="icon fa-solid fa-user-large"
+                        :class="sex"
+                    ></i>
+                    <span class="one-voice"
+                        v-for="(item, i02) of curLang.list.filter(thisOne => thisOne.note.sex === sex)"
+                        :key="item.name"
                         :title="item.name"
                         @click="tryVoice(item)"
+                        :style="{order: item.note.child ? 99 : 1}"
                     >
                         {{ item.nameShort }}
-                        {{ item.note.sex }}
-                        {{ item.note.desc }}
-                    </li>
-                </ul>
+                        {{ item.note.child ? '童声' : '' }}
+                    </span>
+                </div>
             </div>
         </template>
         <!-- <template #footer>
@@ -623,7 +630,7 @@ const oFnObj = [...withNothing].reduce((oResult, cur) => {
 
 
 
-import.meta.client && getVoiceList(); // 有必要触发
+import.meta.client && window.speechSynthesis.getVoices(); // 有必要触发
 
 onMounted(()=>{
     init();
@@ -632,7 +639,7 @@ onMounted(()=>{
     registerKeydownFn(oFnObj);
     setTimeout(()=>{
         aVoiceList.value = getVoiceList();
-    }, 200);
+    }, 100);
 });
 
 

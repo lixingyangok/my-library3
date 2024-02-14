@@ -206,11 +206,27 @@
 
 .one-lang{
     color: #333;
-    margin: 0 0 20px;
-    li{
-        color: #999;
-        margin: 5px 0 0;
-        cursor: pointer;
+    margin: 0 0 35px;
+    .sex-type{
+        display: flex;
+        flex-flow: row wrap;
+        padding-left: 30px;
+        margin: 10px 0 0 0;
+        position: relative;
+        .icon{
+            position: absolute;
+            top: 2px;
+            left: 0;
+            color: #409eff;
+            &[class~=F]{
+                color: #ffc0cb;
+            }
+        }
+        .one-voice{
+            color: #999;
+            margin: 0 20px 8px 0;
+            cursor: pointer;
+        }
     }
 }
 
