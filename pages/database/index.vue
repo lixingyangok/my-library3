@@ -1,3 +1,10 @@
+<!--
+ * @Author: 
+ * @Date: 2024-02-13 21:46:29
+ * @LastEditors: Merlin
+ * @LastEditTime: 2024-02-15 22:13:29
+ * @Description: 
+-->
 <template>
     <div class="database-page" >
         <br/>
@@ -53,7 +60,7 @@ async function importUinit8Array(ev){
     const files = [...ev.target.files];
     if (!files.length) return;
     files.sort((aa, bb) => aa.name.localeCompare(bb.name));
-    console.log("files", files[0]);
+    console.log("导入文件：\n", files[0]);
     let resolve = null;
     const oPromise = new Promise((f1, f2) => resolve = f1);
     const reader01 = Object.assign(new FileReader(), {
@@ -61,10 +68,13 @@ async function importUinit8Array(ev){
     });
     reader01.readAsArrayBuffer(files[0]);
     const res = await oPromise;
-    console.log("res", res);
-    const uint8arr = new Uint8Array(res);
+    const uint8Arr = new Uint8Array(res);
+    const aTables = await checkDataForDB(uint8Arr);
+    if (!aTables?.length) return;
+    console.log('导入数据表：', aTables.flat());
+
     const sqlite = await useSqlite();
-    sqlite.persist(uint8arr);
+    sqlite.persist(uint8Arr);
 }
 
 async function exportUint8Arr(){

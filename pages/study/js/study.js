@@ -2,7 +2,7 @@
  * @Author: Merlin
  * @Date: 2024-02-04 18:34:13
  * @LastEditors: Merlin
- * @LastEditTime: 2024-02-14 15:46:50
+ * @LastEditTime: 2024-02-15 21:01:46
  * @Description: 
  */
 const sqlite = await useSqlite();
@@ -12,7 +12,7 @@ export const useFn = () => {
 
     const oSentenceFn = {
         // ↓显示窗口
-        showSentenceDialog(){
+        showSentenceDialog(oTargetLine){
             const {
                 oSentenceForm,
                 oVisibleControl,
@@ -20,7 +20,13 @@ export const useFn = () => {
                 oSentenceFormRef,
                 oTrans,
             } = oIns.setupState;
-            Object.assign(oSentenceForm, oSentenceFormEmpty.$dc());
+            if (typeof oTargetLine === 'object'){
+                console.log("oTargetLine", oTargetLine.$dc());
+                Object.assign(oSentenceForm, oTargetLine.$dc());
+            }else{
+                Object.assign(oSentenceForm, oSentenceFormEmpty.$dc());
+            }
+            console.log("oSentenceForm", oSentenceForm.$dc());
             oVisibleControl.sentenceDialog = true;
         },
         // ↓添加更多译文
@@ -29,7 +35,7 @@ export const useFn = () => {
             if (oSentenceForm.aTrans.length >= 3){
                 return console.log('3 is enough');
             }
-            oSentenceForm.aTrans.push({...oTrans});
+            oSentenceForm.aTrans.push('');
         },
         // ↓删除译文
         delOneTrans(idx){
@@ -53,7 +59,7 @@ export const useFn = () => {
             console.log("isOK", isOK);
             if (!isOK) return;
             const trans = oSentenceForm.aTrans.map(cur => {
-                return cur.tranText.trim();
+                return cur.trim();
             }).filter(Boolean).join('||');
             const oForm = {
                 ...oSentenceForm,
@@ -86,6 +92,7 @@ export const useFn = () => {
             console.log("oResult\n", oResult.$dc());
             oLine.rows = oResult.rows;
         },
+        // ↓删除某句
         delSentence(oTarget, idx){
             const {oLine} = oIns.setupState;
             console.log("oTarget", oTarget.$dc());
@@ -120,19 +127,24 @@ export const useFn = () => {
                     from line
                     where mediaId = ${mediaId}
                 `);
-                iRowNoFrom = res.maxRowNo;
+                iRowNoFrom = res.maxRowNo; // 最大行号
                 console.log("iRowNoFrom:", iRowNoFrom);
                 if (!iRowNoFrom) return alert('没有行号');
             }else{
-                mediaId = await oFn.saveArticle(oArticleForm);
+                // 保存
+                // mediaId = await oFn.saveArticle(oArticleForm);
             }
+            return toSortRows(oArticleForm, {
+                iRowNoFrom,
+                mediaId,
+            });
             const inserting = !oArticleForm.id && mediaId > 0;
             console.log("正在", inserting ? '新增': '修改');
+            
             if (!isAppending && !inserting){
                 return;
             }
             if (!oArticleForm?.article?.split) return;
-            // oIns.setupState.oVisibleControl.articleDialog = false;
             const aLines = [];
             const aSectionArr = oArticleForm.article.trim().split('\n');
             aSectionArr.forEach((oSection, idx01) => {
@@ -151,6 +163,58 @@ export const useFn = () => {
             console.log("aLines", aLines);
             sqlite.tb.line.insert(aLines);
             oIns.setupState.dialogVisible = false;
+        },
+        // ↓整理行
+        toSortRows(oArticleForm, oConfig={}){
+            const {
+                mediaId,
+                iRowNoFrom=0,
+            } = oConfig;
+            if (!mediaId) throw '需要 mediaId';
+            let {lang, article} = oArticleForm;
+            const aLines = [];
+            const aSectionArr = article.trim().split('\n');
+            const langCorrect = (()=>{
+                const isChinese = /[\u4e00-\u9fa5]/.test(aSectionArr[0]);
+                if (lang === 'ZhEn') return isChinese;
+                return !isChinese;
+            })();
+            if (!langCorrect) {
+                return alert('语言不正确');
+            }
+            if (lang === 'En'){
+                aSectionArr.forEach((sSection, idx01) => {
+                    const sTrimed = (sSection || '').trim();
+                    const arr = sTrimed.split(/(?<=[.!?])\s/);
+                    arr.forEach((sLine, idx02)=>{
+                        const oRow = {
+                            text: sLine.trim(),
+                        };
+                        if (idx02) oRow.follow = 1; // 1 = 与前一句同在一段内
+                        aLines.push(oRow);
+                    });
+                });
+            }else {
+                aSectionArr.forEach((sSection, idx01) => {
+                    const sTrimed = (sSection || '').trim();
+                    const mainChinese = lang === 'ZhEn';
+                    const isChinese = /[\u4e00-\u9fa5]/.test(sTrimed);
+
+                    const oRow = {
+                        text: sTrimed.trim(),
+                    };
+                    aLines.push(oRow);
+                });
+            }
+            aLines.forEach((cur, idx)=>{
+                Object.assign(cur, {
+                    mediaId,
+                    articleRowNo: (iRowNoFrom + 1) + idx,
+                });
+            });
+            console.log("管理结果：", );
+            console.log(aLines.$dc());
+            return aLines;
         },
         // ↓ 存入数据库
         async saveArticle(oForm){

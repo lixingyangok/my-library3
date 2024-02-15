@@ -20,6 +20,7 @@
     display: flex;
     & + .sentence{
         margin: 1em 0 0;
+        padding: 1em 0 0;
         border-top: solid 1px #ccc;
     }
     .trans{
@@ -28,9 +29,12 @@
     }
     .text{
         width: 50%;
+        flex-shrink: 0;
     }
     .buttons{
         margin: 0 0 0 auto;
+        width: 80px;
+        flex-shrink: 0;
     }
 }
 

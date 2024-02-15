@@ -2,7 +2,7 @@
  * @Author: Merlin
  * @Date: 2024-02-04 15:59:59
  * @LastEditors: Merlin
- * @LastEditTime: 2024-02-14 16:00:55
+ * @LastEditTime: 2024-02-15 22:13:00
  * @Description: 
 -->
 <template>
@@ -12,7 +12,7 @@
         >
             添加短文/文章/书籍
         </el-button>
-        <el-button type="primary" @click="oFn.showSentenceDialog">
+        <el-button type="primary" @click="oFn.showSentenceDialog()">
             添加句子
         </el-button>
         <ul class="article-list" >
@@ -39,7 +39,7 @@
                 <el-button link type="primary"
                     @click=oFn.delArtile(cur)
                 >
-                    删除
+                    删除(需要一并删除行)
                 </el-button>
             </li>
         </ul>
@@ -60,6 +60,9 @@
                     </p>
                 </div>
                 <div class="buttons">
+                    <el-button link @click="oFn.showSentenceDialog(oCur, idx)" >
+                        修改
+                    </el-button>
                     <el-button link @click="oFn.delSentence(oCur, idx)" >
                         删除
                     </el-button>
@@ -68,7 +71,7 @@
         </ul>
     </div>
     <!-- 
-        ↓弹出窗口
+        ↓弹出窗口（添加句子）
     -->
     <el-dialog
         title="添加句子"
@@ -84,7 +87,7 @@
             <el-form-item label="">
                 正在添加第 x 句
             </el-form-item>
-            <el-form-item label="语言">
+            <!-- <el-form-item label="语言">
                 <el-radio-group v-model="oSentenceForm.lang">
                     <el-radio :label="cur.value"
                         v-for="(cur, key) of aLangOption.slice(1)" :key="key"
@@ -92,33 +95,44 @@
                         {{ cur.label }}
                     </el-radio>
                 </el-radio-group>
-            </el-form-item>
-            <el-form-item label="句子" prop="text">
+            </el-form-item> -->
+            <el-form-item label="英文句子" prop="text">
                 <el-input v-model="oSentenceForm.text" type="textarea" 
-                    :autosize="{ minRows: 3, maxRows: 5 }"
-                    maxlangth="800"
-                />
-            </el-form-item>
-            <el-form-item
-                v-for="(cur, idx) of oSentenceForm.aTrans"
-                :key="idx"
-                :label="'译文' + (idx + 1)"
-            >
-                <el-input v-model="cur.tranText" type="textarea" 
                     :autosize="{ minRows: 3, maxRows: 5 }"
                     maxlangth="500"
                 />
-                <el-button link
+            </el-form-item>
+            <el-form-item label="译文" >
+                <el-input v-model="oSentenceForm.trans"
+                    type="textarea" 
+                    :autosize="{ minRows: 3, maxRows: 5 }"
+                    maxlangth="500"
+                />
+            </el-form-item>
+            <el-form-item label="笔记" >
+                <el-input v-model="oSentenceForm.note"
+                    type="textarea" 
+                    :autosize="{ minRows: 3, maxRows: 5 }"
+                    maxlangth="200"
+                />
+                <!-- <el-button link
                     @click="oFn.delOneTrans(idx)"
                     :disabled="oSentenceForm.aTrans.length <= 1"
                 >
                     删除
+                </el-button> -->
+            </el-form-item>
+            <el-form-item>
+                <el-button @click="oFn.addMoreTrans"
+                    disabled
+                >
+                    添加译文（暂时禁用）
                 </el-button>
             </el-form-item>
             <el-form-item>
-                <el-button @click="oFn.addMoreTrans">
-                    添加译文
-                </el-button>
+                <el-checkbox label="中译英" size="large"
+                    v-model="oSentenceForm.fromChinese"
+                />
             </el-form-item>
         </el-form>
         <!--  -->
@@ -136,7 +150,9 @@
             </div>
         </template>
     </el-dialog>
-    <!--  -->
+    <!-- 
+        ↓弹出窗口（添加短文）
+    -->
     <el-dialog
         title="添加短文/文章/书籍"
         width="900px"
@@ -174,6 +190,7 @@
                         >
                             {{ cur.label }}
                         </el-radio>
+                        需要严格将两个语种每行交替
                     </el-radio-group>
                 </el-form-item>
             </template>
@@ -209,13 +226,18 @@ const oVisibleControl = ref({
     sentenceDialog: false,
 });
 
-const oSentenceFormRef = ref(null);
+const oSentenceFormRef = ref(null); // 表单实例
 const aArtile = reactive([]);
 const aLangOption = [
     { value: 'En', label: '英语' },
     { value: 'EnZh', label: '英中' },
     { value: 'ZhEn', label: '中英' },
 ];
+
+const oPreview = ref({
+    show: false,
+    aAllLines: [],
+});
 
 const oArticleFormEmpty = Object.freeze({
     id: null,
@@ -227,17 +249,14 @@ const oArticleFormEmpty = Object.freeze({
     lang: 'En',
     appending: false,
 });
-const oTrans = Object.freeze({
-    tranText: '',
-});
+
 
 const oSentenceFormEmpty = Object.freeze({
     id: null,
-    lang: aLangOption[1].value,
-    text: '',
-    trans: '', // 分隔符用|
-    aTrans: [{...oTrans}],
-    // note: '',
+    text: '', // 英
+    trans: '', // 中
+    fromChinese: false, // 中译英标记
+    note: '',
     // tag: 0,
 });
 
