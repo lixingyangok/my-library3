@@ -213,7 +213,7 @@
         padding-left: 30px;
         margin: 10px 0 0 0;
         position: relative;
-        .icon{
+        .sec-icon{
             position: absolute;
             top: 2px;
             left: 0;
@@ -224,8 +224,31 @@
         }
         .one-voice{
             color: #999;
-            margin: 0 20px 8px 0;
+            margin: 0 12px 8px 0;
             cursor: pointer;
+            em{
+                background-color: transparent;
+                padding: 0 2px;
+                margin-right: 4px;
+            }
+            &:hover em,
+            &[class~=using] em{
+                background-color: #41ad5e;
+                color: white;
+                border-radius: 3px;
+            }
+            &:hover{
+                .voice-icon{
+                    opacity: 1;
+                }
+            }
+            .voice-icon{
+                opacity: 0;
+                color: #41ad5e;
+                &:active {
+                    opacity: 0.8;
+                }
+            }
         }
     }
 }

@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-09 17:59:23
  * @LastEditors: Merlin
- * @LastEditTime: 2024-02-14 18:00:57
+ * @LastEditTime: 2024-02-15 14:35:52
  * @Description: 
  */
 
@@ -174,15 +174,28 @@ export function getDateDiff(dateTimeStamp){
     return "刚刚";
 }
 
-
+// en-AU: 2
+// en-CA: 2
+// en-HK: 2
+// en-IE: 2
+// en-KE: 2
+// en-NG: 2
+// en-NZ: 2
+// en-PH: 2
+// en-TZ: 2
+// en-ZA: 2
 export function getVoiceList(){
-    var aLang = ['en-US', 'en-GB', 'zh-CN']; // 保存中英语言
+    var aLang = [ // 保存中英语言
+        'en-US', // 16
+        'en-GB', // 5
+        'en-IN', // 3
+        'en-SG', // 2
+        'zh-CN',
+    ]; 
     var aExclude = ['Yunxia', 'Xiaoyi', 'Ana']; // 排除童声
     var aAllVoices = window.speechSynthesis.getVoices();
     var aResult = aAllVoices.filter(cur => {
-        const aa = aLang.includes(cur.lang);
-        const bb = !aExclude.includes(cur.name);
-        return aa && bb;
+        return aLang.includes(cur.lang);
     });
     var aOnline = aResult.filter(cur => { // 找到线上声音
         return !cur.localService;
@@ -194,7 +207,7 @@ export function getVoiceList(){
         let nameShort = cur.name.replace('Microsoft ', '');
         nameShort = nameShort.replace(/\sOnline \(.+/, '');
         cur.nameShort = nameShort;
-        cur.note = oVoiceNote[nameShort] || {};
+        cur.note = oVoiceNote[nameShort] || {sex: 'M'};
         return cur;
     });
     // aResult.sort((aa, bb)=>{
@@ -277,5 +290,9 @@ const oVoiceNote = {
     Xiaoyi: {sex: 'F', desc: '', child: true},
     Yunxia: {sex: 'F', desc: '', child: true},
     Yunyang: {sex: 'M', desc: ''},
+    Luna: {sex: 'F', desc: ''},
+    Wayne: {sex: 'M', desc: ''},
+    Neerja: {sex: 'F', desc: ''},
+    Prabhat: {sex: 'M', desc: ''},
 };
 

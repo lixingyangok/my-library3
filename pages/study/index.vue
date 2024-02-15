@@ -60,7 +60,7 @@
                     </p>
                 </div>
                 <div class="buttons">
-                    <el-button link @click="oFn.delSentence(oCur, idx)">
+                    <el-button link @click="oFn.delSentence(oCur, idx)" >
                         删除
                     </el-button>
                 </div>
@@ -108,8 +108,9 @@
                     :autosize="{ minRows: 3, maxRows: 5 }"
                     maxlangth="500"
                 />
-                <el-button link v-if="oSentenceForm.aTrans.length > 1"
+                <el-button link
                     @click="oFn.delOneTrans(idx)"
+                    :disabled="oSentenceForm.aTrans.length <= 1"
                 >
                     删除
                 </el-button>

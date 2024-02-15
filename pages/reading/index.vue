@@ -2,7 +2,7 @@
  * @Author: Merlin
  * @Date: 2024-02-07 21:12:39
  * @LastEditors: Merlin
- * @LastEditTime: 2024-02-14 18:25:28
+ * @LastEditTime: 2024-02-15 16:30:35
  * @Description: 
 -->
 <template>
@@ -109,43 +109,12 @@
                 <span>阅读字数：{{hasReadInfo.words}}</span>
             </div>
             <div class="bar-right">
-                <ClientOnly>
-                    <el-select v-model="sEnVoiceName"
-                        placeholder="Select"
-                        style="width: 160px"
-                        size="small"
-                    >
-                        <el-option-group v-for="group in aLangOptions.en"
-                            :key="group.label"
-                            :label="group.label"
-                        >
-                            <el-option v-for="item in group.options"
-                                :key="item.value"
-                                :label="item.name"
-                                :value="item.name"
-                            />
-                        </el-option-group>
-                    </el-select>
-            
-                    <el-select v-model="sZhVoiceName"
-                        placeholder="Select"
-                        style="width: 160px"
-                        size="small"
-                    >
-                        <el-option v-for="item in aLangOptions.zh"
-                            :key="item.value"
-                            :label="item.name"
-                            :value="item.name"
-                        />
-                    </el-select>
-                </ClientOnly>
                 <el-button link @click="drawerShowing=true">
                     drawerShowing
                 </el-button>
             </div>
         </div>
     </div>
-
 
     <el-tour :mask="true"
         v-model="oSentence.visible"
@@ -183,18 +152,22 @@
                 <div v-for="sex of ['M', 'F']" :key="sex"
                     class="sex-type"
                 >
-                    <i class="icon fa-solid fa-user-large"
+                    <i class="sec-icon fa-solid fa-user-large"
                         :class="sex"
                     ></i>
                     <span class="one-voice"
                         v-for="(item, i02) of curLang.list.filter(thisOne => thisOne.note.sex === sex)"
                         :key="item.name"
                         :title="item.name"
-                        @click="tryVoice(item)"
                         :style="{order: item.note.child ? 99 : 1}"
+                        :class="{using: item.using}"
                     >
-                        {{ item.nameShort }}
-                        {{ item.note.child ? '童声' : '' }}
+                        <em @click="setVoice(item)">{{
+                            item.nameShort + (item.note.child ? '童声' : '')
+                        }}</em><i class="voice-icon fa-solid fa-headphones "
+                            :class="sex"
+                            @click="tryVoice(item)"
+                        ></i>
                     </span>
                 </div>
             </div>
@@ -213,15 +186,18 @@
 import dictionaryVue from '../dictionary/index.vue';
 import {ElTourStep} from 'element-plus'
 import {registerKeydownFn, getVoiceList} from '@/common/js/common-fn.js';
+import {useSettingStore} from '@/store/setting.js';
 
+import.meta.client && window.speechSynthesis.getVoices(); // 有必要触发
+
+const oSetting = useSettingStore();
 const pager = [
     'total, sizes, jumper',
     'prev, pager, next',
 ];
-const sEnVoiceName = ref('');
-const sZhVoiceName = ref('');
-const drawerShowing= ref(false);
-const aVoiceList = ref([]);
+
+const drawerShowing= ref(false); // 抽屉可见性
+const aVoiceList = ref([]); // 声音列表
 const aVoiceTypeList = computed(()=>{
     const aResult = [{
         lang: 'en-US',
@@ -232,35 +208,29 @@ const aVoiceTypeList = computed(()=>{
         title: '英式英语',
         list: [],
     },{
+        lang: 'en-SG',
+        title: '新式英语',
+        list: [],
+    },{
+        lang: 'en-IN',
+        title: '印式英语',
+        list: [],
+    },{
         lang: 'zh-',
         title: '中文',
         list: [],
     }];
+    const {sEnVoice, sZhVoice} = oSetting;
     aResult.forEach(cur => {
         cur.list = aVoiceList.value.filter(item => {
+            item.using = (
+                (item.name == sEnVoice) || (item.name == sZhVoice)
+            );
             return item.lang.includes(cur.lang);
         });
     });
     return aResult;
 });
-
-const aLangOptions = computed(()=>{
-    const en = [
-        {
-            label: '美式英语',
-            options:  aVoiceList.value.filter(cur=> cur.lang.includes('en-US')),
-        }, {
-            label: '英式英语',
-            options:  aVoiceList.value.filter(cur=> cur.lang.includes('en-GB')),
-        },
-    ];
-    const zh = aVoiceList.value.filter(cur=> {
-        return cur.lang.includes('zh-');
-    });
-    return {en, zh};
-});
-
-
 
 
 const sqlite = import.meta.client && await useSqlite();
@@ -336,8 +306,6 @@ const aParagraph4Show = computed(()=>{
     }, []);
     return arr;
 });
-
-
 
 
 async function showArticleInfo(){
@@ -600,20 +568,62 @@ function handleSelect(newVal){
     console.log("newVal", newVal);
 }
 
-function tryVoice(voice){
-    console.log('voice')
-    console.log(voice)
-    var text = '许多人认为当他们富有，取得成功时，幸福自然就会随之而来。我告诉你:事实并非如此';
-    var text = 'Many people think that when they become rich and successful, happiness will naturally follow.'; 
-    var text = 'hello，你好'; 
+// ↓试听朗读声音
+function tryVoice(oVoice){
+    var text = '英语是世界通用语言';
+    if (oVoice.lang.startsWith('en-')){
+        text = 'English is the universal language'; 
+    }
     var oMsg = Object.assign(new SpeechSynthesisUtterance(), {
+        voice: oVoice,
+        volume: 100,
+        rate: 1, // 速度
+        pitch: 1, // 值大音尖
+        text,
+        onend(){
+            console.log("ended");
+        },
+    });
+    window.speechSynthesis.speak(oMsg);
+}
+
+
+
+// ↓设定声音
+function setVoice(oVoice){
+    let key = 'sEnVoice';
+    if (oVoice.lang.startsWith('zh-')){
+        key = 'sZhVoice';
+    }
+    oSetting[key] = oVoice.name;
+}
+
+let oLastRead = {};
+// ↓朗读
+function toReadAloud(){
+    const oSpeechSy = window.speechSynthesis;
+    oSpeechSy.speaking && oSpeechSy.cancel();
+    const {text} = oLineReading.value;
+    const sVoiceName =  (()=>{
+        const isChinese = /[\u4e00-\u9fa5]/.test(text);
+        if (isChinese) return oSetting.sZhVoice;
+        return oSetting.sEnVoice;
+    })();
+    const voice = aVoiceList.value.find(cur=>{
+        return cur.name === sVoiceName;
+    });
+    oLastRead = Object.assign(new SpeechSynthesisUtterance(), {
         voice,
         volume: 100,
         rate: 1, // 速度
         pitch: 1, // 值大音尖
         text,
+        onend(){
+            console.log("ended");
+        },
     });
-    window.speechSynthesis.speak(oMsg);
+    console.log("oLastRead\n", oLastRead);
+    oSpeechSy.speak(oLastRead);
 }
 
 
@@ -622,6 +632,7 @@ const withNothing = [
     { key: 's', name: '下一句', fn:()=> readNextLine(1)},
     { key: 'a', name: '上一字', fn:()=> readNextWord(-1)},
     { key: 'd', name: '下一字', fn:()=> readNextWord(1)},
+    { key: 'Tab', name: '朗读', fn: toReadAloud},
 ];
 const oFnObj = [...withNothing].reduce((oResult, cur) => {
     oResult[cur.key] = cur.fn;
@@ -629,8 +640,6 @@ const oFnObj = [...withNothing].reduce((oResult, cur) => {
 }, {});
 
 
-
-import.meta.client && window.speechSynthesis.getVoices(); // 有必要触发
 
 onMounted(()=>{
     init();
