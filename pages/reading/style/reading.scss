@@ -113,11 +113,9 @@
             background-position: bottom left;
             background-size: 0 100%;
             filter: blur(2px);
-            // & + .word{
-            //     &::before{
-            //         content: " ";
-            //     }
-            // }
+            &:hover{
+                color: red;
+            }
         }
         &[class ~= has-read-line],
         &[class ~= reading-line]{

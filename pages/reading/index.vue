@@ -2,7 +2,7 @@
  * @Author: Merlin
  * @Date: 2024-02-07 21:12:39
  * @LastEditors: Merlin
- * @LastEditTime: 2024-02-15 16:30:35
+ * @LastEditTime: 2024-02-15 17:11:52
  * @Description: 
 -->
 <template>
@@ -59,7 +59,6 @@
                                     'has-read-line': oLine.readTimes > oArticleInfo.readTimes,
                                 }"
                                 @click.alt="sentenceEditing($event, oLine)"
-                                @click.ctrl="sentenceMarking($event, oLine)"
                                 :data-sentence="oLine.text"
                             >
                                 <span v-for="(vWord, i03) of (oLine.textMatchedArr || oLine.textArr)"
@@ -69,6 +68,8 @@
                                         'word-has-read': oLine.reading && i03 <= aReading[1],
                                         'matched': vWord.isMatched,
                                     }"
+                                    @mouseenter="hoverIn($event, vWord, oLine)"
+                                    @mouseleave="mediaPopperToggle(false)"
                                 >
                                     {{
                                         ((i03 && !vWord.text) ? ' ' : '') +
@@ -116,29 +117,7 @@
         </div>
     </div>
 
-    <el-tour :mask="true"
-        v-model="oSentence.visible"
-    >
-        <el-tour-step :target="oSentence.dom"
-            title="操作"
-            placement="top"
-        >
-            <p>
-                {{ oSentence.oLine.text }}
-            </p>
-            <br/>
-            <el-button link AAAAclick="setAsNewChapter">
-                从此阅读
-            </el-button>
-            <el-button link @click="setAsNewChapter">
-                设为章节标记
-            </el-button>
-            <el-button link @click="delOneLine(oSentence.oLine)">
-                删除
-            </el-button>
-        </el-tour-step>
-        <template #indicators></template>
-    </el-tour>
+
     <!--  -->
     <el-drawer v-model="drawerShowing">
         <template #header>
@@ -179,6 +158,25 @@
             </div>
         </template> -->
     </el-drawer>
+
+    <el-popover v-if="oHoverWord.dom"
+        :title="oHoverWord.name"
+        :virtual-ref="oHoverWord.dom"
+        :visible="oHoverWord.show"
+        :ref="takePopperDOM"
+        virtual-triggering
+        :width="300"
+        placement="top"
+        trigger="hover"
+    >
+        <p>{{ oHoverWord.text }}</p>
+        <el-button link @click="setAsNewChapter(oHoverWord.line)">
+            设为章节标记
+        </el-button>
+        <el-button link @click="delOneLine(oHoverWord.line)">
+            删除
+        </el-button>
+    </el-popover>
 </template>
 
 
@@ -195,6 +193,13 @@ const pager = [
     'total, sizes, jumper',
     'prev, pager, next',
 ];
+const oHoverWord = ref({ // 目标单词
+    show: false,
+    dom: null,
+    line: null,
+    text: '',
+});
+
 
 const drawerShowing= ref(false); // 抽屉可见性
 const aVoiceList = ref([]); // 声音列表
@@ -247,7 +252,6 @@ const hasReadInfo = ref({
 });
 
 const oSentence = ref({
-    visible: false,
     dom: null,
     oLine: {},
 });
@@ -498,18 +502,10 @@ function sentenceEditing(ev, oLine){
 }
 
 
-// ↓显示气泡窗口
-function sentenceMarking(ev, oLine){
-    const {currentTarget} = ev;
-    console.log("currentTarget\n", currentTarget);
-    oSentence.value.dom = currentTarget;
-    oSentence.value.oLine = oLine;
-    oSentence.value.visible = true;
-}
+
 
 // ↓设为章节标记
-function setAsNewChapter(){
-    const { oLine}= oSentence.value;
+function setAsNewChapter(oLine){
     console.log("oLine", oLine.$dc());
     sqlite.tb.line.updateOne({
         id: oLine.id,
@@ -587,6 +583,42 @@ function tryVoice(oVoice){
     window.speechSynthesis.speak(oMsg);
 }
 
+let iHoverTimer = null;
+let iHoverIn = null;
+// ↓ 鼠标输入单词
+function hoverIn(ev, word, oLine){
+    // console.log("word, line\n", word);
+    // console.log(oLine);
+    mediaPopperToggle(true);
+    const obj = {
+        dom: ev.currentTarget,
+        show: true,
+        text: oLine.text,
+    };
+    clearTimeout(iHoverIn);
+    iHoverIn = setTimeout(()=>{
+        this.oHoverWord = obj;
+    }, 200);
+}
+
+// ↓ 控制气泡可性性 01
+function mediaPopperToggle(isShow){
+    clearTimeout(iHoverTimer);
+    if (isShow) return;
+    iHoverTimer = setTimeout(()=>{
+        this.oHoverWord.show = false; // 用于隐藏气泡
+    }, 300);
+}
+
+// ↓ 控制气泡可见性 02
+function takePopperDOM(oPopper){
+    const {contentRef} = oPopper?.popperRef || {};
+    if (!contentRef) return;
+    contentRef.onmouseenter = ()=> mediaPopperToggle(true);
+    contentRef.onmouseleave = ()=> mediaPopperToggle(false);
+}
+
+
 
 
 // ↓设定声音
@@ -602,7 +634,6 @@ let oLastRead = {};
 // ↓朗读
 function toReadAloud(){
     const oSpeechSy = window.speechSynthesis;
-    oSpeechSy.speaking && oSpeechSy.cancel();
     const {text} = oLineReading.value;
     const sVoiceName =  (()=>{
         const isChinese = /[\u4e00-\u9fa5]/.test(text);
@@ -623,6 +654,7 @@ function toReadAloud(){
         },
     });
     console.log("oLastRead\n", oLastRead);
+    oSpeechSy.speaking && oSpeechSy.cancel();
     oSpeechSy.speak(oLastRead);
 }
 
