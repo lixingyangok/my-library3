@@ -146,8 +146,9 @@ export class TableFunction {
             sWhere = this.#getWhereSql(params);
         }
         let sFullSql = `
-            DELETE FROM ${this.tbName}
-            WHERE ${sWhere};
+            DELETE
+            FROM ${this.tbName}
+            WHERE 1=1 ${sWhere};
         `;
         const res = this.db.run(sFullSql);
         if (res) this.db.persist();

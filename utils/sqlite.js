@@ -2,7 +2,7 @@
  * @Author: Merlin
  * @Date: 2024-01-08 09:35:15
  * @LastEditors: Merlin
- * @LastEditTime: 2024-02-04 18:20:55
+ * @LastEditTime: 2024-02-16 12:58:21
  * @Description: 
  */
 import { useDexie } from "./dxDB";
@@ -42,14 +42,22 @@ export const useSqlite = (() => {
 })();
 
 
-let myWorker = ()=>{};
+let myWorker = {};
 if (import.meta.client){
     const oURL = new URL('worker01.js', import.meta.url);
     myWorker = new Worker(oURL.href, {
         type: 'module',
     });
     window.myWorker = myWorker;
+    myWorker.onmessage = function (event) {
+        const {command, data} = event.data;
+        if (command === 'saved' && data.importing){
+            alert('导入完成');
+            location.reload();
+        }
+    }
 }
+
 
 async function createOneDB(dbType){
     let iLastTime = Date.now();
@@ -145,6 +153,7 @@ const commonDatabaseFn = {
             data: { // 耗时小于 1ms
                 uint8Arr: uint8Arr || this.export(),
                 dbType: this.dbType,
+                importing: !!uint8Arr, // 表示在导入不是简单的保存
             },
         });
     },

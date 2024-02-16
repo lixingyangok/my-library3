@@ -21,7 +21,7 @@ self.addEventListener('message', async (ev) => {
 
 const fnLib = {
     async updateSqlite(data){
-        const {dbType, uint8Arr} = data;
+        const {dbType, uint8Arr, importing} = data;
         if (!dbType || !uint8Arr) {
             return console.error('缺少必要参数');
         }
@@ -45,6 +45,10 @@ const fnLib = {
         const count = await oCollection.count();
         if (count <= 3) return;
         oCollection.limit(count - 3).delete(); // 只保留最新的三条数据
+        postMessage({
+            command: 'saved',
+            data: {importing},
+        });
     },
 }
 

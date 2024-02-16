@@ -39,3 +39,21 @@
 }
 
 
+.preview{
+    max-height: 70vh;
+    overflow-y: auto;
+    .one-line{
+        display: flex;
+        justify-content: space-between;
+        padding: 5px 0;
+        border-top: solid 1px #aaa;
+        i{
+            width: 30px;
+            margin: 0 5px 0 0;
+        }
+        p{
+            width: 47%;
+        }
+    }
+}
+

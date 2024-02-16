@@ -2,7 +2,7 @@
  * @Author: Merlin
  * @Date: 2024-02-04 15:59:59
  * @LastEditors: Merlin
- * @LastEditTime: 2024-02-15 22:13:00
+ * @LastEditTime: 2024-02-16 14:33:38
  * @Description: 
 -->
 <template>
@@ -17,9 +17,11 @@
         </el-button>
         <ul class="article-list" >
             <li v-for="(cur, idx) of aArtile" :key="cur.id" >
-                中文标题：{{ cur.titleZh }}
-                <br/>
-                英文标题：{{ cur.titleEn }}
+                <h1>
+                    {{ cur.titleZh }}
+                    {{ (cur.titleEn && cur.titleZh) ? '|' : '' }}
+                    {{ cur.titleEn }}
+                </h1>
                 <br/>
                 <el-button link type="primary"
                     @click="oFn.read(cur)"
@@ -39,7 +41,7 @@
                 <el-button link type="primary"
                     @click=oFn.delArtile(cur)
                 >
-                    删除(需要一并删除行)
+                    删除
                 </el-button>
             </li>
         </ul>
@@ -53,19 +55,41 @@
                     {{ oCur.text }}
                 </p>
                 <div class="trans">
-                    <p class=""
-                        v-for="(sTran, i02) of oCur.aTrans" :key="`${idx}-${i02}`"
-                    >
-                        {{ sTran }}
+                    <p class="">
+                        <i v-if="oCur.fromChinese" :style="{color: 'blue'}">
+                            中 |
+                        </i>
+                        {{ oCur.trans }}
                     </p>
                 </div>
                 <div class="buttons">
                     <el-button link @click="oFn.showSentenceDialog(oCur, idx)" >
                         修改
                     </el-button>
-                    <el-button link @click="oFn.delSentence(oCur, idx)" >
-                        删除
-                    </el-button>
+                    <el-popover :visible="oCur.visible"
+                        :width="160"
+                        placement="top"
+                        trigger="click"
+                    >
+                        <p>确认删除？</p>
+                        <div style="text-align: right; margin: 0">
+                            <el-button size="small" link @click="oCur.visible = false">
+                                取消
+                            </el-button>
+                            <el-button size="small"
+                                type="primary"
+                                @click="oFn.delSentence(oCur, idx)"
+                            >
+                                确认删除
+                            </el-button >
+                        </div>
+                        <template #reference>
+                            <el-button link @click="oCur.visible = true">
+                                删除
+                            </el-button>
+                        </template>
+                    </el-popover>
+                    
                 </div>
             </li>
         </ul>
@@ -87,15 +111,11 @@
             <el-form-item label="">
                 正在添加第 x 句
             </el-form-item>
-            <!-- <el-form-item label="语言">
-                <el-radio-group v-model="oSentenceForm.lang">
-                    <el-radio :label="cur.value"
-                        v-for="(cur, key) of aLangOption.slice(1)" :key="key"
-                    >
-                        {{ cur.label }}
-                    </el-radio>
-                </el-radio-group>
-            </el-form-item> -->
+            <el-form-item label="类型">
+                <el-checkbox label="中译英"
+                    v-model="oSentenceForm.fromChinese"
+                />
+            </el-form-item>
             <el-form-item label="英文句子" prop="text">
                 <el-input v-model="oSentenceForm.text" type="textarea" 
                     :autosize="{ minRows: 3, maxRows: 5 }"
@@ -129,11 +149,7 @@
                     添加译文（暂时禁用）
                 </el-button>
             </el-form-item>
-            <el-form-item>
-                <el-checkbox label="中译英" size="large"
-                    v-model="oSentenceForm.fromChinese"
-                />
-            </el-form-item>
+
         </el-form>
         <!--  -->
         <template #footer>
@@ -183,6 +199,11 @@
                         maxlangth="800"
                     />
                 </el-form-item>
+            </template>
+            <!--
+                分界
+            -->
+            <template v-if="oArticleForm.appending || (oArticleForm.id > 0 === false)">
                 <el-form-item label="语言">
                     <el-radio-group v-model="oArticleForm.lang">
                         <el-radio :label="cur.value"
@@ -193,15 +214,12 @@
                         需要严格将两个语种每行交替
                     </el-radio-group>
                 </el-form-item>
+                <el-form-item label="正文" >
+                    <el-input v-model="oArticleForm.article" type="textarea" 
+                        :autosize="{ minRows: 8, maxRows: 15 }"
+                    />
+                </el-form-item>
             </template>
-            <!-- 分界 -->
-            <el-form-item label="正文"
-                v-if="oArticleForm.appending || (oArticleForm.id > 0 === false)"
-            >
-                <el-input v-model="oArticleForm.article" type="textarea" 
-                    :autosize="{ minRows: 8, maxRows: 15 }"
-                />
-            </el-form-item>
         </el-form>
         <!--  -->
         <template #footer>
@@ -209,8 +227,40 @@
                 <el-button @click="oVisibleControl.articleDialog = false" >
                     取消
                 </el-button>
+                <el-button @click="oFn.toPreview">
+                    预览
+                </el-button>
                 <el-button type="primary" @click="oFn.clickSave">
                     保存
+                </el-button>
+            </div>
+        </template>
+    </el-dialog>
+    <!-- 
+        ↓弹出窗口（添加短文）
+    -->
+    <el-dialog
+        title="预览"
+        width="800px"
+        top="8vh"
+        v-model="oVisibleControl.preview"
+    >
+        <div class="preview">
+            <div class="one-line" 
+                v-for="(cur, idx) of aPreview" :key="idx"
+            >
+                <i>{{ idx+1 }}</i>
+                <p>{{ cur.text }}</p>
+                <p>{{ cur.trans }}</p>
+            </div>
+        </div>
+        <!--  -->
+        <template #footer>
+            <div class="dialog-footer">
+                <el-button type="primary"
+                    @click="oVisibleControl.preview = false"
+                >
+                    关闭
                 </el-button>
             </div>
         </template>
@@ -224,6 +274,7 @@ import {useFn} from './js/study.js';
 const oVisibleControl = ref({
     articleDialog: false,
     sentenceDialog: false,
+    preview: false,
 });
 
 const oSentenceFormRef = ref(null); // 表单实例
@@ -234,10 +285,7 @@ const aLangOption = [
     { value: 'ZhEn', label: '中英' },
 ];
 
-const oPreview = ref({
-    show: false,
-    aAllLines: [],
-});
+const aPreview = ref([]);
 
 const oArticleFormEmpty = Object.freeze({
     id: null,

@@ -2,7 +2,7 @@
  * @Author: Merlin
  * @Date: 2024-02-04 18:34:13
  * @LastEditors: Merlin
- * @LastEditTime: 2024-02-15 21:01:46
+ * @LastEditTime: 2024-02-16 14:52:42
  * @Description: 
  */
 const sqlite = await useSqlite();
@@ -30,21 +30,21 @@ export const useFn = () => {
             oVisibleControl.sentenceDialog = true;
         },
         // ↓添加更多译文
-        addMoreTrans(){
-            const {oSentenceForm, oTrans} = oIns.setupState;
-            if (oSentenceForm.aTrans.length >= 3){
-                return console.log('3 is enough');
-            }
-            oSentenceForm.aTrans.push('');
-        },
-        // ↓删除译文
-        delOneTrans(idx){
-            const {oSentenceForm, oSentenceFormEmpty} = oIns.setupState;
-            if (oSentenceForm.aTrans.length <= 1){
-                return console.log('at last one');
-            }
-            oSentenceForm.aTrans.splice(idx, 1);
-        },
+        // addMoreTrans(){
+        //     const {oSentenceForm, oTrans} = oIns.setupState;
+        //     if (oSentenceForm.aTrans.length >= 3){
+        //         return console.log('3 is enough');
+        //     }
+        //     oSentenceForm.aTrans.push('');
+        // },
+        // // ↓删除译文
+        // delOneTrans(idx){
+        //     const {oSentenceForm, oSentenceFormEmpty} = oIns.setupState;
+        //     if (oSentenceForm.aTrans.length <= 1){
+        //         return console.log('at last one');
+        //     }
+        //     oSentenceForm.aTrans.splice(idx, 1);
+        // },
         // ↓保存句子
         async saveSentence(isContinue){
             const {
@@ -53,22 +53,15 @@ export const useFn = () => {
                 oSentenceFormEmpty,
                 oSentenceFormRef,
             } = oIns.setupState;
-            const isOK = await oSentenceFormRef.validate().catch(err=>{
-
-            });
-            console.log("isOK", isOK);
+            const isOK = await oSentenceFormRef.validate().catch(err => {});
+            console.log("isOK", !!isOK);
             if (!isOK) return;
-            const trans = oSentenceForm.aTrans.map(cur => {
-                return cur.trim();
-            }).filter(Boolean).join('||');
             const oForm = {
                 ...oSentenceForm,
-                aTrans: undefined, // 删除
-                trans,
+                fromChinese: ~~oSentenceForm.fromChinese,
             };
             console.log("oForm", oForm.$dc());
             if (!oForm.text) return;
-            // return;
             const res = sqlite.tb.line.saveOne(oForm);
             if (!res) return;
             ElMessage.success('已经保存');
@@ -85,9 +78,6 @@ export const useFn = () => {
             },{
                 pageIndex: 1,
                 pageSize: 100,
-            });
-            oResult.rows.forEach(cur=>{
-                cur.aTrans = cur.trans.split('||');
             });
             console.log("oResult\n", oResult.$dc());
             oLine.rows = oResult.rows;
@@ -106,22 +96,22 @@ export const useFn = () => {
         ...oSentenceFn,
         // ↓ 显示窗口
         showAddingDialog(){
-            const {oArticleForm, oArticleFormEmpty} = oIns.setupState;
-            oIns.setupState.oVisibleControl.articleDialog = true;
+            const {oVisibleControl, oArticleForm, oArticleFormEmpty} = oIns.setupState;
+            oVisibleControl.articleDialog = true;
             Object.assign(oArticleForm, {
                 ...oArticleFormEmpty,
             });
         },
         // ↓点击保存
         async clickSave(){
-            const {oArticleForm, oArticleFormEmpty} = oIns.setupState;
+            const {oArticleForm, oArticleFormEmpty, oVisibleControl} = oIns.setupState;
             const isAppending = !!oArticleForm.appending;
             let mediaId = oArticleForm.id;
             let iRowNoFrom = 0;
             if (!oArticleForm.titleZh){
                 return console.log('no titleZh');
             }
-            if (isAppending){
+            if (isAppending){ // 追加
                 const [res] = sqlite.select(`
                     select max(articleRowNo) as maxRowNo
                     from line
@@ -130,11 +120,10 @@ export const useFn = () => {
                 iRowNoFrom = res.maxRowNo; // 最大行号
                 console.log("iRowNoFrom:", iRowNoFrom);
                 if (!iRowNoFrom) return alert('没有行号');
-            }else{
-                // 保存
-                // mediaId = await oFn.saveArticle(oArticleForm);
+            }else{ // 新增
+                mediaId = await oFn.saveArticle(oArticleForm);
             }
-            return toSortRows(oArticleForm, {
+            const aLines = oFn.toSortRows(oArticleForm, {
                 iRowNoFrom,
                 mediaId,
             });
@@ -145,33 +134,34 @@ export const useFn = () => {
                 return;
             }
             if (!oArticleForm?.article?.split) return;
-            const aLines = [];
-            const aSectionArr = oArticleForm.article.trim().split('\n');
-            aSectionArr.forEach((oSection, idx01) => {
-                const sTrimed = (oSection || '').trim();
-                const arr = sTrimed.split(/(?<=[.!?])\s/);
-                arr.forEach((sLine, idx02)=>{
-                    const oRow = {
-                        mediaId,
-                        text: sLine.trim(),
-                        articleRowNo: (iRowNoFrom + 1) + aLines.length,
-                    };
-                    if (idx02) oRow.follow = 1; // 1 = 与前一句同在一段内
-                    aLines.push(oRow);
-                });
-            });
             console.log("aLines", aLines);
             sqlite.tb.line.insert(aLines);
-            oIns.setupState.dialogVisible = false;
+            oVisibleControl.articleDialog = false;
+        },
+        // ↓显示预览窗口
+        toPreview(){
+            const {oArticleForm, oVisibleControl, aPreview} = oIns.setupState;
+            aPreview.splice(0, 1/0);
+            const aLines = oFn.toSortRows(oArticleForm, {
+                previewing: true,
+            });
+            if (!aLines.length) return;
+            oVisibleControl.preview = true;
+            aPreview.push(...aLines);
         },
         // ↓整理行
         toSortRows(oArticleForm, oConfig={}){
+            // const {oVisibleControl, aPreview} = oIns.setupState;
             const {
+                previewing,
                 mediaId,
                 iRowNoFrom=0,
             } = oConfig;
-            if (!mediaId) throw '需要 mediaId';
             let {lang, article} = oArticleForm;
+            if (!mediaId && !previewing) {
+                throw '需要 mediaId';
+            }
+            if (!article.trim()) return [];
             const aLines = [];
             const aSectionArr = article.trim().split('\n');
             const langCorrect = (()=>{
@@ -195,15 +185,20 @@ export const useFn = () => {
                     });
                 });
             }else {
+                const mainChinese = lang === 'ZhEn';
                 aSectionArr.forEach((sSection, idx01) => {
-                    const sTrimed = (sSection || '').trim();
-                    const mainChinese = lang === 'ZhEn';
-                    const isChinese = /[\u4e00-\u9fa5]/.test(sTrimed);
-
-                    const oRow = {
-                        text: sTrimed.trim(),
-                    };
-                    aLines.push(oRow);
+                    const text = (sSection || '').trim();
+                    const isChinese = /[\u4e00-\u9fa5]/.test(text);
+                    const isMainLine = (
+                        (mainChinese && isChinese)
+                        || (!mainChinese && !isChinese)
+                        || !text // 空行
+                    );
+                    if (isMainLine){
+                        aLines.push({ text });    
+                    }else{
+                        aLines.at(-1).trans = text;
+                    }
                 });
             }
             aLines.forEach((cur, idx)=>{
@@ -212,8 +207,7 @@ export const useFn = () => {
                     articleRowNo: (iRowNoFrom + 1) + idx,
                 });
             });
-            console.log("管理结果：", );
-            console.log(aLines.$dc());
+            console.log('整理结果：\n', aLines.$dc());
             return aLines;
         },
         // ↓ 存入数据库
@@ -225,9 +219,11 @@ export const useFn = () => {
             oFn.getArticleList();
             return id;
         },
+        // ↓修改文章
         async editeArtile(oForm){
             console.log("oForm", oForm);
-            oIns.setupState.dialogVisible = true;
+            const {oVisibleControl} = oIns.setupState;
+            oVisibleControl.articleDialog = true;
             const {oArticleForm} = oIns.setupState;
             Object.keys(oArticleForm).forEach(key=>{
                 oArticleForm[key] = oForm[key];
@@ -247,9 +243,15 @@ export const useFn = () => {
             ).catch(xx=>xx);
             console.log("answer:", confirm);
             if (confirm != 'confirm') return;
-            sqlite.tb.media.deleteById(oArticle.id);
+            let res = sqlite.tb.line.delete({
+                mediaId: oArticle.id,
+            });
+            if (res) ElMessage.success('已经删除行');
+            res = sqlite.tb.media.deleteById(oArticle.id);
+            if (res) ElMessage.success('已经删除文章');
             oFn.getArticleList();
         },
+        // ↓ 查询文章列表
         async getArticleList(){
             // const sqlite = await useSqlite();
             const arr = sqlite.select(`
@@ -257,6 +259,7 @@ export const useFn = () => {
                 from media
                 where hash is null
             `);
+            console.log("文章列表：\n", arr.$dc());
             oIns.setupState.aArtile.splice(0, 1/0, ...arr);
         },
         async read(oArticle){
