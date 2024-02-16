@@ -2,7 +2,7 @@
  * @Author: Merlin
  * @Date: 2024-02-07 21:12:39
  * @LastEditors: Merlin
- * @LastEditTime: 2024-02-15 17:11:52
+ * @LastEditTime: 2024-02-16 15:22:37
  * @Description: 
 -->
 <template>
@@ -50,8 +50,12 @@
                             :class="{
                                 empty: aRows.length === 1 && !aRows[0].text,
                             }"
-                            
                         >
+                            <el-button link class="del-button"
+                                v-if="aRows.length === 1 && !aRows[0].text"
+                            >
+                                删除空行
+                            </el-button>
                             <p v-for="(oLine, i02) of aRows" :key="oLine.id"
                                 class="sentence"
                                 :class="{
@@ -111,17 +115,16 @@
             </div>
             <div class="bar-right">
                 <el-button link @click="drawerShowing=true">
-                    drawerShowing
+                    设置
                 </el-button>
             </div>
         </div>
     </div>
 
-
     <!--  -->
     <el-drawer v-model="drawerShowing">
         <template #header>
-            <h4>set title by slot 123</h4>
+            <h4>设置</h4>
         </template>
         <template #default>
             <div class="one-lang"
@@ -149,6 +152,9 @@
                         ></i>
                     </span>
                 </div>
+            </div>
+            <div>
+                显示：纯英文，纯中文，中/英，英/中
             </div>
         </template>
         <!-- <template #footer>

@@ -73,9 +73,10 @@
 .article{
     box-sizing: border-box;
     display: block;
-    padding: 80px var(--padding-x) 200px;
+    padding: 80px var(--padding-x) 150px;
     background-color: #fff7e9;
-    min-height: 100vh;
+    // min-height: 100vh;
+    min-height: calc(100vh - 70px); // 减顶部 title 高度
     box-shadow: 0px 0px 20px rgba(0, 100, 0, 0.1);
     .section-box{
         min-height: 50vh;
@@ -86,6 +87,18 @@
 .paragraph{
     min-height: 0.5em;
     line-height: 2.6;
+    position: relative;
+    .del-button{
+        position: absolute;
+        top: 0;
+        right: 0;
+        opacity: 0;
+    }
+    &:Hover{
+        .del-button{
+            opacity: 1;
+        }
+    }
     &:not(.empty) + .paragraph:not(.empty){
         margin-top: 0.5em;
     }

@@ -22,6 +22,7 @@ export const useFn = () => {
             } = oIns.setupState;
             if (typeof oTargetLine === 'object'){
                 console.log("oTargetLine", oTargetLine.$dc());
+                oTargetLine.fromChinese = !!oTargetLine.fromChinese; //转布尔
                 Object.assign(oSentenceForm, oTargetLine.$dc());
             }else{
                 Object.assign(oSentenceForm, oSentenceFormEmpty.$dc());
