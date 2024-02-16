@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: Merlin
- * @LastEditTime: 2024-02-03 22:46:09
+ * @LastEditTime: 2024-02-16 21:18:27
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
@@ -719,6 +719,7 @@ export function fnAllKeydownFn() {
             await afterSaved(oResult);
         }
         isSavingToDB = false;
+        This.oTodayBar.init();
     }
     async function afterSaved(oResult){
         // ▼ 加载新字幕
