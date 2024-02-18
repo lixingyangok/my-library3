@@ -354,7 +354,7 @@ export function mainPart(){
 	// ▼删除1个单词
 	async function delOneWord(oWord){
 		// console.log("oWord", oWord.$dc());
-		const res = sqlite.tb.new_word.delete(oWord.id);
+		const res = sqlite.tb.new_word.deleteById(oWord.id);
 		if (!res) {
 			return ElMessage.error('删除单词未成功');
 		}
