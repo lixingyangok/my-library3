@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-22 19:31:55
  * @LastEditors: Merlin
- * @LastEditTime: 2024-02-03 21:24:58
+ * @LastEditTime: 2024-02-19 21:47:46
  * @Description: 与文件夹/文件相关的方法（纯函数）
  */
 // 本包将来可修改为，提供数据查询的包
@@ -227,6 +227,7 @@ export async function fillOneFile(oFileObject, config={}){
     oFileObject.bNameRight = [
         oFileObject.name === oMediaInfoInDB.name,
         oFileObject.size === oMediaInfoInDB.size,
+        oFileObject.duration > 0, // 没有时长就补充
     ].every(Boolean);
 }
 
