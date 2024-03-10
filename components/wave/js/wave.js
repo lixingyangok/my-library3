@@ -1,10 +1,10 @@
 import { reactive, getCurrentInstance, watch, computed, } from 'vue';
 import { fileToBuffer, getPeaks, getChannelArr, } from '@/common/js/pure-fn.js';
 import { getTubePath } from '@/common/js/common-fn.js';
-// import TheAction from '@/common/js/action.js';
+import TheAction from '@/common/js/action.js';
 // import {useBarInfo} from '@/store/happy-bar.js';
 // const oBarInfo = useBarInfo();
-// const oActionFn = new TheAction('playing');
+const oActionFn = new TheAction('playing');
 
 
 export default function(){
@@ -76,7 +76,7 @@ export default function(){
             const {currentTime} = oDom.oAudio;
             setTimeout(() => {
                 // iDuration 是不准确的，因为多次播放只会取到最后一次播放的时间长度
-                // const iDuration = oActionFn.saveRecord(currentTime);
+                const iDuration = oActionFn.saveRecord(currentTime);
                 // oBarInfo.setStatus(false, iDuration);
             });
         }
@@ -207,14 +207,14 @@ export default function(){
             if (iType < 0) return Math.max(start, currentTime - 3); // 快退x秒
             return start;
         })();
-        // oActionFn.initRecord({ // 只管启动，程序会按需保存
-        //     currentTime,
-        //     playFrom,
-        //     ongoing: !!oData.playing,
-        //     mediaId: props.oMediaInfo.id,
-        //     lineId: oCurLine.value.id || null, // 断句期间可能没有 ID 
-        //     isSpaceDown: oEv.keyCode === 32, // 记录是否由空格触发
-        // });
+        oActionFn.initRecord({ // 只管启动，程序会按需保存
+            currentTime,
+            playFrom,
+            ongoing: !!oData.playing,
+            mediaId: props.oMediaInfo.id,
+            lineId: oCurLine.value.id || null, // 断句期间可能没有 ID 
+            isSpaceDown: oEv.keyCode === 32, // 记录是否由空格触发
+        });
         oDom.oPointer.left = `${playFrom * oData.fPerSecPx}px`;
 		oDom.oAudio.currentTime = playFrom;
 		oDom.oAudio.play();

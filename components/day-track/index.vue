@@ -1,13 +1,13 @@
 <!--
  * @Author: 李星阳
  * @Date: 2023-08-11 19:52:29
- * @LastEditors: 李星阳
- * @LastEditTime: 2023-08-18 19:27:56
+ * @LastEditors: Merlin
+ * @LastEditTime: 2024-03-10 21:14:05
  * @Description: 
 -->
 <template>
     <div class="day-track-body" :style="{'--height': `${height}px`}" >
-        <ul class="day-ul">
+        <ul class="day-ul" v-if="oAction.aTodayAction">
             <li v-for="(cur, idx) of oAction.aTodayAction" :key="idx" 
                 :style="{
                     left: `${cur.leftAt}%`,
@@ -31,7 +31,6 @@
 
 <script>
 import {useActionStore} from '@/store/action-store.js';
-const oAction = useActionStore();
 
 export default {
     name: 'day-track',
@@ -42,18 +41,17 @@ export default {
         },
     },
     data(){
-        oAction.init();
         const oResult = {
             aDayAction: [],
-            oAction,
+            oAction: {},
         };
         return oResult;
     },
     computed: {
         oMiddleLineStyle(){
-            const [oFirst] = oAction.aTodayAction;
+            const [oFirst] = this.oAction.aTodayAction || [];
             if (!oFirst) return {};
-            const oLast = oAction.aTodayAction.at(-1);
+            const oLast = this.oAction.aTodayAction.at(-1);
             return {
                 left: `${oFirst.leftAt}%`,
                 width: `${oLast.leftAt - oFirst.leftAt + oLast.width}%`,
@@ -62,6 +60,10 @@ export default {
     },
     created(){
         // this.init();
+    },
+    mounted(){
+        this.oAction = useActionStore();
+        this.oAction.init();
     },
     methods: {
         getInfo(obj){

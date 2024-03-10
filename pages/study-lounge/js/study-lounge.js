@@ -5,7 +5,7 @@ import {figureOut} from './figure-out-region.js';
 import {getTubePath, getDateDiff} from '@/common/js/common-fn.js';
 import {fillOneFile} from '@/common/js/fs-fn.js';
 import {path2handle, handle2List} from '@/common/js/fileSystemAPI.js';
-// import {useActionStore} from '@/store/action-store.js';
+import {useActionStore} from '@/store/action-store.js';
 
 const [sqlite, dxDB] = await Promise.all([
 	useSqlite(),
@@ -13,7 +13,7 @@ const [sqlite, dxDB] = await Promise.all([
 ]);
 
 export function mainPart(){
-	// const oActionStore = useActionStore();
+	const oActionStore = useActionStore();
 	const sToday = window.dayjs().format('YYYY-MM-DD');
 	let isMediaChanged = false; // 是否加载了一个新的媒体
 
@@ -260,7 +260,7 @@ export function mainPart(){
 			isMediaChanged = false; // 复位
 		}
 		// oData.sReadingFile || showFileAotuly(sTxtFile);
-		// oActionStore.getMediaRows(oData.oMediaInfo.id);
+		oActionStore.getMediaRows(oData.oMediaInfo.id);
 	}
 	// ▼通过文本文件路径读取其中内容（音频的原文文件）
 	async function showFileAotuly(sTxtFile, fileTxt){
@@ -773,13 +773,13 @@ export function mainPart(){
 			cur.text = '';
 		});
 	}
-	// watch(() => oActionStore.aMediaRows, (aNewVal)=>{
-	// 	aNewVal.forEach(cur=>{
-	// 		if (!cur.lineId) return;
-	// 		const oRow = oIdD2Line.value[cur.lineId];
-	// 		if (oRow) oRow.iSecLong = Math.round(cur.duration_um);
-	// 	});
-	// });
+	watch(() => oActionStore.aMediaRows, (aNewVal)=>{
+		aNewVal.forEach(cur=>{
+			if (!cur.lineId) return;
+			const oRow = oIdD2Line.value[cur.lineId];
+			if (oRow) oRow.iSecLong = Math.round(cur.duration_um);
+		});
+	});
 	// ============================================================================
 	init();
 	const oFn = {
@@ -813,7 +813,7 @@ export function mainPart(){
         ...toRefs(oDom),
         ...toRefs(oData),
 		...oFn,
-		// oActionStore,
+		oActionStore,
 		oCurLine,
 		aMileStones,
 		aMinutesAnalyze,

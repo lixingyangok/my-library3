@@ -2,11 +2,11 @@
  * @Author: 
  * @Date: 2024-01-22 22:45:22
  * @LastEditors: Merlin
- * @LastEditTime: 2024-02-12 17:00:52
+ * @LastEditTime: 2024-03-10 21:11:34
  * @Description: 
  */
 
-// const sNow = strftime('%Y-%m-%d %H:%M:%f +00:00', 'now')
+const sNow = `strftime('%Y-%m-%d %H:%M:%f +00:00', 'now')`;
 
 export class TableFunction {
     db = {};
@@ -65,6 +65,25 @@ export class TableFunction {
             return sWhere;
         }
     }
+    // ↓ 数据值转数组以便保存或修改
+    #getColValueArr(oParams, aColName){
+        aColName ||=  this.#getColsArr(oParams, true);
+        const aValueArr = [];
+        const aKeyValArr = [];
+        aColName.forEach(key => {
+            const sColType = this.oColumnsInfo[key].type;
+            let value = oParams[key] ?? null; // 用 null 顶替 undefined
+            let sValType = typeof value;
+            if (sValType === 'string') {
+                value = `'${value.replaceAll("'", "''")}'`;
+            }else if (sValType === 'number' && sColType === 'DATETIME'){
+                value = `strftime('%Y-%m-%d %H:%M:%f +00:00', ${value / 1000}, 'unixepoch')`; 
+            }
+            aValueArr.push(String(value)); // null 转 'null' 
+            aKeyValArr.push(`${key} = ${value}`);
+        });
+        return { aColName, aValueArr, aKeyValArr };
+    }
     #getUpdateSql(params){
         let sSet = ` updatedAt = strftime('%Y-%m-%d %H:%M:%f +00:00', 'now'), \n`;
         if (typeof params === 'string') {
@@ -74,19 +93,21 @@ export class TableFunction {
             sSet += params.join(', ');
         }
         if (params.constructor.name === 'Object'){
-            const aColName = this.#getColsArr(params, true);
-            const aSetArr = aColName.map(key => {
-                const sColType = this.oColumnsInfo[key].type;
-                let value = params[key] ?? null; // 用 null 顶替 undefined
-                let sValType = typeof value;
-                if (sValType === 'string') {
-                    value = `'${value.replaceAll("'", "''")}'`;
-                }else if (sValType === 'number' && sColType === 'DATETIME'){
-                    value = `strftime('%Y-%m-%d %H:%M:%f +00:00', ${value / 1000}, 'unixepoch')`; 
-                }
-                return `${key} = ${value}`; 
-            });
-            sSet += aSetArr.join(',\n');
+            const {aKeyValArr} = this.#getColValueArr(oParams);
+            // 下方注释的部分已经改用 this.#getColValueArr() 
+            // const aColName = this.#getColsArr(params, true);
+            // const aSetArr = aColName.map(key => {
+            //     const sColType = this.oColumnsInfo[key].type;
+            //     let value = params[key] ?? null; // 用 null 顶替 undefined
+            //     let sValType = typeof value;
+            //     if (sValType === 'string') {
+            //         value = `'${value.replaceAll("'", "''")}'`;
+            //     }else if (sValType === 'number' && sColType === 'DATETIME'){
+            //         value = `strftime('%Y-%m-%d %H:%M:%f +00:00', ${value / 1000}, 'unixepoch')`; 
+            //     }
+            //     return `${key} = ${value}`; 
+            // });
+            sSet += aKeyValArr.join(',\n');
         }
         sSet = sSet.trimEnd().replace(/,+$/, '') + ' ';
         return sSet;
@@ -105,9 +126,10 @@ export class TableFunction {
         }
         return this.insertOne(obj);
     }
+    // ↓ 插入一条
     insertOne(oParams){
         if (!oParams) return;
-        const aColName = this.#getColsArr(oParams, true);
+        const {aColName, aValueArr} = this.#getColValueArr(oParams);
         let sFullSql = `
             INSERT INTO ${this.tbName}
             (
@@ -115,17 +137,12 @@ export class TableFunction {
                 ${aColName.join(', ')}
             )
             VALUES (
-                strftime('%Y-%m-%d %H:%M:%f +00:00', 'now'),
-                strftime('%Y-%m-%d %H:%M:%f +00:00', 'now'),
-                ${aColName.map(() => '?').join(', ')}
+                ${sNow}, ${sNow},
+                ${aValueArr.join(', ')}
             );
         `;
-        const thisArr = aColName.map(cur => {
-            return oParams[cur] ?? null;
-        });
-        // console.log("sFullSql", sFullSql);
-        // console.log("thisArr", thisArr);
-        const res = this.db.run(sFullSql, thisArr);
+        // console.log("sFullSql\n", sFullSql);
+        const res = this.db.run(sFullSql, );
         var id = this.db.exec("SELECT last_insert_rowid();")[0].values[0][0];
         if (id) this.db.persist();
         return id;

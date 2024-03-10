@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-22 19:31:55
  * @LastEditors: Merlin
- * @LastEditTime: 2024-03-10 17:58:36
+ * @LastEditTime: 2024-03-10 19:13:15
  * @Description: 与文件夹/文件相关的方法（纯函数）
  */
 // 本包将来可修改为，提供数据查询的包
@@ -183,7 +183,7 @@ export async function getTodayHistory(iMediaID){
     // ↓ 录入时长+创建时长（秒）
     let [iFiDuration, iCrDuration] = [0, 0];
     arr.forEach(cur => {
-        // 如果在当天创建行并同时录入只记一份功，即：录入
+        // 如果在当天创建行并同时录入只记一份功，即：录入，似乎可以记2份
         const {filledAt, text, start, end} = cur;
         const sKey = filledAt ? 'iFilled' : 'iCreated';
         oResult[sKey]++;

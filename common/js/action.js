@@ -1,13 +1,12 @@
 /*
  * @Author: 李星阳
  * @Date: 2023-08-13 20:12:08
- * @LastEditors: 李星阳
- * @LastEditTime: 2023-08-27 21:27:05
+ * @LastEditors: Merlin
+ * @LastEditTime: 2024-03-10 21:13:09
  * @Description: 
  */
 
-// import {useActionStore} from '@/store/action-store.js';
-// const oActionStore = useActionStore();
+import {useActionStore} from '@/store/action-store.js';
 
 export default class {
     sActionType = '';
@@ -31,7 +30,7 @@ export default class {
     // ▼初始化（按需保存）
     async initRecord(oAction){
         oAction.action = this.sActionType;
-        oAction.actionBegin = new Date().getTime();
+        oAction.actionBegin = Date.now();
         if (oAction.ongoing){
             // ▼这里执行完成之前千万不要污染 this.oRecord
             this.saveRecord(oAction.currentTime);
@@ -53,7 +52,7 @@ export default class {
             alert('👆播放模式请传入媒体当前时间点');
             throw '👆播放模式请传入媒体当前时间点';
         }
-        const duration = (new Date().getTime() - this.oRecord.actionBegin) / 1000;
+        const duration = (Date.now() - this.oRecord.actionBegin) / 1000;
         if (duration < 1){
             console.log(`操作过短不记录-- ${duration}`);
             return 0; // 返回0表示不记录
@@ -66,12 +65,13 @@ export default class {
         return duration;
     };
     async doSaving(useToSave){
-        const oSaved = await fnInvoke('db', 'saveAction', useToSave);
-        // .then(this.afterSaved);
+        const oActionStore = useActionStore();
+        const sqlite = await useSqlite();
+        const oSaved = sqlite.tb.action.insertOne(useToSave);
         if (!oSaved) alert('保存学习记录失败，请注意');
         // ▼保存之后刷新数据
-        // oActionStore.init();
-		// oActionStore.getMediaRows(useToSave.mediaId);
+        oActionStore.init();
+		oActionStore.getMediaRows(useToSave.mediaId);
         // console.log('useToSave', useToSave);
         // console.log('oSaved', oSaved);
     }
@@ -99,7 +99,7 @@ export default class {
 //     };
 //     // ▼初始化播放记录
 //     function initRecord(oActionInfo){
-//         const actionBegin = new Date().getTime();
+//         const actionBegin = Date.now();
 //         // const {actionEnd} = oRecordObj; // 提前保存好上次行动结束时间
 //         const example = {
 //             action: sActionType,
