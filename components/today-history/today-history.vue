@@ -1,16 +1,16 @@
 <!--
  * @Author: 李星阳
  * @Date: 2022-04-15 18:02:43
- * @LastEditors: 李星阳
- * @LastEditTime: 2023-12-03 15:28:57
- * @Description: 
+ * @LastEditors: Merlin
+ * @LastEditTime: 2024-03-10 19:03:25
+ * @Description: TODO 切换显示：当前媒体数据和全部数据
 -->
 <template>
     <div class="today-bar" >
-        今日成就：
-        <div class="cell" >
+        今日数据：
+        <div class="cell">
             录入时长：
-            <ul class="lights" >
+            <ul class="lights">
                 <li v-for="iOrder, of 10" :key="iOrder"
                     :class="{lighting: ~~(oInfo.iFiDuration / 60) >= oInfo.tenQty * 10 + iOrder}"
                     :name="oInfo.tenQty * 10 + iOrder"
@@ -19,22 +19,12 @@
             <em>{{oInfo.sFiDuration}}</em>
             <b class="addition" v-if="oInfo.iFiDuration_">{{oInfo.iFiDuration_}}</b>
         </div>
-        <span class="cell"  @click="showUp" >
-            录入行数：<em>{{oInfo.iFilled}}行</em>
-            <b class="addition" v-if="oInfo.iFilled_">{{oInfo.iFilled_}}</b>
+        <span class="cell" @click="showUp">
+            行数：<em>{{oInfo.iFilled}}/{{ oInfo.iCreated }} ({{oInfo.iFilledWords}} words)</em>
+            <!-- 尾部有下划线的属性来源不明，先注释掉 2024.03.08 22:29:3 星期五  -->
         </span>
-        <span class="cell" >
-            录入词汇：<em>{{oInfo.iFilledWords}}个</em>
-            <b class="addition" v-if="oInfo.iFilledWords_">{{oInfo.iFilledWords_}}</b>
-        </span>
-        --&emsp;
-        <span class="cell" >
-            创建行数：<em>{{oInfo.iCreated}}行</em>
-            <b class="addition" v-if="oInfo.iCreated_">{{oInfo.iCreated_}}</b>
-        </span>
-        <span class="cell" >
-            创建时长：<em>{{oInfo.sCrDuration}}</em>
-            <b class="addition" v-if="oInfo.iCrDuration_">{{oInfo.iCrDuration_}}</b>
+        <span class="cell">
+            时长：<em>{{oInfo.sFiDuration}}/{{oInfo.sCrDuration}}</em>
         </span>
     </div>
 </template>
@@ -54,7 +44,6 @@ const oProps = defineProps({
     iMediaID: Number,
 });
 
-init();
 async function init(){
     const oRes = await getTodayHistory(oProps.iMediaID);
     if (!oRes) return;
@@ -69,13 +58,16 @@ async function init(){
     // ▼ 统计已经听写了几个十分钟
     setValue(oRes);
 }
+onMounted(()=>{
+    init();
+});
 
 function setValue(oRes){
     Object.entries(oRes).forEach(([key, val])=>{
         const sKeyNew = `${key}_`;
         const iAddition = val - oInfo.value[key];
         oInfo.value[key] = val;
-        oInfo.value[sKeyNew] = iAddition > 0 ? iAddition : 0;
+        oInfo.value[sKeyNew] = (iAddition > 0) ? iAddition : 0;
     });
     setTimeout(()=>{
         Object.keys(oInfo.value).forEach((key)=>{

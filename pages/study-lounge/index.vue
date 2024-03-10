@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: Merlin
- * @LastEditTime: 2024-02-05 22:20:44
+ * @LastEditTime: 2024-03-10 17:36:08
  * @Description: 
 -->
 <template>
@@ -302,7 +302,7 @@
                 </ul>
             </article>
             <!-- ▼ -->
-            <!-- <dayTrack ref="oDayTrack" /> -->
+            <dayTrack ref="oDayTrack" />
         </section>
         <!-- ↑列2 ↓列3 -->
         <dictionaryVue
@@ -420,7 +420,7 @@ import {getKeyDownFnMap, fnAllKeydownFn} from './js/key-down-fn.js';
 import {registerKeydownFn, getTubePath} from '@/common/js/common-fn.js';
 import dictionaryVue from '../dictionary/index.vue';
 import TodayHistory from '@/components/today-history/today-history.vue';
-// import dayTrack from '@/components/day-track/day-track.vue';
+import dayTrack from '@/components/day-track/index.vue';
 // import happyBar from '@/components/happy-bar/happy-bar.vue';
 
 export default {
@@ -428,7 +428,7 @@ export default {
     components: {
         dictionaryVue,
         TodayHistory,
-        // dayTrack,
+        dayTrack,
         // happyBar,
     },
     setup(){

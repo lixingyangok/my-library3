@@ -2,7 +2,7 @@
  * @Author: 
  * @Date: 2023-12-30 10:38:50
  * @LastEditors: Merlin
- * @LastEditTime: 2024-02-07 21:58:23
+ * @LastEditTime: 2024-03-10 19:10:34
  * @Description: 
 -->
 <template>
@@ -33,6 +33,7 @@ useHead({
         type: 'text/css',
         href: '//unpkg.com/element-plus/dist/index.css',
     }],
+    // ------------------------------------------------------------
     script: [{ // echarts
         src: 'https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js',
     },{ // store

@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-22 19:31:55
  * @LastEditors: Merlin
- * @LastEditTime: 2024-02-19 21:47:46
+ * @LastEditTime: 2024-03-10 17:58:36
  * @Description: 与文件夹/文件相关的方法（纯函数）
  */
 // 本包将来可修改为，提供数据查询的包
@@ -147,10 +147,11 @@ export async function findMedia(sPath, oTarget) {
     return iSum;
 }
 
-// 查询：某天/某几天 的学习数据
+// 查询：某天或某几天 的学习数据
 export async function getLearningHistory(iMediaID){
     let sql = `
-        SELECT *,
+        SELECT
+            *,
             julianday('now', 'localtime') - julianday(createdAt, 'localtime') as gap
         FROM "line"
         where
@@ -179,8 +180,10 @@ export async function getTodayHistory(iMediaID){
         iFilledWords: 0,
         sFiDuration: '',
     };
+    // ↓ 录入时长+创建时长（秒）
     let [iFiDuration, iCrDuration] = [0, 0];
     arr.forEach(cur => {
+        // 如果在当天创建行并同时录入只记一份功，即：录入
         const {filledAt, text, start, end} = cur;
         const sKey = filledAt ? 'iFilled' : 'iCreated';
         oResult[sKey]++;
