@@ -2,7 +2,7 @@
  * @Author: 
  * @Date: 2024-01-22 22:45:22
  * @LastEditors: Merlin
- * @LastEditTime: 2024-03-10 21:11:34
+ * @LastEditTime: 2024-03-11 22:17:58
  * @Description: 
  */
 
@@ -93,7 +93,7 @@ export class TableFunction {
             sSet += params.join(', ');
         }
         if (params.constructor.name === 'Object'){
-            const {aKeyValArr} = this.#getColValueArr(oParams);
+            const {aKeyValArr} = this.#getColValueArr(params);
             // 下方注释的部分已经改用 this.#getColValueArr() 
             // const aColName = this.#getColsArr(params, true);
             // const aSetArr = aColName.map(key => {
