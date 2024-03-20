@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: Merlin
- * @LastEditTime: 2024-03-10 17:36:08
+ * @LastEditTime: 2024-03-16 16:43:58
  * @Description: 
 -->
 <template>
@@ -317,7 +317,7 @@
         <!-- ▼单词表 -->
         <el-dialog title="单词表" v-model="isShowNewWords">
             <div class="new-words-search-bar" >
-                <el-input v-model="sNewWordSearch" placeholder="搜索" />
+                <el-input v-model.trim="sNewWordSearch" placeholder="搜索" />
             </div>
             <div class="one-box" 
                 v-for="(oneList, i01) of aFilteredWords" :key="i01"

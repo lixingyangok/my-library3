@@ -286,7 +286,7 @@ export function mainPart(){
 		ElMessage.success(`取得文本 ${aArticle.length} 行`);
 		oData.aArticle = Object.freeze(aArticle);
 	}
-	// ▼保存1个媒体信息
+	// ▼ 保存1个媒体信息
 	async function saveMedia(){
 		const arr = store('sFilePath').split('/');
 		const obj = {
@@ -697,8 +697,8 @@ export function mainPart(){
 		// console.log('dealMediaTimeGaP', oMediaInfo.$dc(), oMediaBuffer.$dc());
 		const sMsg = `
 			${oMediaInfo.durationStr} | ${oMediaBuffer.sDuration_}
-			👈 默认方案与通过波形解析的音频时长不同，
-			改为以波形结果为准？
+			← 媒体时长信息与“通过波形解析的时长”不同，
+			是否改为以波形结果为准？
 		`.replace(/\s{2,}/g, ' ').trim();
 		const isSure = await ElMessageBox.confirm(sMsg, 'Warning', {
 			confirmButtonText: '确认',
@@ -706,10 +706,11 @@ export function mainPart(){
 			type: 'warning',
 		}).catch(()=>false);
 		if (!isSure) return;
-		await toRecordDiration(oMediaInfo, {
+		const res = await toRecordDiration(oMediaInfo, {
 			fDuration: oMediaBuffer.duration,
 			sDuration: oMediaBuffer.sDuration_,
 		});
+		if (!res) return;
 		ElMessage.success(`时长已经修改为 ${oMediaBuffer.sDuration_}`);
 	}
 	// 保存媒体时长信息
@@ -738,14 +739,15 @@ export function mainPart(){
 			ElMessage.success(sTips);
 		}
 	}
-	// ▼如果数据库中没有记录音频的时长，此时应该将时长记录起来
+	// ▼ 更新媒体的时长信息
 	async function toRecordDiration(oMediaInfo, oDuration){
-		return alert('需要删除 fnInvoke');
-		const res = await fnInvoke("db", 'updateMediaInfo', {
+		const obj = {
 			id: oMediaInfo.id,
 			duration: oDuration.fDuration,
 			durationStr: oDuration.sDuration,
-		});
+		};
+		const res = sqlite.tb.media.updateOne(obj);
+		// console.log(obj, '\n', res);
 		return res;
 	}
 	const fnLib = {
