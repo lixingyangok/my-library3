@@ -96,7 +96,7 @@
             <div class="file-info-bar">
                 ◆文件：{{(oMediaInfo?.dir||'').split('/').slice(-2).join('/') + `/${oMediaInfo.name}`}}&emsp;
                 ◆时长：{{oMediaBuffer.sDuration_}}&emsp;
-                ◆完成于：{{oMediaInfo?.finishedAt?.toLocaleString() || '进行中'}}&emsp;
+                ◆完成于：{{oMediaInfo?.finishedAt?.toLocaleString().slice(0,16) || '进行中'}}&emsp;
             </div>
             <Wave ref="oMyWave"
                 :media-path="sMediaSrc"
