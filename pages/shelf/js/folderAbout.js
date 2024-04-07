@@ -50,8 +50,31 @@ const oFn01 = {
         }
         this.ckickItem(...this.aLastFolder);
     },
-    // ↓ 将媒体配对（未完全完成）
-    switchMp3(){
+    // ↓ 将媒体配对（未彻底完成） 
+    mediaManagement(){
+        let aLast = this.aDirectory.at(-1);
+        if (!aLast?.length) return;
+        this.oFileChanging.isShowDialog = true;
+        let aItemsOld = []; // 左列
+        for (const [idx, oCur] of aLast.entries()){
+            if (!oCur.isMedia) continue; 
+            // console.log("idx =", idx);
+            let [sNameShorten, sTail] = oCur.name.split(/\.(?=[a-z0-9]{2,5}$)/i);
+            sTail &&= sTail.toLowerCase();
+            oCur.sNameShorten = sNameShorten;
+            aItemsOld.push(oCur);
+            if (oCur.infoAtDb) continue; 
+            // ↓ 未入库媒体 
+            // getMediaDuration(oCur.oFile).then(oDuration => {
+            //     // oDuration = {duration: 91.99746, durationStr: '00:01:31'}
+            //     Object.assign(oCur, oDuration);
+            // });
+        }
+        this.oFileChanging.aListMatched = aItemsOld;
+        console.log("aItemsOld\n", aItemsOld.$dc());
+    },
+    // ↓ 将 mp3 格式与其它格式配对 ------------------------------
+    async pairMedia(){
         let aLast = this.aDirectory.at(-1);
         if (!aLast?.length) return;
         this.oFileChanging.isShowDialog = true;
@@ -73,6 +96,7 @@ const oFn01 = {
                 });
             }
         }, {});
+        // ↓ 只保留有伴的
         aItemsOld = aItemsOld.filter(oMedia => {
             oMedia.aMatched = oMatched[oMedia.sNameShorten];
             return oMedia.aMatched;
@@ -80,7 +104,7 @@ const oFn01 = {
         this.oFileChanging.aListMatched = aItemsOld;
         console.log("aItemsOld\n", aItemsOld.$dc());
     },
-    // ↓ 保存到数据库
+    // ↓ 将“替换项” 保存到数据库
     async changeMediaFile(oNewMedia, idx){
         if (!oNewMedia.hash) return;
         const oOld = this.oFileChanging.aListMatched[idx];
@@ -98,6 +122,29 @@ const oFn01 = {
         sqlite.tb.media.updateOne(oNewInfo);
         console.log("oNewInfo\n", oNewInfo.$dc());
         oNewMedia.changingMark = '✔';
+    },
+    // ↓保存全部入库 
+    async save2DB(){
+        let {aListMatched} = this.oFileChanging;
+        const aNotInDB = aListMatched.filter(cur => {
+            return cur.hash && !cur.infoAtDb;
+        });
+        if (!aNotInDB.length) return;
+        console.log("aNotInDB", aNotInDB);
+        for (const [idx, oCur] of aNotInDB.entries()){
+            const oDuration = await getMediaDuration(oCur.oFile);
+            const oNewInfo = {
+                dir: oCur.path,
+                name: oCur.name,
+                size: oCur.size,
+                hash: oCur.hash,
+                ...oDuration,
+            };
+            // console.log(oNewInfo);
+            const id = sqlite.tb.media.insertOne(oNewInfo);
+            console.log(`id = ${id}`); 
+            oCur.infoAtDb = {};
+        }
     },
 }
 

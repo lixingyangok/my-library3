@@ -9,12 +9,12 @@
                     {{cur}}
                 </span>
                 &nbsp;
-                <!-- <el-button link type="primary" @click="showDialog(cur)">
+                <el-button link type="primary" @click="showDialog(cur)">
                     弹出窗口
-                </el-button> -->
+                </el-button>
             </li>
         </ul>
-
+        <!-- ↑ 旧版 --> 
         <section class="root-choosing" >
             <button @click="chooseRoot">选择文件夹</button>
             <br/>
@@ -33,10 +33,13 @@
                 </li>
             </ul>
         </section>
-        <p>
+        <div class="current-path" >
             <!-- 当前1：{{aPath.join('/')}}<br/> -->
-            当前2：{{aRoutesStr.join('/')}}<br/>
-        </p>
+            当前位置：{{aRoutesStr.join('/')}} 
+            <button @click="checkFolder"> 
+                浏览
+            </button>
+        </div>
         <div class="legend" >
             图标含义：
             文件夹/内含媒体/媒体已入库：
@@ -52,8 +55,15 @@
             文件路径/名称与数据库不符 <i style="color:red">红字</i>
         </div>
         <div>
-            <button @click="updateMediaInfo">更新异常文件</button>
-            <button @click="switchMp3">变换Mp3为其它格式</button>
+            <button @click="updateMediaInfo">
+                更新异常文件
+            </button>
+            <button @click="mediaManagement('')">
+                媒体管理
+            </button>
+            <button @click="mediaManagement()">
+                变换Mp3为其它格式
+            </button>
         </div>
         <br/>
         <article class="directory-list">
@@ -69,6 +79,7 @@
                     @mouseenter="hoverIn($event, cur)"
                     @mouseleave="mediaPopperToggle(false)"
                 >
+                    <!-- ↓文件夹 -->
                     <template v-if="cur.kind == 'directory'">
                         <i class="fas fa-fw folder-mark fa-folder "
                             :class="{'has-media': cur.hasMedia}"
@@ -78,6 +89,7 @@
                             v-if="oMediaHomes[cur.sPath]"
                         /> -->
                     </template>
+                    <!-- ↓媒体 -->
                     <template v-else-if="cur.isMedia">
                         <i v-if="cur.hash"
                             class="fas fa-fw fa-play-circle"
@@ -88,6 +100,7 @@
                         />
                         <i v-else class="fa-solid fa-fw fa-circle-notch fa-spin" />
                     </template>
+                    <!-- ↓其它文件 -->
                     <i v-else class="fas fa-fw fa-file-alt"/>
                     <!-- 左右分界 -->
                     <span class="item-name">
@@ -96,8 +109,8 @@
                 </li>
             </ul>
         </article>
-
-        <!-- ▼大列表（旧） -->
+        <!-- 👆 大列表（新版） -->
+        <!-- 👇 大列表（旧） -->
         <article  v-if="0">
             <ul v-for="(aColumn, i1) of aTree" :key="i1">
                 <li v-for="(cur, i2) of aColumn" :key="i2"
@@ -133,10 +146,10 @@
             </ul>
         </article>
     </section>
-
-
     <!-- 
-        ▼弹窗 ▼弹窗 ▼弹窗
+        ▼弹窗
+        ▼弹窗
+        ▼弹窗
     -->
     <!-- <el-dialog title="初始化" width="960px"
         v-model="dialogVisible"
@@ -174,9 +187,10 @@
             </span>
         </template>
     </el-dialog> -->
-    <!-- ▼弹窗 -->
-    <!-- ▼文件夹的【媒体列表】 -->
-    <!-- <el-dialog title="初始化" width="550px"
+
+    <!-- ▼ 2级弹窗 -->
+    <!-- ▼ 文件夹的【媒体列表】 -->
+    <el-dialog title="初始化" width="550px"
         v-model="bMediaDialog"
     >
         <h3> {{fucousFolder}} </h3>
@@ -217,15 +231,23 @@
                 </el-button>
             </span>
         </template>
-    </el-dialog> -->
+    </el-dialog>
+
     <!-- ▼媒体详情窗口 -->
     <el-dialog title="媒体详情"
-        width="880px"
+        width="950px"
         v-model="oFileChanging.isShowDialog"
         top="10vh"
     >
         <el-table :data="oFileChanging.aListMatched" style="width: 100%">
             <el-table-column prop="name" label="文件名" />
+            <el-table-column label="状态" width="130px">
+                <template #default="scope">
+                    {{
+                        scope.row.infoAtDb ? '已入库' : ''
+                    }}
+                </template>
+            </el-table-column>
             <el-table-column prop="aMatched" label="替换项" >
                 <template #default="scope">
                     <p v-for="(cur, idx) of scope.row.aMatched" :key="idx" 
@@ -240,8 +262,20 @@
                     </p>
                 </template>
             </el-table-column>
-            <!-- <el-table-column prop="changingMark" label="状态" width="150px"/> -->
+            <el-table-column label="操作" width="150px">
+                <template #default="scope">
+                    <el-button link @click="()=>(scope.row)" >
+                        入库
+                    </el-button>
+                </template>
+            </el-table-column>
         </el-table>
+        <!-- ↓ -->
+        <div>
+            <el-button type="primary" @click="save2DB" >
+                保存未入库媒体
+            </el-button>
+        </div>
     </el-dialog>
     <!--  -->
     <el-dialog title="媒体详情"

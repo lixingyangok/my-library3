@@ -32,11 +32,11 @@ const fnAboutDB = {
         }, {});
         return aRes;
     },
-    // ▼弹出1级窗口-树
+    // ▼弹出1级窗口-树（已经改为新版） 
     showDialog(sPath){
         this.dialogVisible = true;
         this.aFolders = [];
-        this.setTreeList(sPath);
+        // this.setTreeList(sPath);
     },
     // ▼插入1级窗口的树
     async setTreeList(sPath) {
@@ -52,16 +52,8 @@ const fnAboutDB = {
         }];
         this.aFolders = treeArr;
     },
-    // ▼打开2级窗口————查询某个目录
-    // TODO 应该把 getFolderKids 改为 getFolderChildren
-    async checkFolder(oInfo){
-        this.fucousFolder = oInfo.sPath;
-        this.bMediaDialog = true;
-        const aFolderMedia = await getFolderKids(oInfo.sPath);
-        // console.log('aFolderMedia\n', aFolderMedia.$dc());
-        this.aFolderMedia = aFolderMedia;
-        addAllMediaDbInfo(this.aFolderMedia);
-    },
+
+
 
     // ▼将某个文件夹内的媒体逐个保存媒体到DB
     async saveOneByOne(){
@@ -146,6 +138,21 @@ const oAboutTree = {
 
 // ========= 已经移植到新版的功能 =============================
 const oUseInNew = {
+    // ▼打开2级窗口————查询某个目录
+    // TODO 应该把 getFolderKids 改为 getFolderChildren
+    async checkFolder(){
+        this.bMediaDialog = true;
+        // this.fucousFolder = oInfo.sPath;
+        let aLast = this.aDirectory.at(-1);
+        if (!aLast?.length) return;
+        console.log("aLast", aLast.$dc()); 
+        return;
+        
+        const aFolderMedia = await getFolderKids(oInfo.sPath);
+        // console.log('aFolderMedia\n', aFolderMedia.$dc());
+        this.aFolderMedia = aFolderMedia;
+        addAllMediaDbInfo(this.aFolderMedia);
+    },
     // ▼检查媒体详情
     async checkDetail(oMedia){
         console.log(oMedia.$dc());

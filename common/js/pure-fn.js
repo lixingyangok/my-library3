@@ -31,13 +31,15 @@ export async function getMediaDuration(oFile){
 	if (!isFile) throw '入参不正确';
 	let fnResolve;
 	const oPromise = new Promise(f1 => fnResolve = f1);
-	Object.assign(new Audio(), {
+	let oMyAudio = new Audio();
+	Object.assign(oMyAudio, {
 		src: URL.createObjectURL(oFile),
 		ondurationchange(ev) {
 			fnResolve({
 				duration: ev.target.duration,
 				durationStr: secToStr(ev.target.duration),
 			});
+			oMyAudio = null;
 		},
 	});
 	return oPromise;
