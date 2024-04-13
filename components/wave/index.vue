@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-03 10:09:58
  * @LastEditors: Merlin
- * @LastEditTime: 2024-02-12 16:04:36
+ * @LastEditTime: 2024-04-13 12:43:10
  * @Description: 
 -->
 <template>
@@ -38,12 +38,17 @@
                             <span v-show="(cur % 2 == 0) || iPerSecPx >= 50">{{~~(cur/60)}}'{{cur%60}}</span>
                         </li>
                     </ul>
+                    <!-- ↑ 时间刻度 -->
+                    <!-- ↓ 区间标记 -->
                     <ul class="region-ul"
                         @contextmenu="clickOnWave"
                         @mousedown="mouseDownFn"
                     >
                         <li v-for="(cur, idx) of aGapRegions" :key="idx" 
-                            class="region" :class="cur.idx === iCurLineIdx ? 'cur' : ''"
+                            :class="{
+                                region: true,
+                                cur: cur.idx === iCurLineIdx,
+                            }"
                             :style="{
                                 left: `${cur.start * fPerSecPx}px`,
                                 width: `${(cur.end - cur.start) * fPerSecPx}px`,
@@ -59,6 +64,7 @@
                                     {{cur.iRate}}%
                                 </span>
                             </i>
+                            <!-- ↓ 当前行文本 -->
                             <p class="text" v-if="fPerSecPx>100">
                                 {{ cur.text }}
                             </p>
@@ -115,8 +121,8 @@ export default {
         // ▼视口范围 [起点秒，终点秒]
         const aGapSeconds = computed(() => {
             const iWidth = oDom?.oViewport?.offsetWidth || window.innerWidth;
-            const start = ~~(oData.iScrollLeft / oData.fPerSecPx);
-            const end = ~~((oData.iScrollLeft + iWidth) / oData.fPerSecPx);
+            const start = Math.floor(oData.iScrollLeft / oData.fPerSecPx);
+            const end = Math.ceil((oData.iScrollLeft + iWidth) / oData.fPerSecPx); 
             // end = math.min(end, duration*oData.fPerSecPx) // 这行留着做将来的参考，有必要就打开
             return [Math.max(start, 0), end];
         });
@@ -135,8 +141,9 @@ export default {
             const {length} = props.aLineArr;
             for (let idx = 0; idx < length; idx++){
                 const oCur = props.aLineArr[idx];
-                const {end} = oCur;
+                const {start, end} = oCur;
                 const IsShow = end > iLeftSec || end > iRightSec; // 此处正确无误
+                // const IsShow = end > iLeftSec || start < iRightSec; // 新
                 if (!IsShow) continue;
                 oCur.idx = idx;
                 if (iFinalDuration.value > 100){

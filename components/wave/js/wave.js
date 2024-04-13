@@ -30,7 +30,8 @@ export default function(){
         iScrollLeft: 0,
         drawing: false,
         sWaveBarClassName: '',
-        scrollTimer: null, // 滚动条
+        scrollTimer: 0, // 滚动条动画计时
+        scrollAniRequest: 0, // 滚动条动画 ID
     });
     const iFinalDuration = computed(() => {
         return (
@@ -196,6 +197,7 @@ export default function(){
 		Context.clearRect(0, 0, 5_000, 200);
         // console.log('画面已被清空');
 	}
+    // ↓ 开始播放
 	function toPlay(iType=0, oEv={}) {
         cancelAnimationFrame(oData.playing);
         oDom.oAudio ||= document.getElementById('media-player');
@@ -218,6 +220,11 @@ export default function(){
         oDom.oPointer.left = `${playFrom * oData.fPerSecPx}px`;
 		oDom.oAudio.currentTime = playFrom;
 		oDom.oAudio.play();
+		oDom.oAudio.ontimeupdate = (ev)=>{
+            if (ev.target.currentTime < oCurLine.value.end) return;
+            ev.target.pause();
+            cancelAnimationFrame(oData.playing);
+        }; 
         oData.playing = requestAnimationFrame(toMovePointer);
 	}
     // ▼移动光标，
@@ -320,7 +327,7 @@ export default function(){
 	}
     // 改变波形高度
 	function changeWaveHeigh(deltaY) {
-		const [min, max, iStep] = [0.1, 3, 0.15];
+		const [min, max, iStep] = [0.1, 4.5, 0.15]; 
 		let { iHeight } = oData;
 		if (deltaY >= 0) iHeight += iStep;
 		else iHeight -= iStep;
@@ -352,7 +359,9 @@ export default function(){
 	}
     // ▼定位滚动条
     function rollTheWave(iNewLeft){
-        cancelAnimationFrame(oData.scrollTimer);
+        cancelAnimationFrame(oData.scrollAniRequest); 
+        const runID = Date.now(); 
+        oData.scrollTimer = runID; 
         const {oViewport, oLongBar} = oDom;
 		const iOldVal = oViewport['scrollLeft'];
 		if (~~iOldVal === ~~iNewLeft) return;
@@ -362,16 +371,18 @@ export default function(){
 		const [iTakeTime, iTimes] = [800, 60]; // 走完全程耗时, x毫秒走一步
 		const iOneStep = ~~((iNewLeft - iOldVal) / (iTakeTime / iTimes)); // 步长 px
         function fnSetter(){
+            if (oData.scrollTimer != runID) return; 
             let iAimTo = oViewport['scrollLeft'] + iOneStep;
             const needStop = iNewLeft > iOldVal ? (iAimTo >= iNewLeft) : (iAimTo <= iNewLeft);
             oViewport['scrollLeft'] = needStop ? iNewLeft: iAimTo;
-			if (needStop){
-                cancelAnimationFrame(oData.scrollTimer);
-			}else{
-                requestAnimationFrame(fnSetter);
-            }
+			// if (needStop){
+            //     cancelAnimationFrame(oData.scrollTimer);
+			// }else{
+            //     requestAnimationFrame(fnSetter);
+            // }
+            needStop || requestAnimationFrame(fnSetter);
         }
-		oData.scrollTimer = requestAnimationFrame(fnSetter);
+		oData.scrollAniRequest = requestAnimationFrame(fnSetter); 
 	}
     function moveToFirstLine(){
         const canGo = iFinalDuration.value && props.aLineArr.length;
