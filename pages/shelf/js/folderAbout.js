@@ -9,10 +9,10 @@ const [sqlite, dxDB] = await Promise.all([
 ]);
 
 const oFn01 = {
-    // ▼删除一项（待验证）
+    // ▼删除一项媒体记录，以及附带的其它表行
     async toForgetMedia(oMedia){
-        const {id} = oMedia;
-        // console.log(oMedia.$dc());
+        const {id, name} = oMedia;
+        console.log(oMedia.$dc());
         const confirm = await ElMessageBox.confirm(
             '确认移除记录?',
             '请确认',
@@ -28,7 +28,10 @@ const oFn01 = {
         sqlite.run(`DELETE FROM new_word WHERE mediaId=${id};`),
         sqlite.run(`DELETE FROM line WHERE mediaId=${id};`),
         sqlite.run(`DELETE FROM media WHERE id=${id};`);
-        this.ckickItem(...this.aLastFolder);
+        sqlite.persistExecutor();
+        ElMessage.success(`已经移除：${name}`);
+        Reflect.deleteProperty(oMedia.row, 'infoAtDb');
+        // this.ckickItem(...this.aLastFolder);
     },
     // ▼如果文件名，体积，修改时间变化了，此方法用于记录新的信息到数据库
     async updateMediaInfo(){
@@ -235,7 +238,7 @@ const oFn02 = {
         this.aRoutesInt.splice(i1, 1/0, i2);
     },
 
-    // ↓ 切换媒体文件
+    // ↓ 切换媒体文件（更换 hash) 
     async useAnotherMedia(oMedia){
         console.log(`点击列\n`, oMedia.$dc());
         const {name, infoAtDb} = oMedia;
@@ -252,7 +255,7 @@ const oFn02 = {
         const [hash] = value.match(/^[0-9a-z]{16}$/i) || [];
         console.log("hash", hash);
         if (!hash || !infoAtDb.id) return;
-        return alert('停止，需要优化')
+        // return alert('停止，需要优化')
         const res = sqlite.tb.media.updateOne({
             id: infoAtDb.id,
             hash,

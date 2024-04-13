@@ -262,10 +262,15 @@
                     </p>
                 </template>
             </el-table-column>
-            <el-table-column label="操作" width="150px">
+            <el-table-column label="操作" width="160px">
                 <template #default="scope">
-                    <el-button link @click="()=>(scope.row)" >
-                        入库
+                    <el-button link @click="()=>(scope.row)" 
+                        :disabled="!!scope.row.infoAtDb"
+                    >
+                        入库(假)
+                    </el-button>
+                    <el-button link @click="toForgetMedia(scope.row.infoAtDb, )" >
+                        移除媒体
                     </el-button>
                 </template>
             </el-table-column>
