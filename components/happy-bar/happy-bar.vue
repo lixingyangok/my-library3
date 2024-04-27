@@ -1,8 +1,8 @@
 <!--
  * @Author: 李星阳
  * @Date: 2023-08-15 20:50:04
- * @LastEditors: 李星阳
- * @LastEditTime: 2023-08-27 21:34:38
+ * @LastEditors: Merlin
+ * @LastEditTime: 2024-04-27 14:47:01
  * @Description: 
 -->
 <template>
@@ -15,18 +15,26 @@
             :name="iLong"
         >
             <time class="sec">{{iWentSec.toFixed(1)}}</time>
-            
         </div>
-        <!-- <el-progress :percentage="percentage" :stroke-width="18" striped123 striped-flow123 :duration="30" :format="showSec" :text-inside="true" /> -->
+        
+        <!-- <el-progress
+            :text-inside="true" 
+            :percentage="percentage"
+            :stroke-width="18"
+            :duration="30"
+            :format="showSec"
+            striped123
+            striped-flow123
+        /> -->
     </article>
 </template>
 
 <script setup>
-
 import { watch, ref } from 'vue';
 import {useBarInfo} from '@/store/happy-bar.js';
+
+const oBarInfo = import.meta.client && useBarInfo();
 let iTimer = 0;
-const oBarInfo = useBarInfo();
 const iLong = ref(0);
 const iLeftAt = ref(0);
 const iSecRunTimes = 60; // 帧率
@@ -64,6 +72,7 @@ function toRun(){
         }
     }, iFreQ);
 }
+
 function toStop(iDurationSec){
     clearInterval(iTimer);
     console.log('toStop ---');

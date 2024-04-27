@@ -1,8 +1,9 @@
 .happy-bar{
     margin: 12px 0;
-    /* background: #eee; */
+    background: #eee;
     position: relative;
-    height: 9px;
+    height: 12px;
+    border-radius: 3px; 
     overflow: hidden;
 }
 

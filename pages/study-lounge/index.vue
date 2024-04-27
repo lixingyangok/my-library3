@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: Merlin
- * @LastEditTime: 2024-03-16 16:43:58
+ * @LastEditTime: 2024-04-27 14:52:26
  * @Description: 
 -->
 <template>
@@ -128,6 +128,7 @@
                             <el-dropdown-item command="导入Srt">导入Srt</el-dropdown-item>
                             <el-dropdown-item command="导出Srt">导出Srt</el-dropdown-item>
                             <el-dropdown-item command="导出Srt(补空行)">导出Srt(补空行)</el-dropdown-item>
+                            <el-dropdown-item command="断句">断句</el-dropdown-item>
                         </el-dropdown-menu>
                     </template>
                 </el-dropdown>
@@ -227,7 +228,7 @@
                         <!-- 'blink': aMinutesAnalyze[iMitIndex]?.doneByToday -->
                     </ul>
                 </section>
-                <!-- <happyBar/> -->
+                <happyBar/> 
                 <div class="textarea" :key="iCurLineIdx">
                     <template v-for="(word, widx) of splitSentence(oCurLine.text)">
                         <span v-if="word.sClassName" :class="word.sClassName" :key="widx">
@@ -236,7 +237,7 @@
                         <template v-else>{{word}}</template>
                     </template>
                 </div>
-                <!-- ▲下层内容，▼上层输入框 -->
+                <!-- ▲下层内容，▼上层为真实输入框 -->
                 <textarea ref="oTextArea" class="textarea textarea-real"
                     :class="{
                         'being-wrong': oCurLine.text.match(/\s{2,}|^\s|\n|\r/g),
@@ -264,8 +265,10 @@
                     </li>
                 </ul>
             </section>
-            <!-- ▲输入框 -->
-            <!-- ▼字幕大列表 -->
+            <!--
+                ▲输入框
+                ▼字幕大列表
+            -->
             <article class="last-part" ref="oSententWrap"
                 @scroll="lineScroll"
             >
@@ -421,7 +424,7 @@ import {registerKeydownFn, getTubePath} from '@/common/js/common-fn.js';
 import dictionaryVue from '../dictionary/index.vue';
 import TodayHistory from '@/components/today-history/today-history.vue';
 import dayTrack from '@/components/day-track/index.vue';
-// import happyBar from '@/components/happy-bar/happy-bar.vue';
+import happyBar from '@/components/happy-bar/happy-bar.vue';
 
 export default {
     name: 'study-lounge',
@@ -429,7 +432,7 @@ export default {
         dictionaryVue,
         TodayHistory,
         dayTrack,
-        // happyBar,
+        happyBar,
     },
     setup(){
         if (!import.meta.client) return;
@@ -474,11 +477,11 @@ export default {
             return oData.aArticle.length;
         });
         const oAllFn = fnAllKeydownFn();
-        // document.addEventListener('keyup', oAllFn.readingStopped);
-        // onBeforeUnmount(() => {
-        //     console.log('卸载-取消按键抬起~~');
-        //     document.removeEventListener('keyup', oAllFn.readingStopped);
-        // });
+        document.addEventListener('keyup', oAllFn.readingStopped);
+        onBeforeUnmount(() => {
+            console.log('已注销按键抬起事件');
+            document.removeEventListener('keyup', oAllFn.readingStopped);
+        });
         return {
             ...toRefs(oData),
             ...oAllFn,

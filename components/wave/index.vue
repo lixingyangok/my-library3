@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-03 10:09:58
  * @LastEditors: Merlin
- * @LastEditTime: 2024-04-13 12:43:10
+ * @LastEditTime: 2024-04-13 12:57:24
  * @Description: 
 -->
 <template>
@@ -24,6 +24,7 @@
                 @mousewheel="wheelOnWave"
                 @scroll="waveWrapScroll"
                 AAAcontextmenu="clickOnWave"
+                @contextmenu.prevent="()=>null"
                 AAAmousedown="mouseDownFn"
             >
                 <div class="long-bar" ref="oLongBar"
@@ -41,7 +42,7 @@
                     <!-- ↑ 时间刻度 -->
                     <!-- ↓ 区间标记 -->
                     <ul class="region-ul"
-                        @contextmenu="clickOnWave"
+                        @contextmenu.prevent="clickOnWave"
                         @mousedown="mouseDownFn"
                     >
                         <li v-for="(cur, idx) of aGapRegions" :key="idx" 

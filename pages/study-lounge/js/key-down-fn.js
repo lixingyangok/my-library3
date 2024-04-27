@@ -2,16 +2,15 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: Merlin
- * @LastEditTime: 2024-02-16 21:18:27
+ * @LastEditTime: 2024-04-27 22:24:58
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
 import { fixTime } from '@/common/js/pure-fn.js';
 import TheAction from '@/common/js/action.js';
 import { figureOut } from './figure-out-region.js';
+import {useBarInfo} from '@/store/happy-bar.js';
 
-// import {useBarInfo} from '@/store/happy-bar.js';
-// const oBarInfo = useBarInfo();
 const oActionFn = new TheAction('reading');
 let iSearchingQ = 0;
 let isSavingToDB = false; // 保存事件防抖
@@ -107,6 +106,7 @@ export function getKeyDownFnMap(This, sType) {
 
 // ▼按键后的方法列表
 export function fnAllKeydownFn() {
+    const oBarInfo = useBarInfo();
     const oInstance = getCurrentInstance();
     const This = oInstance.proxy;
     function Esc(){
@@ -127,15 +127,16 @@ export function fnAllKeydownFn() {
             }),
         });
     }
+    // ↓ 空格按下事件 
     function readAloud(ev){
         // console.log(`长按 ${ev.repeat} - ${This.isReading}`);
-        // 终止条件 👉 非长按 || 已进入朗读状态
-        // if (!ev.repeat || This.isReading) return;
-        if (This.isReading) return;
+        // ↓ 终止条件 👉 非长按 || 已进入朗读状态
+        if (!ev.repeat || This.isReading) return; 
+        // if (This.isReading) return;
         This.isReading = true;
         This.oMyWave.toPlay(null, ev);
-        This.oCurLine.text = This.oCurLine.text.trim().replace(/\s{2,}/g, ' ');
-        // oBarInfo.setStatus(true);
+        // This.oCurLine.text = This.oCurLine.text.replace(/ {2,}/g, ' ');
+        oBarInfo.setStatus(true);
         console.log('开始朗读');
         oActionFn.initRecord({ // 只管启动，程序会按需保存
             mediaId: This.oMediaInfo.id,
@@ -144,13 +145,14 @@ export function fnAllKeydownFn() {
             playEnd: This.oCurLine.end,
         });
     }
+    // ↓ 空格抬起事件
     function readingStopped(ev){
         if (!This.isReading) return;
         This.isReading = false;
         This.oMyWave.toPause();
         // console.log(`松开空格 ${This.isReading}`, ev);
         const iDuration = oActionFn.saveRecord();
-        // oBarInfo.setStatus(false, iDuration);
+        oBarInfo.setStatus(false, iDuration);
         // console.log(`朗读完成 ${duration} 秒`, This.oReadingAloud.$dc());
     }
     function dealQuotationMark(){
@@ -204,7 +206,7 @@ export function fnAllKeydownFn() {
         // let sFirst = sCandidate.match(/(\S+\s+){3}/)[0] + ' ';
         // let sFirst = sCandidate.match(/(\S+\s{0,1}){1,3}/)[0] + ' ';
         let sFirst = sCandidate.match(/(\S+\s{0,1}){1,3}/)[0] + ' ';
-        let iFind = sFirst.search(/[,"'!\.\?\n]\s/);
+        let iFind = sFirst.search(/[,"'!\.\?;\n]\s/);
         if (iFind > -1) {
             // console.log('iFind', iFind, sCandidate);
             sFirst = sFirst.slice(0, iFind + 2);
@@ -217,7 +219,7 @@ export function fnAllKeydownFn() {
         // console.log(sCandidate);
     }
     // ▼切换当前句子（上一句，下一句）
-    function previousAndNext(iDirection) {
+    function previousAndNext(iDirection, creating=false) {
         const { oMediaBuffer, aLineArr, iCurLineIdx } = This;
         const iCurLineNew = iCurLineIdx + iDirection;
         if (iCurLineNew < 0) {
@@ -234,8 +236,14 @@ export function fnAllKeydownFn() {
             return figureOut(oMediaBuffer, end); // 要新增一行，返回下行数据
         })();
         if (oNewLine === null) {
-            return ElMessage.warning('后面没有了');
+            ElMessage.warning('后面没有了');
+            return null; 
         }
+        if (creating===true) {
+            This.aLineArr.push(oNewLine);
+            This.iCurLineIdx = iCurLineNew;
+            return;
+        };
         goLine(iCurLineNew, oNewLine, true);
     }
     // ▼跳至某行

@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: Merlin
- * @LastEditTime: 2024-02-08 14:49:11
+ * @LastEditTime: 2024-04-25 22:30:08
  * @Description: 
  */
 
@@ -77,7 +77,8 @@ export async function fileToBuffer(oFile){
 export function getFakeBuffer(buffer){
 	// 结果为真 buffer.length === buffer.duration * buffer.sampleRate
 	// 结果为真 buffer.length === buffer.getChannelData(0).length
-	let iLeap = 100; // 压缩
+	// let iLeap = 100; // 压缩
+	let iLeap = 70; // 压缩
 	if (buffer.sampleRate >= 96000){
 		iLeap = 200;
 	}

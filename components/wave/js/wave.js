@@ -59,10 +59,12 @@ export default function(){
             scrollToFn(wheelDeltaY);
         }
     }
-    // ▼滚动条动后调用
+    // ▼滚动条动后调用（手动滚动和程序设定滚动条位置都将触发此方法执行） 
+    // ↓
     function waveWrapScroll() {
         const {oMediaBuffer, iPerSecPx, fPerSecPx: fPerSecPxOld} = oData;
         const {offsetWidth, scrollLeft} = oDom.oViewport;
+        console.log("waveWrapScroll() iScrollLeft =", scrollLeft);
         const {aPeaks, fPerSecPx} = getPeaks(
             oMediaBuffer, iPerSecPx, scrollLeft, offsetWidth
         );
@@ -290,8 +292,9 @@ export default function(){
             const {width, left} = oDom.oCanvasDom.getBoundingClientRect();
             clientX = left + width / 2;
         }
-		const [min, max, iStep] = [30, 200, 10]; // 每秒最小/大宽度（px），缩放步幅
-        // ▼小到头了就不要再缩小了，大到头了也就要放大了
+        // ▼ 每秒最小/大宽度（px），缩放步幅
+		const [min, max, iStep] = [30, 250, 10];
+        // ▼ 小到头了就不要再缩小了，大到头了也就要放大了
 		if (deltaY > 0 ? (perSecPxOld <= min) : (perSecPxOld >= max)){
 			return oData.drawing = false;
 		}
@@ -327,7 +330,8 @@ export default function(){
 	}
     // 改变波形高度
 	function changeWaveHeigh(deltaY) {
-		const [min, max, iStep] = [0.1, 4.5, 0.15]; 
+        // ↓波形最低，最高，
+		const [min, max, iStep] = [0.1, 5, 0.15]; 
 		let { iHeight } = oData;
 		if (deltaY >= 0) iHeight += iStep;
 		else iHeight -= iStep;
@@ -368,18 +372,14 @@ export default function(){
         iNewLeft = Math.max(0, iNewLeft);
         iNewLeft = Math.min(iNewLeft, oLongBar.offsetWidth - oViewport.offsetWidth);
 		// if ('不要动画') return (oViewport['scrollLeft'] = iNewLeft);
-		const [iTakeTime, iTimes] = [800, 60]; // 走完全程耗时, x毫秒走一步
+        // ↓ 走完全程耗时, x毫秒走一步 
+		const [iTakeTime, iTimes] = [600, Math.round(1000/30)];
 		const iOneStep = ~~((iNewLeft - iOldVal) / (iTakeTime / iTimes)); // 步长 px
         function fnSetter(){
             if (oData.scrollTimer != runID) return; 
             let iAimTo = oViewport['scrollLeft'] + iOneStep;
             const needStop = iNewLeft > iOldVal ? (iAimTo >= iNewLeft) : (iAimTo <= iNewLeft);
             oViewport['scrollLeft'] = needStop ? iNewLeft: iAimTo;
-			// if (needStop){
-            //     cancelAnimationFrame(oData.scrollTimer);
-			// }else{
-            //     requestAnimationFrame(fnSetter);
-            // }
             needStop || requestAnimationFrame(fnSetter);
         }
 		oData.scrollAniRequest = requestAnimationFrame(fnSetter); 

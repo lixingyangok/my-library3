@@ -116,7 +116,9 @@ export function mainPart(){
 		const arr = oData.aFullWords.concat().sort((aa, bb)=>{
 			return bb.length - aa.length;
 		});
-		return new RegExp(`\\b(${arr.join('|')})`, 'gi'); // \\b
+		// ↓ 旧版本： `\\b(${arr.join('|')})`
+		const theRegExp = new RegExp(`(${arr.join('|')})`, 'gi');
+		return theRegExp;
 	});
 	// ▼ 抓捕字幕的正则表达式
 	const aMinutesAnalyze = computed(()=>{
@@ -471,12 +473,15 @@ export function mainPart(){
 		if (!reFullWords.value) return [text];
 		const aResult = [];
 		let iLastEnd = 0;
-		text.replace(reFullWords.value, (abc, sCurMach, iCurIdx) => {
-			iCurIdx && aResult.push(text.slice(iLastEnd, iCurIdx));
-			const sClassName = (
-				oData.oKeyWord[sCurMach.toLowerCase()] ? 'red' : 'blue'
+		text.replace(reFullWords.value, (sP01, sCurMach, iCurIdx) => {
+			// console.log("sP01", sP01, sCurMach, iCurIdx);
+			iCurIdx && aResult.push(
+				text.slice(iLastEnd, iCurIdx)
 			);
-			aResult.push({ sClassName, word: sCurMach });
+			aResult.push({
+				sClassName: oData.oKeyWord[sCurMach.toLowerCase()] ? 'red' : 'blue',
+				word: sCurMach,
+			});
 			iLastEnd = iCurIdx + sCurMach.length;
 		});
 		if (!iLastEnd) return [text];
@@ -575,7 +580,7 @@ export function mainPart(){
 		const arr = SubtitlesStr2Arr(fileTxt);
 		if (!arr) return console.log('文本转为数据未成功\n');
 		const sMsg = `解析到 ${arr.length} 行字幕，是否覆盖当前字幕？`;
-		const isSure = await this.$confirm(sMsg, 'Warning', {
+		const isSure = await ElMessageBox.confirm(sMsg, 'Warning', {
 			confirmButtonText: '确认覆盖',
 			cancelButtonText: '取消',
 			type: 'warning',
@@ -750,12 +755,23 @@ export function mainPart(){
 		// console.log(obj, '\n', res);
 		return res;
 	}
+	// ↓ 断句
+	async function createLines(){ 
+		console.log("oMediaBuffer", oData.oMediaBuffer);  
+		let iSeconds = 9 && Math.floor(oData.oMediaBuffer.duration);
+		while(--iSeconds){
+			const res = await oInstance.proxy.previousAndNext(1, true);
+			if (res=== null) break;
+			await Sleep(950);
+		}
+	}
 	const fnLib = {
 		'保存波形': () => oDom?.oMyWave?.toSaveTemp(),
 		'媒体入库': saveMedia,
 		'导入Srt': () => oDom?.oSrtInput?.click(),
 		'导出Srt': saveSrt,
 		'导出Srt(补空行)': () => saveSrt('fill'),
+		'断句': createLines,
 	};
 	// ▼ 处理菜单点击事件
 	function handleCommand(command){
