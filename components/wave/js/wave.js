@@ -64,7 +64,7 @@ export default function(){
     function waveWrapScroll() {
         const {oMediaBuffer, iPerSecPx, fPerSecPx: fPerSecPxOld} = oData;
         const {offsetWidth, scrollLeft} = oDom.oViewport;
-        console.log("waveWrapScroll() iScrollLeft =", scrollLeft);
+        // console.log("waveWrapScroll() iScrollLeft =", scrollLeft);
         const {aPeaks, fPerSecPx} = getPeaks(
             oMediaBuffer, iPerSecPx, scrollLeft, offsetWidth
         );
@@ -363,7 +363,8 @@ export default function(){
 	}
     // ▼定位滚动条
     function rollTheWave(iNewLeft){
-        cancelAnimationFrame(oData.scrollAniRequest); 
+        // cancelAnimationFrame(oData.scrollAniRequest); 
+        clearInterval(oData.scrollAniRequest);
         const runID = Date.now(); 
         oData.scrollTimer = runID; 
         const {oViewport, oLongBar} = oDom;
@@ -372,17 +373,22 @@ export default function(){
         iNewLeft = Math.max(0, iNewLeft);
         iNewLeft = Math.min(iNewLeft, oLongBar.offsetWidth - oViewport.offsetWidth);
 		// if ('不要动画') return (oViewport['scrollLeft'] = iNewLeft);
+        // const iDistance = ~~Math.abs(iNewLeft - iOldVal); // ←计划：应实现近快远慢
         // ↓ 走完全程耗时, x毫秒走一步 
-		const [iTakeTime, iTimes] = [600, Math.round(1000/30)];
-		const iOneStep = ~~((iNewLeft - iOldVal) / (iTakeTime / iTimes)); // 步长 px
+		const [iTakeTime, iTimes] = [300, Math.round(1000/30)];
+        // ↓ 步长 px，正负值同时定义了行进方向 
+		const iOneStep = ~~((iNewLeft - iOldVal) / (iTakeTime / iTimes));
+        fnSetter();
         function fnSetter(){
-            if (oData.scrollTimer != runID) return; 
+            // if (oData.scrollTimer != runID) return; 
             let iAimTo = oViewport['scrollLeft'] + iOneStep;
             const needStop = iNewLeft > iOldVal ? (iAimTo >= iNewLeft) : (iAimTo <= iNewLeft);
             oViewport['scrollLeft'] = needStop ? iNewLeft: iAimTo;
-            needStop || requestAnimationFrame(fnSetter);
+            needStop && clearInterval(oData.scrollAniRequest);
+            // needStop || requestAnimationFrame(fnSetter);
         }
-		oData.scrollAniRequest = requestAnimationFrame(fnSetter); 
+		// oData.scrollAniRequest = requestAnimationFrame(fnSetter); 
+        oData.scrollAniRequest = setInterval(fnSetter, iTimes);
 	}
     function moveToFirstLine(){
         const canGo = iFinalDuration.value && props.aLineArr.length;

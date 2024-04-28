@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: Merlin
- * @LastEditTime: 2024-04-27 22:24:58
+ * @LastEditTime: 2024-04-28 09:34:39
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
@@ -134,7 +134,7 @@ export function fnAllKeydownFn() {
         if (!ev.repeat || This.isReading) return; 
         // if (This.isReading) return;
         This.isReading = true;
-        This.oMyWave.toPlay(null, ev);
+        // This.oMyWave.toPlay(null, ev);
         // This.oCurLine.text = This.oCurLine.text.replace(/ {2,}/g, ' ');
         oBarInfo.setStatus(true);
         console.log('开始朗读');
