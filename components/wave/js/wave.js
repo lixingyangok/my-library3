@@ -374,8 +374,8 @@ export default function(){
         iNewLeft = Math.min(iNewLeft, oLongBar.offsetWidth - oViewport.offsetWidth);
 		// if ('不要动画') return (oViewport['scrollLeft'] = iNewLeft);
         // const iDistance = ~~Math.abs(iNewLeft - iOldVal); // ←计划：应实现近快远慢
-        // ↓ 走完全程耗时, x毫秒走一步 
-		const [iTakeTime, iTimes] = [300, Math.round(1000/30)];
+        // ↓ 走完全程耗时, 帧率 
+		const [iTakeTime, iTimes] = [300, Math.round(1000/20)];
         // ↓ 步长 px，正负值同时定义了行进方向 
 		const iOneStep = ~~((iNewLeft - iOldVal) / (iTakeTime / iTimes));
         fnSetter();

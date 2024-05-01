@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: Merlin
- * @LastEditTime: 2024-04-27 14:52:26
+ * @LastEditTime: 2024-05-01 20:13:45
  * @Description: 
 -->
 <template>
@@ -299,7 +299,9 @@
                             </template>
                         </p>
                         <span class="action-mark">
-                            {{cur.iSecLong}}
+                            <template v-if="cur.iSecLong && cur.long">
+                                {{ Math.round(cur.iSecLong / cur.long) }} x
+                            </template>
                         </span>
                     </li>
                 </ul>

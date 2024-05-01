@@ -758,11 +758,11 @@ export function mainPart(){
 	// ↓ 断句
 	async function createLines(){ 
 		console.log("oMediaBuffer", oData.oMediaBuffer);  
-		let iSeconds = 9 && Math.floor(oData.oMediaBuffer.duration);
-		while(--iSeconds){
+		let iSeconds = 10 || Math.floor(oData.oMediaBuffer.duration);
+		while(iSeconds--){
 			const res = await oInstance.proxy.previousAndNext(1, true);
-			if (res=== null) break;
-			await Sleep(950);
+			if (res === null) break;
+			await Sleep(100);
 		}
 	}
 	const fnLib = {

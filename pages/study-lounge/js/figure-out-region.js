@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2020-08-16 18:35:35
  * @LastEditors: Merlin
- * @LastEditTime: 2024-01-13 22:58:35
+ * @LastEditTime: 2024-05-01 20:09:49
  * @Description: 这是智能断句的模块
  */
 import {getPeaks, fixTime} from '@/common/js/pure-fn.js';
@@ -39,11 +39,11 @@ export function figureOut(
         return { start, end };
     })();
     start = (fEndSec + start / iPerSecPx).toFixed(2) * 1;
-    const farthest = oMediaBuffer.duration - 0.1;
+    const farthest = oMediaBuffer.duration;
     const fLastRegion = 0.3; // 最后一行宽0.3秒
-    end = Math.min(fEndSec + end / iPerSecPx, farthest); //
+    end = Math.min(fEndSec + end / iPerSecPx, farthest);    
     if (end == farthest && end - fEndSec < fLastRegion) {
-        end = fLastRegion;
+        end += fLastRegion; // 加长，防止过短 
     }
     end = end.toFixed(2) * 1;
     return fixTime({start, end});
@@ -60,13 +60,24 @@ function getWaveArr(oMediaBuffer, iPerSecPx, fEndSec, fRightDuration) {
     let {iWaveHeight = 0.5} = store.get('oRecent')?.[store('media')?.pathFull] || {};
     // 👆 从 lg 里取值不是最佳方案，先这样用着，再优化
     // ▼或许应优化为 idx+=2 节省一半的遍历次数，
-    const myArr = aPeaks.reduce((result, cur, idx, arr) => {
-        if (idx % 2) return result; // 只处理0、2、4 不处理1、3、5
-        // ▼此处是否需要转整形，待考究
-        let iOnePxHeight = Math.round((cur - arr[idx + 1]) * iWaveHeight);
-        result.push(iOnePxHeight);
-        return result;
-    }, []);
+    // const myArr = aPeaks.reduce((result, cur, idx, arr) => {
+    //     if (idx % 2) return result; // 只处理0、2、4 不处理1、3、5
+    //     // ▼此处是否需要转整形，待考究
+    //     let iOnePxHeight = Math.round((cur - arr[idx + 1]) * iWaveHeight);
+    //     result.push(iOnePxHeight);
+    //     return result;
+    // }, []);
+    // ↑旧版 ↓新版 
+    const myArr = [];
+    const iMaxOne = aPeaks.length - 1;
+    for (let idx = 0; idx < iMaxOne; idx += 2){ 
+        let iValue = Math.abs(aPeaks[idx]);
+        iValue += Math.abs(aPeaks[idx + 1]);
+        let iOnePxHeight = Math.round(
+            iValue * iWaveHeight
+        );
+        myArr.push(iOnePxHeight);
+    }
     return myArr;
 }
 
@@ -77,7 +88,8 @@ function getCandidateArr(aWaveArr, iPerSecPx, iWaveHeight) {
         const iCurHeight = aWaveArr[idx];
         if (iCurHeight < iWaveHeight) continue;
         const oLast = aSection[aSection.length-1];
-        if (oLast && (idx - oLast.end) / iPerSecPx < 0.35) { //上一区间存在 && 距离上一区间很近(0.35秒之内)。则视为一段话，累加长度
+        // ↓ 上一区间存在 && 距离上一区间很近(0.35秒之内)。则视为一段话，累加长度
+        if (oLast && (idx - oLast.end) / iPerSecPx < 0.35) {
             const { start, end, fAveHeight } = oLast;
             const pxLong = idx - start + 1;
             oLast.end = idx;

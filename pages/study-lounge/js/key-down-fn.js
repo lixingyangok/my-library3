@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: Merlin
- * @LastEditTime: 2024-04-28 09:34:39
+ * @LastEditTime: 2024-05-01 12:10:15
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
@@ -239,7 +239,7 @@ export function fnAllKeydownFn() {
             ElMessage.warning('后面没有了');
             return null; 
         }
-        if (creating===true) {
+        if (oNewLine && creating===true) {
             This.aLineArr.push(oNewLine);
             This.iCurLineIdx = iCurLineNew;
             return;
