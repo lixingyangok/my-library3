@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: Merlin
- * @LastEditTime: 2024-05-01 12:10:15
+ * @LastEditTime: 2024-05-05 15:26:24
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
@@ -60,9 +60,10 @@ export function getKeyDownFnMap(This, sType) {
         { key: 'ctrl + j', name: '合并上一句', fn: () => This.putTogether(-1) },
         { key: 'ctrl + k', name: '合并下一句', fn: () => This.putTogether(1) },
         { key: 'ctrl + f', name: '朗读', fn: () => This.tts_reader() },
-        { key: `ctrl + '`, name: '处理引号', fn: () => This.dealQuotationMark() },
+        { key: `ctrl + '`, name: '处理引号', fn: () => This.dealQuotationMark(`'`) },
         // { key: 'ctrl + Enter', name: '播放', fn: () => oMyWave.toPlay() }, // 将来开发此方法能打阅读标记
         // { key: 'ctrl + shift + Enter', name: '播放', fn: () => oMyWave.toPlay(true) },
+        { key: `ctrl + shift + '`, name: '处理引号', fn: () => This.dealQuotationMark(`"`) },
         { key: 'ctrl + shift + z', name: '恢复', fn: () => This.setHistory(1) },
         { key: 'ctrl + shift + c', name: '分割', fn: () => This.split() }, // 一刀两段
     ];
@@ -155,18 +156,28 @@ export function fnAllKeydownFn() {
         oBarInfo.setStatus(false, iDuration);
         // console.log(`朗读完成 ${duration} 秒`, This.oReadingAloud.$dc());
     }
-    function dealQuotationMark(){
-        console.log('dealQuotationMark', This.oCurLine);
-        let text = This.oCurLine.text.trim();
+    // ↓ 处理引号 
+    // ↓ 入参可能是单引号或双引号 
+    function dealQuotationMark(sPunctuation){
+        let text = This.oCurLine.text; // .trim(); // trimStart().replaceAll(`\n`, '');
+        const spaceWrong = text.match(/^ |\s{2,}|\n/);
+        if (spaceWrong){
+            This.oCurLine.text = text.trimStart().replace(/\n/g, '').replace(/\s{2,}/g, ' ');
+            return;
+        }
         if (!text) return;
-        var aa = `"'`.includes(text.at(0));
-        var bb = `"'`.includes(text.at(-1));
-        if (aa || bb){ // 有则删除
+        var aa = text.startsWith(sPunctuation);
+        var bb = text.endsWith(sPunctuation);
+        if (aa || bb){
+            // ↓ 删除引号 
             const iStart = aa ? 1 : 0;
             const iEnd = bb ? -1 : Infinity;
-            This.oCurLine.text = text.slice(iStart, iEnd) + ' ';
-        }else{ // 无则添加（在左侧头部添加）
-            This.oCurLine.text = `"${text}`;
+            let sNewText = text.slice(iStart, iEnd);
+            if (sNewText.at(-1)) text += ' ';
+            This.oCurLine.text = sNewText;
+        }else{
+            // ↓ 添加引号 
+            This.oCurLine.text = `${sPunctuation}${text}`;
         }
     }
     function smartFill(){
@@ -693,6 +704,7 @@ export function fnAllKeydownFn() {
         This.oMyWave.goOneLine(oNextLine);
     }
     // ▼保存到数据库
+    // TODO 更新 localstore 内的资料 
     async function saveLines() {
         if (isSavingToDB) return; // 节流
         const toSaveArr = [];

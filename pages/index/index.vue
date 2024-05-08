@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-02 20:27:04
  * @LastEditors: Merlin
- * @LastEditTime: 2024-02-02 23:23:08
+ * @LastEditTime: 2024-05-08 22:08:44
  * @Description: 
 -->
 
@@ -60,7 +60,7 @@
                     </el-table-column>
                     <el-table-column prop="fPercent" label="进度" width="250" >
                         <template #default="scope">
-                            <el-progress :percentage="scope.row.fPercent" />
+                            <el-progress :percentage="scope.row.fPercent || 0" />
                         </template>
                     </el-table-column>
                     <el-table-column label="操作" width="150">
