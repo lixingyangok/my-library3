@@ -30,8 +30,6 @@ export default function(){
         iScrollLeft: 0,
         drawing: false,
         sWaveBarClassName: '',
-        scrollTimer: 0, // 滚动条动画计时
-        scrollAniRequest: 0, // 滚动条动画 ID
     });
     const iFinalDuration = computed(() => {
         return (
@@ -59,8 +57,8 @@ export default function(){
             scrollToFn(wheelDeltaY);
         }
     }
-    // ▼滚动条动后调用（手动滚动和程序设定滚动条位置都将触发此方法执行） 
-    // ↓
+    // ▼ 滚动条动后调用
+    // ▼ 手动滚动 + 程序触发滚动条位置 => 都将触发此方法执行 
     function waveWrapScroll() {
         const {oMediaBuffer, iPerSecPx, fPerSecPx: fPerSecPxOld} = oData;
         const {offsetWidth, scrollLeft} = oDom.oViewport;
@@ -223,9 +221,9 @@ export default function(){
 		oDom.oAudio.currentTime = playFrom;
 		oDom.oAudio.play();
 		oDom.oAudio.ontimeupdate = (ev)=>{
-            if (ev.target.currentTime < oCurLine.value.end) return;
-            ev.target.pause();
-            cancelAnimationFrame(oData.playing);
+            if (ev.target.currentTime >= oCurLine.value.end) {
+                toPause();
+            }
         }; 
         oData.playing = requestAnimationFrame(toMovePointer);
 	}
@@ -338,6 +336,8 @@ export default function(){
 		if (iHeight < min) iHeight = min;
 		if (iHeight > max) iHeight = max;
 		oData.iHeight = iHeight.toFixed(2) * 1;
+        // toUpdateTempInfo()
+        console.log("changing oRecent", );
         store.transact('oRecent', (oldData) => {
             const old = store('media') || {};
             oldData[old.pathFull] = {
@@ -363,32 +363,12 @@ export default function(){
 	}
     // ▼定位滚动条
     function rollTheWave(iNewLeft){
-        // cancelAnimationFrame(oData.scrollAniRequest); 
-        clearInterval(oData.scrollAniRequest);
-        const runID = Date.now(); 
-        oData.scrollTimer = runID; 
         const {oViewport, oLongBar} = oDom;
 		const iOldVal = oViewport['scrollLeft'];
 		if (~~iOldVal === ~~iNewLeft) return;
         iNewLeft = Math.max(0, iNewLeft);
         iNewLeft = Math.min(iNewLeft, oLongBar.offsetWidth - oViewport.offsetWidth);
-		// if ('不要动画') return (oViewport['scrollLeft'] = iNewLeft);
-        // const iDistance = ~~Math.abs(iNewLeft - iOldVal); // ←计划：应实现近快远慢
-        // ↓ 走完全程耗时, 帧率 
-		const [iTakeTime, iTimes] = [300, Math.round(1000/20)];
-        // ↓ 步长 px，正负值同时定义了行进方向 
-		const iOneStep = ~~((iNewLeft - iOldVal) / (iTakeTime / iTimes));
-        fnSetter();
-        function fnSetter(){
-            // if (oData.scrollTimer != runID) return; 
-            let iAimTo = oViewport['scrollLeft'] + iOneStep;
-            const needStop = iNewLeft > iOldVal ? (iAimTo >= iNewLeft) : (iAimTo <= iNewLeft);
-            oViewport['scrollLeft'] = needStop ? iNewLeft: iAimTo;
-            needStop && clearInterval(oData.scrollAniRequest);
-            // needStop || requestAnimationFrame(fnSetter);
-        }
-		// oData.scrollAniRequest = requestAnimationFrame(fnSetter); 
-        oData.scrollAniRequest = setInterval(fnSetter, iTimes);
+        oViewport['scrollLeft'] = iNewLeft; 
 	}
     function moveToFirstLine(){
         const canGo = iFinalDuration.value && props.aLineArr.length;
