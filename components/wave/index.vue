@@ -13,7 +13,8 @@
             :style="{width: '200px'}"
             :src="mediaSrc"
         ></video>
-        <section class="my-wave-bar" ref="oMyWaveBar"
+        <section ref="oMyWaveBar"
+            class="my-wave-bar"
             :class="sWaveBarClassName"
         >
             <canvas class="canvas" ref="oCanvasDom"/>
@@ -21,10 +22,11 @@
             <!-- ▼横长条的视口 -->
             <section class="viewport"
                 ref="oViewport"
+                :style="oStyle4WaveBox"
                 @mousewheel="wheelOnWave"
                 @scroll="waveWrapScroll"
-                AAAcontextmenu="clickOnWave"
                 @contextmenu.prevent="()=>null"
+                AAAcontextmenu="clickOnWave"
                 AAAmousedown="mouseDownFn"
             >
                 <div class="long-bar" ref="oLongBar"

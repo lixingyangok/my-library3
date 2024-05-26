@@ -55,6 +55,9 @@
     left: 0;
 	--color: #0f0;
 	scroll-behavior: smooth; // 👍 
+	&:hover{
+		scroll-behavior: auto; // 用鼠标滚轮时不需要平滑
+	}
 	&::-webkit-scrollbar{
 		height: calc(var(--total-height) - var(--canvas-top) - var(--canvas-height));
 		background: transparent;

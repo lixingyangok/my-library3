@@ -30,6 +30,7 @@ export default function(){
         iScrollLeft: 0,
         drawing: false,
         sWaveBarClassName: '',
+        oStyle4WaveBox: {},
     });
     const iFinalDuration = computed(() => {
         return (
@@ -296,6 +297,7 @@ export default function(){
 		if (deltaY > 0 ? (perSecPxOld <= min) : (perSecPxOld >= max)){
 			return oData.drawing = false;
 		}
+        oData.oStyle4WaveBox = {'scroll-behavior': 'auto'}; // 暂时关闭平滑效果
 		const iPerSecPx = (() => { //新★每秒宽度
 			const result = perSecPxOld + iStep * (deltaY <= 0 ? 1 : -1);
 			if (result < min) return min;
@@ -318,6 +320,7 @@ export default function(){
 		if (iNewLeftPx <= 0) { // 滚动条位于左侧原点时收缩波形会触发
 			waveWrapScroll();
 		}
+        oData.oStyle4WaveBox = {}; // 清空，恢复平滑效果
 	}
     // ▼得到鼠标位置的的秒数
 	function getPointSec(clientX) {
