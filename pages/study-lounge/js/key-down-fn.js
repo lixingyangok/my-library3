@@ -54,15 +54,16 @@ export function getKeyDownFnMap(This, sType) {
         { key: 'ctrl + Next', name: '下一项', fn: () => This.visitNeighbor(1) },
         { key: 'ctrl + q', name: '查字典', fn: () => This.searchWord() },
         { key: 'ctrl + b', name: '显示左栏', fn: () => This.showLeftColumn() },
-        { key: 'ctrl + d', name: '删除一行', fn: () => This.toDel() },
         { key: 'ctrl + z', name: '撤销', fn: () => This.setHistory(-1) },
         { key: 'ctrl + s', name: '保存到DB', fn: () => This.saveLines() },
         { key: 'ctrl + j', name: '合并上一句', fn: () => This.putTogether(-1) },
         { key: 'ctrl + k', name: '合并下一句', fn: () => This.putTogether(1) },
         { key: 'ctrl + f', name: '朗读', fn: () => This.tts_reader() },
         { key: `ctrl + '`, name: '处理引号', fn: () => This.dealQuotationMark(`'`) },
+        { key: 'ctrl + Enter', name: '播放', fn: () => playAndCheck() },
         // { key: 'ctrl + Enter', name: '播放', fn: () => oMyWave.toPlay() }, // 将来开发此方法能打阅读标记
         // { key: 'ctrl + shift + Enter', name: '播放', fn: () => oMyWave.toPlay(true) },
+        { key: 'ctrl + shift + d', name: '删除一行', fn: () => This.toDel() }, // 后加一个 shift 防止删除操作太简单被误触 
         { key: `ctrl + shift + '`, name: '处理引号', fn: () => This.dealQuotationMark(`"`) },
         { key: 'ctrl + shift + z', name: '恢复', fn: () => This.setHistory(1) },
         { key: 'ctrl + shift + c', name: '分割', fn: () => This.split() }, // 一刀两段
