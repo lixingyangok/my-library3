@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: Merlin
- * @LastEditTime: 2024-05-01 20:13:45
+ * @LastEditTime: 2024-10-28 22:04:04
  * @Description: 
 -->
 <template>
@@ -147,7 +147,7 @@
                     查字典
                 </el-button>
                 <el-button type="primary" size="small" @click="isShowNewWords = true">
-                    单词表：{{aFullWords.length}}个
+                    单词表：{{ `${aWordsList[0].length} + ${aWordsList[1].length}` }}个
                 </el-button>
                 <el-button-group size="small">
                     <el-button type="primary"  @click="showLeftColumn">
@@ -329,7 +329,7 @@
             >
                 <h3 class="title">
                     ◆ {{['新词汇', '专有名词'][i01]}}
-                    <small>{{oneList.length}}个</small>
+                    <small>{{aWordsList[i01].length}}个</small>
                 </h3>
                 <ul class="one-type-word-ul">
                     <li class="word" v-for="(oneWord, i02) of oneList" :key="i02" >

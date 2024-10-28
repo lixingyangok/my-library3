@@ -89,7 +89,9 @@ export function mainPart(){
 	const {proxy} = oInstance;
 	// ▼过滤后的
 	const aFilteredWords = computed(()=>{
-		if (!oData.sNewWordSearch) return oData.aWordsList;
+		if (!oData.sNewWordSearch) {
+			return oData.aWordsList; // 无搜索，显示全部 
+		}
 		const regExp = new RegExp(oData.sNewWordSearch, 'i');
 		return oData.aWordsList.map(l01 => {
 			return l01.filter(l02 => {
@@ -379,7 +381,7 @@ export function mainPart(){
 		oData.aFullWords = aRes.map(cur => cur.word);
 		oData.oProperNoun = {}; // 清空
 		oData.oKeyWord = {}; // 清空
-		oData.aWordsList = aRes.reduce((aResult, cur)=>{
+		oData.aWordsList = aRes.reduce((aResult, cur) => { 
 			let iAimTo = 0;
 			if (cur.type == 2) iAimTo = 1;
 			aResult[iAimTo].push(cur);
