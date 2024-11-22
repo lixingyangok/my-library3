@@ -11,7 +11,7 @@
   },
   "devDependencies": {
     "@pinia-plugin-persistedstate/nuxt": "^1.2.0",
-    "nuxt": "^3.9.0",
+    "nuxt": "^3.14.1592",
     "sass": "^1.69.6",
     "vue": "^3.4.0",
     "vue-router": "^4.2.5"
@@ -20,5 +20,6 @@
     "@element-plus/nuxt": "^1.0.7",
     "@pinia/nuxt": "^0.5.1",
     "element-plus": "^2.5.1"
-  }
+  },
+  "packageManager": "pnpm@8.15.3+sha512.dd85cd6eca6417c6f73db32ba1eb4767ffb4cba4f5bf0727846722c92b6b9e56a2cc218b11385bbc2b21f18a16a67da77aceae9b61a0f56a1643b25e1fb6a605"
 }
