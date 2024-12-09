@@ -91,9 +91,7 @@ if (process.client){
     box-sizing: border-box;
 }
 body > #__nuxt{
-    &{
-        line-height: 1.2;
-    }
+    line-height: 1.2;
     --nav-width: 55px;
     position: relative;
     .nav{
