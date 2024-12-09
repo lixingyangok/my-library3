@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: Merlin
- * @LastEditTime: 2024-10-28 22:04:04
+ * @LastEditTime: 2024-12-08 12:13:10
  * @Description: 
 -->
 <template>
@@ -33,6 +33,16 @@
                     </h3>
                 </div>
                 <hr class="hr-line" />
+                <!-- ↓ 视频文件专区 -->
+                <section class="left-video"
+                    v-if="leftVideoSrc"
+                >
+                    <video
+                        controls123
+                        ref="oBigVideo"
+                        :src="leftVideoSrc"
+                    ></video>
+                </section>
                 <!-- ▼文本 -->
                 <ul ref="oLeftTxt" class="article-text">
                     <li name="▲当前行上方-1">
@@ -99,6 +109,8 @@
                 ◆完成于：{{oMediaInfo?.finishedAt?.toLocaleString().slice(0,16) || '进行中'}}&emsp;
             </div>
             <Wave ref="oMyWave"
+                :oBigVideo="oBigVideo"
+                :leftVideoVisible="leftVideoVisible"
                 :media-path="sMediaSrc"
                 :a-line-arr="aLineArr"
                 :i-cur-line-idx="iCurLineIdx"

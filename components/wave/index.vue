@@ -7,9 +7,12 @@
 -->
 <template>
     <article class="wave-coat" >
-        <video controls class="player" ref="oAudio"
+        <video controls
+            class="player"
+            ref="oAudio"
             id="media-player"
-            v-show="(mediaPath || '').endsWith('.mp4')"
+            v-if="!leftVideoVisible"
+            v-show="mediaPath.match(/\.mp4$/i)"
             :style="{width: '200px'}"
             :src="mediaSrc"
         ></video>
@@ -96,7 +99,9 @@ export default {
             type: Number,
             default: 0,
         },
-        mediaPath: String, // 文件的绝对路径，将废弃 
+        mediaPath: String, // 文件路径
+        leftVideoVisible: Boolean, 
+        oBigVideo: Object, 
         oMediaFile: { // 新增
             type: Object,
         },

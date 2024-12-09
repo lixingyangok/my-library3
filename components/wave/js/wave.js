@@ -43,6 +43,19 @@ export default function(){
             props.iCurLineIdx
         ];
     });
+    // ↓ 临时方案 
+    watch(
+        () => props.oBigVideo,
+        (oNewOne)=>{
+            if (oNewOne) {
+                oDom.oAudio = oNewOne;
+                return;
+            }
+            oDom.oAudio = (
+                document.querySelector('#media-player')
+            );
+        },
+    );
     // ▼滚轮动了
     function wheelOnWave(ev) {
         ev.preventDefault();

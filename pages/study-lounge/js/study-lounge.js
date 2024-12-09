@@ -20,6 +20,7 @@ export function mainPart(){
 	const oDom = reactive({
 		oIframe: null,
 		oMyWave: null, // 波
+		oBigVideo: null,
 		oTextArea: null, // 输入框
 		oSententList: null, // 字幕列表
 		oSententWrap: null, // 字幕外套
@@ -203,6 +204,17 @@ export function mainPart(){
 		arr[arr.length-1] = 'srt';
 		return arr.join('.');
 	})();
+	const leftVideoVisible = computed(()=>{
+		return (
+			oData.isShowLeft
+			&& !!oData.sMediaSrc.match(/\.mp4$/i)
+		);
+	});
+	const leftVideoSrc = computed(()=>{
+		if (leftVideoVisible.value) {
+			return URL.createObjectURL(oData.oMediaFile);
+		}
+	});
 	// ▲数据 ====================================================================================
 	// ▼方法 ====================================================================================
 	async function init(){
@@ -565,10 +577,13 @@ export function mainPart(){
 		// oData.sArticle = fileTxt; // 好像没用上
 		oData.aArticle = Object.freeze(aArticle);
 	}
-	// ▼ 字幕置左
+	// ▼ 字幕置左 
 	async function showLeftArticle(){
 		oData.leftType = 'txt';
 		oData.isShowLeft = true;
+		if (oData.sMediaSrc.match(/\.mp4$/i)){
+			return (oData.aArticle=[]);
+		}
 		const arr = oData.aLineArr.map(cur => {
 			return cur.text.trim();
 		});
@@ -838,6 +853,8 @@ export function mainPart(){
 		aMileStones,
 		aMinutesAnalyze,
 		aFilteredWords,
+		leftVideoVisible,
+		leftVideoSrc,
     });
 };
 
