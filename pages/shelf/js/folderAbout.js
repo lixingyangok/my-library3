@@ -76,8 +76,9 @@ const oFn01 = {
         this.oFileChanging.aListMatched = aItemsOld;
         console.log("aItemsOld\n", aItemsOld.$dc());
     },
-    // ↓ 将 mp3 格式与其它格式配对 ------------------------------
+    // ↓ 将 mp3, mp4 格式与其它格式配对 ------------------------------
     async pairMedia(){
+        console.log("pairMedia() excuted!!", );
         let aLast = this.aDirectory.at(-1);
         if (!aLast?.length) return;
         this.oFileChanging.isShowDialog = true;
@@ -88,8 +89,9 @@ const oFn01 = {
             let [sNameShorten, sTail] = oCur.name.split(/\.(?=[a-z0-9]{2,5}$)/i);
             sTail &&= sTail.toLowerCase();
             oCur.sNameShorten = sNameShorten;
-            const usable = !oCur.infoAtDb && ['ogg'].includes(sTail);
-            if (sTail === 'mp3' && oCur.infoAtDb){
+            const usable = !oCur.infoAtDb && ['aac'].includes(sTail); 
+            // ↓左侧文件，
+            if (sTail === 'mp4' && oCur.infoAtDb){
                 aItemsOld.push(oCur);
             }else if(usable){
                 oMatched[sNameShorten] ||= [];

@@ -238,7 +238,10 @@
         width="950px"
         v-model="oFileChanging.isShowDialog"
         top="10vh"
-    >
+    >   
+        <button @click="pairMedia">
+            配对
+        </button>
         <el-table :data="oFileChanging.aListMatched" style="width: 100%">
             <el-table-column prop="name" label="文件名" />
             <el-table-column label="状态" width="130px">
@@ -257,14 +260,15 @@
                         {{ cur.name }}
                         <br/>
                         {{ scope.row.infoAtDb.durationStr }}-{{ cur.durationStr }}
-                        （{{~~(cur.duration - scope.row.infoAtDb.duration)}}）
+                        （{{~~(cur.duration - scope.row.infoAtDb.duration)}} Time Gap）
                         {{ cur.changingMark ? ` ${cur.changingMark}` : '' }}
                     </p>
                 </template>
             </el-table-column>
             <el-table-column label="操作" width="160px">
                 <template #default="scope">
-                    <el-button link @click="()=>(scope.row)" 
+                    <el-button link
+                        @click="()=>(scope.row)" 
                         :disabled="!!scope.row.infoAtDb"
                     >
                         入库(假)

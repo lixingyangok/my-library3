@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: Merlin
- * @LastEditTime: 2024-05-05 15:26:24
+ * @LastEditTime: 2024-09-28 21:33:17
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
@@ -130,7 +130,7 @@ export function fnAllKeydownFn() {
         });
     }
     // ↓ 空格按下事件 
-    function readAloud(ev){
+    function readAloud(ev){ 
         // console.log(`长按 ${ev.repeat} - ${This.isReading}`);
         // ↓ 终止条件 👉 非长按 || 已进入朗读状态
         if (!ev.repeat || This.isReading) return; 
@@ -629,7 +629,7 @@ export function fnAllKeydownFn() {
         console.log("输入了：", ev.data);
         //  ↓ iCleared 如果是0，无延时执行
         //  ↓ 如果输入了非字母，立即匹配左侧字幕
-        const iTimes = iCleared && (isLetter ? 250 : 0);
+        const iTimes = iCleared && (isLetter ? 350 : 0);
         inputTimer = setTimeout(() => {
             recordHistory();
             setLeftLine();
