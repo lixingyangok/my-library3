@@ -18,7 +18,10 @@
             <!-- data-src123="https://www.vanderbilt.edu/olli/class-materials/Franz_Kafka.pdf"
             sandbox123="allow-scripts allow-same-origin" -->
             <!--  -->
-            <div class="txt-box" ref="oLeftTxtWrap" v-if="leftType == 'txt'">
+
+            <div class="txt-box" ref="oLeftTxtWrap"
+                v-else="leftType"
+            >
                 <div v-if="0 && '测试中'">
                     aArticle.length：{{aArticle.length}}<br/>
                     iShowUntil：{{iShowUntil}}<br/>
@@ -31,6 +34,7 @@
                         <br/>{{oMediaInfo?.dir}}/
                         <br/><em style="color: black; font-weight: bold;">{{oMediaInfo.name}}</em>
                     </h3>
+                    <input type="file" @change="fnLoadVideo"> 
                 </div>
                 <hr class="hr-line" />
                 <!-- ↓ 视频文件专区 -->

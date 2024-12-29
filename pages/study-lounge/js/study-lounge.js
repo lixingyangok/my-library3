@@ -63,11 +63,10 @@ export function mainPart(){
 		...oInputMethod,
 		...visiableControl,
 		isReading: false,
-		sMediaSrc: store('media')?.pathFull, // 考虑废弃
+		sMediaSrc: store('media')?.pathFull,
 		oMediaInLocal: store('media') || {},
 		handleMediaIn: null, // 新版
 		oMediaFile: null, // 媒体文件
-		
 		sHash: '',
 		oMediaInfo: {}, // 库中媒体信息
 		oMediaBuffer: {}, // 媒体的波形信息
@@ -205,10 +204,15 @@ export function mainPart(){
 		return arr.join('.');
 	})();
 	const leftVideoVisible = computed(()=>{
-		return (
+		const regVideo = /\.mp4$/i;
+		const bResult = (
 			oData.isShowLeft
-			&& !!oData.sMediaSrc.match(/\.mp4$/i)
+			&& (
+				!!oData.sMediaSrc.match(regVideo)
+				|| oData.oMediaFile.name.match(regVideo)
+			)
 		);
+		return bResult;
 	});
 	const leftVideoSrc = computed(()=>{
 		if (leftVideoVisible.value) {
@@ -531,6 +535,14 @@ export function mainPart(){
 		const btn = dcmt.querySelector('#openFile');
 		btn && btn.click();
 	}
+	// ▼打开视频
+	function fnLoadVideo(ev){
+		const {target} = ev;
+		const [oFile] = target.files;
+		// console.log('视频', oFile);
+		oData.oMediaFile = oFile;
+		target.value = null;
+	}
 	// ▼打开文本
 	async function openTxt(){
 		oData.isShowFileList = true;
@@ -842,6 +854,7 @@ export function mainPart(){
 		visitNeighbor,
 		handleCommand,
 		openTxt,
+		fnLoadVideo,
 		showLeftArticle,
 	};
     return reactive({
