@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-09 17:59:23
  * @LastEditors: Merlin
- * @LastEditTime: 2024-02-15 14:35:52
+ * @LastEditTime: 2025-01-11 14:34:39
  * @Description: 
  */
 
@@ -13,6 +13,9 @@ import { keyMap } from './key-map.js';
 export function registerKeydownFn(oFnList) {
     let spacePressedAt = 0;
     function keyDownFnCaller(ev) {
+        if (ev.altKey){
+            ev.preventDefault();
+        }
         const ctrl = ev.ctrlKey ? 'ctrl + ' : '';
         const alt = ev.altKey ? 'alt + ' : '';
         const shift = ev.shiftKey ? 'shift + ' : '';
