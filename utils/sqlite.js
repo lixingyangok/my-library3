@@ -2,7 +2,7 @@
  * @Author: Merlin
  * @Date: 2024-01-08 09:35:15
  * @LastEditors: Merlin
- * @LastEditTime: 2024-02-16 12:58:21
+ * @LastEditTime: 2025-02-09 16:09:17
  * @Description: 
  */
 import { useDexie } from "./dxDB";
@@ -22,7 +22,7 @@ const getSQL = (()=>{
     let theSQL;
     return ()=>{
         theSQL ||= window.initSqlJs({ 
-            locateFile: ()=> `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.9.0/sql-wasm.wasm`,
+            locateFile: ()=> `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.12.0/sql-wasm.wasm`,
         });
         return theSQL;
     };
@@ -41,7 +41,7 @@ export const useSqlite = (() => {
     };
 })();
 
-
+// ↓ 初始化 myWorker 
 let myWorker = {};
 if (import.meta.client){
     const oURL = new URL('worker01.js', import.meta.url);
@@ -51,9 +51,12 @@ if (import.meta.client){
     window.myWorker = myWorker;
     myWorker.onmessage = function (event) {
         const {command, data} = event.data;
-        if (command === 'saved' && data.importing){
-            alert('导入完成');
-            location.reload();
+        if (command === 'saved'){
+            console.log('保存完成')
+            if (data.importing){
+                alert('导入完成');
+                location.reload();
+            }
         }
     }
 }
@@ -135,6 +138,7 @@ const commonDatabaseFn = {
     },
     // ↓ 持久化 TODO 添加节流功能
     persist(uint8Arr){
+        console.log('清除定时器', this.taskTimer); 
         clearTimeout(this.taskTimer);
         // 收到了 uint8Arr 说明在首次导入，0延时，
         const iDelay = uint8Arr ? 0 : 1000;

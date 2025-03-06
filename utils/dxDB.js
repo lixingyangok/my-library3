@@ -2,7 +2,7 @@
  * @Author: Merlin
  * @Date: 2024-01-07 21:07:28
  * @LastEditors: Merlin
- * @LastEditTime: 2024-02-03 13:24:20
+ * @LastEditTime: 2025-02-09 15:42:28
  * @Description: 
  */
 
@@ -11,7 +11,7 @@ export const useDexie = (()=>{
     let dxDB = null;
     return async ()=>{
         if (dxDB || !import.meta.client) return dxDB;
-        const {Dexie} = await import('https://cdn.jsdelivr.net/npm/dexie@3.2.4/+esm');
+        const {Dexie} = await import('https://cdn.jsdelivr.net/npm/dexie@3.2.7/+esm');
         dxDB = new Dexie("dxDB");
         // ↓ 每次修改建库参数需要加大版本号
         dxDB.version(18).stores({
