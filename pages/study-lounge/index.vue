@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: Merlin
- * @LastEditTime: 2024-12-08 12:13:10
+ * @LastEditTime: 2025-01-19 13:39:35
  * @Description: 
 -->
 <template>
@@ -172,7 +172,7 @@
                     <el-button type="primary" @click="openPDF">
                         打开PDF
                     </el-button>
-                    <el-button type="primary" @click="openTxt">
+                    <el-button type="primary" @click="openTxt()">
                         打开TXT
                     </el-button>
                     <el-button type="primary" @click="showLeftArticle">
@@ -422,6 +422,9 @@
         <el-dialog title="文本文件列表" width="700px"
             v-model="isShowFileList"
         >
+            <button @click="openTxt(true)">
+                ↑ 向上一级
+            </button>
             <ul class="txt-file-list" >
                 <li v-for="(cur, idx) of aTxtFileList" :key="idx"
                     :class="{gap: idx && (cur.sTail != aTxtFileList[idx-1].sTail)}"

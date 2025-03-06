@@ -544,7 +544,11 @@ export function mainPart(){
 		target.value = null;
 	}
 	// ▼打开文本
-	async function openTxt(){
+	async function openTxt(goUp=false){
+		if (goUp){
+			console.log('向上一级');
+		}
+		// 向上一级 
 		oData.isShowFileList = true;
 		let aItems = await handle2List(oData.handleMediaIn);
 		aItems &&= aItems.map(cur => {
