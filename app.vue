@@ -2,7 +2,7 @@
  * @Author: 
  * @Date: 2023-12-30 10:38:50
  * @LastEditors: Merlin
- * @LastEditTime: 2024-03-10 19:10:34
+ * @LastEditTime: 2025-02-09 15:50:21
  * @Description: 
 -->
 <template>
@@ -43,7 +43,7 @@ useHead({
     }, { // hashwasm.xxhash64
         src: 'https://cdn.jsdelivr.net/npm/hash-wasm@4/dist/xxhash64.umd.min.js',
     }, { // initSqlJs
-        src: 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.9.0/sql-wasm.js',
+        src: 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.12.0/sql-wasm.js',
     },
     // { // Dexie
     //     src: 'https://unpkg.com/dexie@latest/dist/dexie.js',
