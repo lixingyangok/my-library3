@@ -545,12 +545,16 @@ export function mainPart(){
 	}
 	// ▼打开文本
 	async function openTxt(goUp=false){
+		let oDirHandle = oData.handleMediaIn;
 		if (goUp){
-			console.log('向上一级');
+			const {pathFull} = oData.oMediaInLocal;
+			const sTopPath = pathFull.split('/').slice(0, -2).join('/');
+			const oTopLevel = await path2handle(sTopPath, 'directory');
+			oDirHandle = oTopLevel.handle; 
+			console.log('查询上级'); 
 		}
-		// 向上一级 
 		oData.isShowFileList = true;
-		let aItems = await handle2List(oData.handleMediaIn);
+		let aItems = await handle2List(oDirHandle);
 		aItems &&= aItems.map(cur => {
 			const sTail = cur.name.split('.').pop().toLowerCase();
 			const aFormat = ['pdf', 'srt', 'ass', 'txt'];
@@ -564,6 +568,9 @@ export function mainPart(){
 		}).sort((aa, bb)=>{
 			return aa.sTail.localeCompare(bb.sTail);
 		});
+		if (!goUp || !aItems.length){
+			return openTxt(true); 
+		}
 		console.log('aItems\n', aItems);
 		oData.aTxtFileList = aItems;
 		// oDom.oTxtInput.click(); // 旧的 
