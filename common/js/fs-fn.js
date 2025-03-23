@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-01-22 19:31:55
  * @LastEditors: Merlin
- * @LastEditTime: 2024-03-10 19:13:15
+ * @LastEditTime: 2025-03-23 21:44:16
  * @Description: 与文件夹/文件相关的方法（纯函数）
  */
 // 本包将来可修改为，提供数据查询的包
@@ -147,8 +147,10 @@ export async function findMedia(sPath, oTarget) {
     return iSum;
 }
 
-// 查询：某天或某几天 的学习数据
+
+// 查询：某天或某几天：创建行，录入行数据 
 export async function getLearningHistory(iMediaID){
+    // gap = days ago 
     let sql = `
         SELECT
             *,
@@ -156,8 +158,8 @@ export async function getLearningHistory(iMediaID){
         FROM "line"
         where
             (
-                julianday('now') - julianday(date(createdAt, 'localtime')) < 1 or
-                julianday('now') - julianday(date(filledAt, 'localtime')) < 1
+                julianday('now', 'localtime') - julianday(date(createdAt, 'localtime')) < 1 or
+                julianday('now', 'localtime') - julianday(date(filledAt, 'localtime')) < 1
             )
     `;
     if (iMediaID){
@@ -168,7 +170,7 @@ export async function getLearningHistory(iMediaID){
     return res;
 }
 
-// 查询：当天的学习数据
+// 查询：当天的创建行，录入行数据
 export async function getTodayHistory(iMediaID){
     const arr = await getLearningHistory(iMediaID);
     if (!arr) return;
@@ -195,8 +197,8 @@ export async function getTodayHistory(iMediaID){
         }
     });
     Object.assign(oResult, {
-        sCrDuration: secToStr(iCrDuration),
-        sFiDuration: secToStr(iFiDuration),
+        sCrDuration: secToStr(iCrDuration, ''),
+        sFiDuration: secToStr(iFiDuration, ''),
         iCrDuration: Number.parseInt(iCrDuration),
         iFiDuration: Number.parseInt(iFiDuration),
     });
