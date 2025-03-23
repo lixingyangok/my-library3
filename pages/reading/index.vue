@@ -2,7 +2,7 @@
  * @Author: Merlin
  * @Date: 2024-02-07 21:12:39
  * @LastEditors: Merlin
- * @LastEditTime: 2024-02-16 15:22:37
+ * @LastEditTime: 2025-02-23 15:42:38
  * @Description: 
 -->
 <template>
@@ -508,8 +508,6 @@ function sentenceEditing(ev, oLine){
 }
 
 
-
-
 // ↓设为章节标记
 function setAsNewChapter(oLine){
     console.log("oLine", oLine.$dc());
@@ -623,8 +621,6 @@ function takePopperDOM(oPopper){
     contentRef.onmouseenter = ()=> mediaPopperToggle(true);
     contentRef.onmouseleave = ()=> mediaPopperToggle(false);
 }
-
-
 
 
 // ↓设定声音
