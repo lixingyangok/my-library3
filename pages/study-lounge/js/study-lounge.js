@@ -1,11 +1,10 @@
-// 
-import {toRefs, reactive, computed, onMounted, getCurrentInstance, watch} from 'vue';
 import {SubtitlesStr2Arr, fixTime, copyString, downloadSrt, fileToStrings, getMediaDuration, secToStr} from '@/common/js/pure-fn.js';
 import {figureOut} from './figure-out-region.js';
 import {getTubePath, getDateDiff} from '@/common/js/common-fn.js';
 import {fillOneFile} from '@/common/js/fs-fn.js';
 import {path2handle, handle2List} from '@/common/js/fileSystemAPI.js';
 import {useActionStore} from '@/store/action-store.js';
+import {getMediaActionTotal} from '@/common/js/action-db.js';
 
 const [sqlite, dxDB] = await Promise.all([
 	useSqlite(),
@@ -407,11 +406,7 @@ export function mainPart(){
 			return aResult;
 		}, [[],[]]);
 	}
-	// ▼显示一批媒体信息
-	async function showMediaDialog(){
-		oData.isShowMediaInfo = true;
-		setFolderInfo();
-	}
+
 	// ▼ 查询邻居文件列表
 	async function getNeighbors(){
 		const {path} = oData.oMediaInLocal;
@@ -433,14 +428,32 @@ export function mainPart(){
 			cur.idx_ = idx + 1;
 			cur.done_ = !!finishedAt;
 			cur.durationStr = durationStr;
+			cur.practiceTimes = 0; // 稍后赋值 
 			cur.active_ = id == oData.oMediaInfo.id;
 			if (finishedAt){ // YYYY-MM-DD HH:mm:ss
 				cur.finishedAt_ = dayjs(finishedAt).format('YYYY-MM-DD HH:mm');
 			}
 		}
-		// console.log('当前媒体邻居:', aList.$dc());
 		oData.aSiblings = aList;
 		recordMediaTimeInfo(); // 检查是否所有的文件都有媒体信息
+	}
+	// ▼显示一批媒体信息
+	async function showMediaDialog(){
+		oData.isShowMediaInfo = true;
+		setFolderInfo();
+		await Sleep(100);
+		for (const oMedia of oData.aSiblings){
+			const mediaId = oMedia.infoAtDb?.id;
+			if (!mediaId) continue; 
+			const oPractice = await getMediaActionTotal(mediaId);
+			if (!oPractice.durationAll || !oMedia.duration) {
+				continue;
+			}
+			oMedia.practiceTimes = oPractice.durationAll / oMedia.duration;
+			// console.log('Neighbor', oMedia.name);
+			// console.log('oPractice', oPractice.durationAll);
+		}
+		console.log('当前媒体邻居:', oData.aSiblings.$dc());
 	}
 	// ▼统计文件夹音频时长（打开邻居窗口调用）
 	async function setFolderInfo(){
@@ -545,6 +558,7 @@ export function mainPart(){
 	}
 	// ▼打开文本
 	async function openTxt(goUp=false){
+		oData.isShowFileList = true;
 		let oDirHandle = oData.handleMediaIn;
 		if (goUp){
 			const {pathFull} = oData.oMediaInLocal;
@@ -552,12 +566,13 @@ export function mainPart(){
 			const oTopLevel = await path2handle(sTopPath, 'directory');
 			oDirHandle = oTopLevel.handle; 
 			console.log('查询上级'); 
+		}else{
+			console.log('查询同级'); 
 		}
-		oData.isShowFileList = true;
+		const aFormat = ['pdf', 'srt', 'ass', 'txt'];
 		let aItems = await handle2List(oDirHandle);
 		aItems &&= aItems.map(cur => {
 			const sTail = cur.name.split('.').pop().toLowerCase();
-			const aFormat = ['pdf', 'srt', 'ass', 'txt'];
 			return {
 				...cur,
 				sTail,
@@ -568,7 +583,7 @@ export function mainPart(){
 		}).sort((aa, bb)=>{
 			return aa.sTail.localeCompare(bb.sTail);
 		});
-		if (!goUp || !aItems.length){
+		if (!goUp && !aItems.length){
 			return openTxt(true); 
 		}
 		console.log('aItems\n', aItems);
@@ -802,7 +817,7 @@ export function mainPart(){
 		while(iSeconds--){
 			const res = await oInstance.proxy.previousAndNext(1, true);
 			if (res === null) break;
-			await Sleep(50);
+			await Sleep(5);
 		}
 	}
 	const fnLib = {

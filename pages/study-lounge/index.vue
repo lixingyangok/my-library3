@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-12-05 17:35:19
  * @LastEditors: Merlin
- * @LastEditTime: 2025-01-19 13:39:35
+ * @LastEditTime: 2025-03-23 12:39:47
  * @Description: 
 -->
 <template>
@@ -393,7 +393,7 @@
                 <el-table border123
                     :data="aSiblings.filter(cur => cur.done_ == !!i02)"
                 >
-                    <el-table-column prop="idx_" label="序号" width="60" />
+                    <el-table-column prop="idx_" label="#" width="50" />
                     <el-table-column prop="sItem" label="名称">
                         <template #default="scope">
                             <p class="file-name" :class="{'cur-file': scope.row?.infoAtDb?.hash == sHash}"
@@ -403,9 +403,14 @@
                             </p>
                         </template>
                     </el-table-column>
-                    <el-table-column prop="durationStr" label="时长" width="100" />
-                    <el-table-column prop="finishedAt_" label="完成时间" width="160" />
-                    <el-table-column label="操作" width="155">
+                    <el-table-column prop="durationStr" label="时长" width="90" />
+                    <el-table-column label="训练次数" width="90" >
+                        <template #default="scope">
+                            {{ scope.row.practiceTimes ? scope.row.practiceTimes.toFixed(1) : '' }}
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="finishedAt_" label="完成时间" width="150" />
+                    <el-table-column label="操作" width="140">
                         <template #default="scope">
                             <el-button link @click="visitSibling(scope.row)" >
                                 跳转

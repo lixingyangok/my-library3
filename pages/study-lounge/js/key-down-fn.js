@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: Merlin
- * @LastEditTime: 2024-09-28 21:33:17
+ * @LastEditTime: 2025-03-22 22:42:43
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
@@ -21,6 +21,7 @@ export function getKeyDownFnMap(This, sType) {
     function playAndCheck(iVal){
         oMyWave.toPlay(iVal);
         This.setLeftLine();
+        This.oTodayBar.update();
     }
     function playOrMove(ev, iVal){
         const ScrollLock = ev.getModifierState("ScrollLock");
@@ -62,7 +63,6 @@ export function getKeyDownFnMap(This, sType) {
         { key: `ctrl + '`, name: '处理引号', fn: () => This.dealQuotationMark(`'`) },
         { key: 'ctrl + Enter', name: '播放', fn: () => playAndCheck() },
         // { key: 'ctrl + Enter', name: '播放', fn: () => oMyWave.toPlay() }, // 将来开发此方法能打阅读标记
-        // { key: 'ctrl + shift + Enter', name: '播放', fn: () => oMyWave.toPlay(true) },
         { key: 'ctrl + shift + d', name: '删除一行', fn: () => This.toDel() }, // 后加一个 shift 防止删除操作太简单被误触 
         { key: `ctrl + shift + '`, name: '处理引号', fn: () => This.dealQuotationMark(`"`) },
         { key: 'ctrl + shift + z', name: '恢复', fn: () => This.setHistory(1) },
@@ -146,6 +146,7 @@ export function fnAllKeydownFn() {
             playFrom: This.oCurLine.start,
             playEnd: This.oCurLine.end,
         });
+        This.oTodayBar.update();
     }
     // ↓ 空格抬起事件
     function readingStopped(ev){
@@ -740,7 +741,6 @@ export function fnAllKeydownFn() {
             await afterSaved(oResult);
         }
         isSavingToDB = false;
-        This.oTodayBar.init();
     }
     async function afterSaved(oResult){
         // ▼ 加载新字幕
