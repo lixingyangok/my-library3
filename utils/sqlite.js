@@ -2,7 +2,7 @@
  * @Author: Merlin
  * @Date: 2024-01-08 09:35:15
  * @LastEditors: Merlin
- * @LastEditTime: 2025-02-09 16:09:17
+ * @LastEditTime: 2025-03-22 17:47:04
  * @Description: 
  */
 import { useDexie } from "./dxDB";
@@ -138,11 +138,11 @@ const commonDatabaseFn = {
     },
     // ↓ 持久化 TODO 添加节流功能
     persist(uint8Arr){
-        console.log('清除定时器', this.taskTimer); 
+        console.log('01-取消旧定时器', this.taskTimer); 
         clearTimeout(this.taskTimer);
         // 收到了 uint8Arr 说明在首次导入，0延时，
-        const iDelay = uint8Arr ? 0 : 1000;
-        console.log(`${this.dbType}: 已经设定了持久化任务`);
+        const iDelay = uint8Arr ? 0 : 1_000;
+        console.log(`01-设定新定时器，保存数据：${this.dbType} in ${iDelay}ms`);
         this.taskTimer = setTimeout(() => {
             this.persistExecutor(uint8Arr);
         }, iDelay);

@@ -2,7 +2,7 @@
  * @Author: Merlin
  * @Date: 2024-02-03 11:38:12
  * @LastEditors: Merlin
- * @LastEditTime: 2025-02-09 16:23:53
+ * @LastEditTime: 2025-03-23 21:49:59
  * @Description: 
  */
 import { useDexie } from "./dxDB";
@@ -25,11 +25,13 @@ const fnLib = {
         if (!dbType || !uint8Arr) {
             return console.error('缺少必要参数');
         }
-        console.log('Web worker: 开始保存到 indexedDB...');
         const dxDB = await useDexie();
+        console.log('Web worker: 开始保存到 indexedDB...');
+        console.log('scheduler.postTask', scheduler.postTask); // 可以打印 
         const createdAt = new Date();
         const time = createdAt.toLocaleString();
-        console.time(`Web worker: ${dbType} 已经保存到 indexedDB`);
+        const t01 = Date.now();
+        await scheduler.yield(); 
         const rowID = await dxDB.sqlite.add({
             type: dbType,
             uint8Arr,
@@ -37,7 +39,7 @@ const fnLib = {
             createdAt,
             updatedAt: createdAt,
         });
-        console.timeEnd(`Web worker: ${dbType} 已经保存到 indexedDB`);
+        console.log(`Web worker: ${dbType} 已经保存到 indexedDB, consumed ms:`, Date.now() - t01);
         console.log(`Web worker: row id=${rowID} | time=${time}`);
         await scheduler.yield(); 
         // id 是自增的，所以删除值最小的一行（最旧的数据）
