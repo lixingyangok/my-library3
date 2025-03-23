@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: Merlin
- * @LastEditTime: 2024-05-01 13:39:10
+ * @LastEditTime: 2025-03-22 21:57:43
  * @Description: 
  */
 
@@ -125,6 +125,9 @@ export function secToStr(fSecond, sType){
 		sTail = '.' + sTail.slice(1, 3);
 	}else if (sType === 'srtTime'){
 		// 
+	}else if (sType === 'hourMinute'){
+		sTime = sTime.slice(0, 5);
+		sTail = '';
 	}
 	return sTime + sTail; // srt 时间格式 00:00:15,000 --> 00:00:28,680
 }
