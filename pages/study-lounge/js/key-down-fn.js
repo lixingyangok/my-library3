@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: Merlin
- * @LastEditTime: 2025-03-22 22:42:43
+ * @LastEditTime: 2025-05-03 16:16:55
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
@@ -614,45 +614,68 @@ export function fnAllKeydownFn() {
         ElMessage.success('保存成功');
         This.getNewWords();
     }
-    let inputTimer = null;
-    let candidateTimer = null;
-    let iCleared = 0;
+    
+    let abortController01 = null;
+    let abortController02 = null;
+    const aPriority = ['user-blocking', 'user-visible', 'background'];
+    let iLastPress = 0; // 上次按键时间 
     // ▼处理用户输入
     function inputHandler(ev) {
-        if (++iCleared <= 2){ // 连续击键2次，执行 clear，第3次要放行
-            clearTimeout(inputTimer);
-            clearTimeout(candidateTimer);
-        }else{
-            iCleared = 0; // 归零，表示再有输入事件需要清理
+        const iNow = Date.now();
+        const iGap = iNow - iLastPress;
+        const soSoon = iGap < 200;
+        iLastPress = iNow;
+        if (soSoon){
+            console.log('执行取消');
+            abortController01?.abort('too soon'); 
+            abortController02?.abort('too soon'); 
         }
         const Backspace = ev.inputType == "deleteContentBackward";
         const isLetter = ev.data?.match(/[a-z]/i);
         console.log("输入了：", ev.data);
-        //  ↓ iCleared 如果是0，无延时执行
-        //  ↓ 如果输入了非字母，立即匹配左侧字幕
-        const iTimes = iCleared && (isLetter ? 350 : 0);
-        inputTimer = setTimeout(() => {
+        abortController01 = new AbortController();
+        scheduler.postTask(() => {
+            console.log('输入触发：记录历史');
             recordHistory();
             setLeftLine();
-        }, iTimes);
-        // if (!oAlphabetObj[ev.data] && !Backspace) return;
+        }, {
+            delay: isLetter ? 200 : 0, 
+            signal: abortController01.signal,
+            priority: aPriority[1],
+        }).then(()=>{}).catch(()=>{
+            console.log('已经取消：记录历史 🚫'); 
+        });
         if (!isLetter && !Backspace) return;
+        This.sTyped = getLeftWords(ev);
+        // console.log('左侧文本：', sLeft);
+        if (!This.sTyped) return;
+        This.aCandidate = [];
+        setCandidate();
+        abortController02 = new AbortController();
+        scheduler.postTask(() => {
+            console.log('生成候选词');
+            This.sTyped = getLeftWords(ev);
+            setCandidate('', ++iSearchingQ);
+        }, {
+            delay: 300, 
+            signal: abortController02.signal,
+            priority: aPriority[1],
+        }).then(()=>{}).catch(()=>{
+            console.log('已经取消：生成候选词 🚫'); 
+        });
+    }
+
+    // 取左侧字符  
+    function getLeftWords(ev){
         const sText = ev.target.value; // 当前文字
         const idx = ev.target.selectionStart; // 光标位置
-        // const sLeft = (sText.slice(0, idx) || '').split(' ').pop().trim();
         const sLeft = ((sText.slice(0, idx) || '').match(/[a-z]+/ig) || ['']).pop();
-        This.sTyped = sLeft;
-        // console.log('左侧文本：', sLeft);
-        if (!sLeft) return;
-        This.aCandidate = [];
-        const sLeftLower = sLeft.toLowerCase();
-        setCandidate(sLeftLower);
-        candidateTimer = setTimeout(() => {
-            setCandidate(sLeftLower, ++iSearchingQ);
-        }, 600);
+        return sLeft;
     }
     // ▼查询候选词
     async function setCandidate(sWord, iCurQs) {
+        if (!This.sTyped) return;
+        sWord = This.sTyped.toLowerCase(); // 放弃入参了，用这个 
         const aResult = [];
         for (const cur of This.aFullWords) {
             if (cur.toLowerCase().startsWith(sWord)) {
