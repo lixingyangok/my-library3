@@ -2,20 +2,20 @@
  * @Author: 李星阳
  * @Date: 2022-04-15 18:02:43
  * @LastEditors: Merlin
- * @LastEditTime: 2025-03-23 21:46:52
+ * @LastEditTime: 2025-03-31 10:27:34
  * @Description: TODO 切换显示：当前媒体数据和全部数据
 -->
 <template>
     <div class="today-bar" >
         统计数据：
         <div class="cell">
-            🕓训练时长：
+            🕓投入时长：
             <em> {{ oInfo.sPracticedTodayDuration }} </em>
             <i class="divide" />
             <em> {{ oInfo.sPracticedDuration }} </em>
         </div>
         <div class="cell">
-            🎯训练次数：
+            🎯累计次数：
             <em> {{ oInfo.fPracticedTodayTimes.toFixed(2) }} </em>
             <i class="divide" />
             <em> {{ oInfo.fPracticedTimes.toFixed(1) }} </em>
@@ -35,7 +35,7 @@
             💻录入统计：
             <em>{{oInfo.iFilled}}行</em>
             <i class="divide" />
-            <em>{{oInfo.iFilledWords}} words</em>
+            <em>{{oInfo.iFilledWords}}词</em>
             <i class="divide" />
             <em>{{oInfo.sFiDuration}}</em>
         </span>
