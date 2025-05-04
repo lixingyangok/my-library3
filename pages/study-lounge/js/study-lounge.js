@@ -258,7 +258,7 @@ export function mainPart(){
 			oData.iSubtitle = -1; // -1 表示文件不存在 
 			return;
 		}
-		console.log('当前媒体所有行：\n', aRes);
+		console.log('当前媒体所有行：\n', aRes.length);
 		const aLineArr = fixTime(aRes);
 		const sLineArr = JSON.stringify(aLineArr);
 		oData.aHistory[0].sLineArr = sLineArr;
@@ -441,8 +441,8 @@ export function mainPart(){
 	async function showMediaDialog(){
 		oData.isShowMediaInfo = true;
 		setFolderInfo();
-		await Sleep(100);
 		for (const oMedia of oData.aSiblings){
+			await Sleep(10);
 			const mediaId = oMedia.infoAtDb?.id;
 			if (!mediaId) continue; 
 			const oPractice = await getMediaActionTotal(mediaId);
