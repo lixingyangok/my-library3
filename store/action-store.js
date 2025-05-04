@@ -49,9 +49,15 @@ export const useActionStore = defineStore('action', {
             const aResult = await getActionByDay();
             // console.timeEnd('♥查询当日所有练习记录耗时');
             // console.log('aResult', aResult);
-            console.time('♥合并当日练习记录耗时');
-            await this.processMinites(aResult);
-            console.timeEnd('♥合并当日练习记录耗时');
+            const t01 = Date.now();
+            // await this.processMinites(aResult);
+            scheduler.postTask(()=>{
+                this.processMinites(aResult).finally(()=>{
+                    console.log('♥合并当日练习记录耗时', Date.now() - t01);
+                });
+            },{
+                priority: 'background',
+            });
         },
         async processMinites(aResult){
             const {default: moment} = await import('https://cdn.jsdelivr.net/npm/moment@2.30.1/+esm');

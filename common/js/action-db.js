@@ -1,3 +1,10 @@
+/*
+ * @Author: Merlin
+ * @Date: 2024-03-10 21:12:57
+ * @LastEditors: Merlin
+ * @LastEditTime: 2025-05-03 17:06:58
+ * @Description: 
+ */
 
 // ▼查询某个媒体的 “各行” 练习记录 
 export async function getMediaActionRows(iMediaID){
@@ -49,7 +56,7 @@ export async function getMediaActionTotal(iMediaID){
     `;
     const t01 = Date.now();
     const aResult = sqlite.select(sSql);
-    console.log('统计某个媒体操练时长： consumed ms', Date.now()-t01); // 耗时xx
+    console.log('查询某个媒体操练时长： consumed ms', Date.now()-t01); // 耗时xx
     return aResult[0];
 }
 

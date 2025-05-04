@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2022-04-15 18:02:43
  * @LastEditors: Merlin
- * @LastEditTime: 2025-03-31 10:27:34
+ * @LastEditTime: 2025-05-03 17:36:37
  * @Description: TODO 切换显示：当前媒体数据和全部数据
 -->
 <template>
@@ -76,7 +76,7 @@ async function init(){
     fnTotalPracticed(); 
     const oRes = await getTodayHistory(oProps.iMediaID);
     if (!oRes) return;
-    console.log('oRes 001', oRes.$dc());
+    // console.log('oRes 001', oRes.$dc());
     oInfo.value.tenQty = Math.floor(oRes.iFiDuration / 600);
     if (oData.isFirstRun){
         oData.isFirstRun = false;
@@ -110,7 +110,7 @@ async function fnTotalPracticed(){
         fPracticedTodayTimes: durationToday / oLines.seconds, // 当日训练次数 
     }; 
     Object.assign(oInfo.value, oResult);
-    console.log('训练统计：\n', oResult);
+    // console.log('训练统计：\n', oResult);
 }
 
 
@@ -141,18 +141,28 @@ watch(
 );
 
 let lastTime = 0;  
-let lastRun = null;
+let abortController01 = null;
+
 function update() {
-    clearTimeout(lastRun); 
+    abortController01?.abort('取消并重启事件：更新历史条'); 
+    abortController01 = new AbortController();
     const now = Date.now();
     const frequency = 1_000;
     const iDelay = (
         now - lastTime > frequency
-        ? 0
+        ? 100
         : frequency
     );
-    lastRun = setTimeout(init, iDelay);
     lastTime = now;
+    scheduler.postTask(() => {
+        init();
+    }, {
+        delay: iDelay, 
+        signal: abortController01.signal,
+        priority: 'background',
+    }).then(()=>{}).catch(()=>{
+        console.log('已经取消：更新历史条 🚫'); 
+    });
 }
 
 //关键点 把方法暴露给父组件
