@@ -122,7 +122,7 @@ export default function(){
             console.log(sTips);
             return ElMessage.error(sTips);
         }
-        oData.oMediaBuffer = oMediaBuffer;
+        oData.oMediaBuffer = Object.freeze(oMediaBuffer);
         setCanvasWidthAndDraw();
         moveToFirstLine();
         oInstance.emit('pipe', oData.oMediaBuffer); // 向上传递数据
