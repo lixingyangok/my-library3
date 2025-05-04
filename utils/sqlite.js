@@ -2,7 +2,7 @@
  * @Author: Merlin
  * @Date: 2024-01-08 09:35:15
  * @LastEditors: Merlin
- * @LastEditTime: 2025-03-22 17:47:04
+ * @LastEditTime: 2025-05-03 22:39:56
  * @Description: 
  */
 import { useDexie } from "./dxDB";
@@ -85,7 +85,7 @@ async function createOneDB(dbType){
             console.log('已经从头建库');
             sqlite.persist();
             alert('数据库已经初始化，需要刷新');
-            location.reload();
+            // location.reload();
         }
     }
     const nameOnWindow = dbType === 'main' ? 'sqlite' : 'cache';
@@ -138,14 +138,15 @@ const commonDatabaseFn = {
     },
     // ↓ 持久化 TODO 添加节流功能
     persist(uint8Arr){
-        console.log('01-取消旧定时器', this.taskTimer); 
+        this.taskTimer && console.log('01-取消旧定时器 🔴', this.taskTimer); 
         clearTimeout(this.taskTimer);
         // 收到了 uint8Arr 说明在首次导入，0延时，
         const iDelay = uint8Arr ? 0 : 1_000;
-        console.log(`01-设定新定时器，保存数据：${this.dbType} in ${iDelay}ms`);
         this.taskTimer = setTimeout(() => {
+            this.taskTimer = null;
             this.persistExecutor(uint8Arr);
         }, iDelay);
+        console.log(`01-设定新定时器 ✅`, this.taskTimer ,`保存数据：${this.dbType} in ms`, iDelay);
     },
     // ↓持久化
     async persistExecutor(uint8Arr){
