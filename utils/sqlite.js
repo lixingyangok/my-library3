@@ -2,7 +2,7 @@
  * @Author: Merlin
  * @Date: 2024-01-08 09:35:15
  * @LastEditors: Merlin
- * @LastEditTime: 2025-05-03 22:39:56
+ * @LastEditTime: 2025-05-05 21:55:32
  * @Description: 
  */
 import { useDexie } from "./dxDB";
@@ -138,15 +138,18 @@ const commonDatabaseFn = {
     },
     // ↓ 持久化 TODO 添加节流功能
     persist(uint8Arr){
-        this.taskTimer && console.log('01-取消旧定时器 🔴', this.taskTimer); 
-        clearTimeout(this.taskTimer);
-        // 收到了 uint8Arr 说明在首次导入，0延时，
         const iDelay = uint8Arr ? 0 : 1_000;
+        let Msg = `预约-数据持久化定时器 ✅`;
+        if (this.taskTimer){
+            clearTimeout(this.taskTimer);
+            Msg = `覆盖-数据持久化定时器 ☑️`;
+        }
+        console.log(`${Msg} - 将保存数据 ${this.dbType} in ms`, iDelay);
+        // 收到了 uint8Arr 说明在首次导入，0延时，
         this.taskTimer = setTimeout(() => {
             this.taskTimer = null;
             this.persistExecutor(uint8Arr);
         }, iDelay);
-        console.log(`01-设定新定时器 ✅`, this.taskTimer ,`保存数据：${this.dbType} in ms`, iDelay);
     },
     // ↓持久化
     async persistExecutor(uint8Arr){
@@ -156,7 +159,7 @@ const commonDatabaseFn = {
         myWorker.postMessage({
             command: 'updateSqlite',
             data: { // 耗时小于 1ms
-                uint8Arr: uint8Arr || this.export(),
+                uint8Arr: uint8Arr || this.export(), // 后者应在 worker 用直接取值 
                 dbType: this.dbType,
                 importing: !!uint8Arr, // 表示在导入不是简单的保存
             },
