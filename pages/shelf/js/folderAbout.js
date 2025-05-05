@@ -233,6 +233,7 @@ const oFn02 = {
         // 👈处理点击文件夹动作
         // ▼ this.aPath 正在被 watch 监听，操作会触发后续动作
         // this.aPath.splice(i1 + 1, Infinity, sItem);
+        this.aDirectory.splice(i1+1, Infinity, []); // 先响应 
         const arr = await handle2List(oItem.handle, {path: oItem.path});
         console.log("目标的子元素（初步数据）\n", arr);
         this.aDirectory.splice(i1+1, Infinity, arr);
