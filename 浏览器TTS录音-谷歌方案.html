@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Screen Recording and Audio Extraction Example</title>
+    <!-- 引用 jsdelivr 上 FFmpeg 的 CDN 资源 -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.11.2/dist/ffmpeg-core.js"></script> -->
+
+    
+    <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.9.5/dist/ffmpeg.min.js"></script>
+    <!-- <script src="//cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.8.3/dist/ffmpeg.min.js"></script> -->
+    <!-- ↓ 国内 51cto  -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.js"></script> -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/umd/814.ffmpeg.js"></script> -->
+
+    <!-- 张鑫旭 -->
+    <!-- <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.9.5/dist/ffmpeg.min.js"></script> -->
+</head>
+
+<body>
+    <video id="video01" src="" controls width="800"></video>
+    <br />
+    <audio src="https://bitmidi.com/uploads/112561.mid" controls> </audio>
+    <br />
+    <button id="startButton">Start Recording</button>
+    <button id="stopButton" disabled>Stop Recording</button>
+    <button id="downloadButton" disabled>Download Audio</button>
+
+    <script type="module">
+        
+        const startButton = document.getElementById('startButton');
+        const stopButton = document.getElementById('stopButton');
+        const downloadButton = document.getElementById('downloadButton');
+        const video01 = document.getElementById('video01');
+        let mediaRecorder;
+        let aRecordedChunksArr = [];
+
+        const {createFFmpeg} = FFmpeg;
+        var ffmpeg = createFFmpeg({
+            // corePath: "./ffmpeg-core.js",
+            log: true,
+        });
+
+        console.log("createFFmpeg()", );
+        try{
+            console.log("loding", );
+            ffmpeg.load()
+            console.log("loaded", );
+        }catch (err){
+            console.log("loding failed", err);
+        }
+        // console.log('createFFmpeg', createFFmpeg); // 可打印 
+        // const ffmpeg = new FFmpegWASM.FFmpeg();
+        // console.log('ffmpeg', ffmpeg); // 可打印 
+
+        // 开始录制按钮点击事件
+        startButton.addEventListener('click', async () => {
+            try {
+                // 请求屏幕录制权限
+                const stream = await navigator.mediaDevices.getDisplayMedia({
+                    audio: true,
+                    video: {
+                        displaySurface: "monitor", // monitor, window, browser
+                    },
+                    systemAudio: 'include', // systemAudio 的默认值为 "include" 
+                });
+
+                // 创建 MediaRecorder 实例
+                mediaRecorder = new MediaRecorder(stream, {
+                    // mimeType: 'audio/webm',
+                    // mimeType: 'video/webm; codecs=vp9',
+                });
+
+                // 当有新的录制数据块时触发
+                mediaRecorder.ondataavailable = (event) => {
+                    if (event.data.size > 0) {
+                        aRecordedChunksArr.push(event.data);
+                    }
+                };
+
+                // 录制停止时触发
+                mediaRecorder.onstop = async () => {
+                    console.log('录制已经终止');
+                    const videoBlob = new Blob(
+                        aRecordedChunksArr,
+                        { type: 'video/webm' },
+                        // { type: 'audio/webm' },
+                    );
+                    const videoUrl = URL.createObjectURL(videoBlob);
+                    video01.src = videoUrl;
+
+                    // // 下载按钮点击事件
+                    downloadButton.addEventListener('click', async () => {
+                        console.log('下载按钮点击事件');
+                        const buffer = await videoBlob.arrayBuffer();
+                        // 创建音频上下文
+                        const audioCtx = new AudioContext();
+                        // arrayBuffer转audioBuffer
+                        audioCtx.decodeAudioData(buffer, function(audioBuffer) {
+                            console.log('Got audioBuffer');
+                            // audioBuffer 就是 AudioBuffer
+                            const blob = bufferToWave(
+                                audioBuffer,
+                                audioBuffer.sampleRate * audioBuffer.duration
+                            );
+                            // 使用Blob地址
+                            const blobUrl = URL.createObjectURL(blob);
+                            
+                            // 创建下载链接
+                            const aa = document.createElement("a");
+                            aa.href = blobUrl;
+                            aa.download = "recording.webm";
+                            aa.click();
+                            // result.innerHTML = `&lt;h4&gt;试听&lt;/h4&gt;
+                            //     &lt;audio src="${blobUrl}" controls&gt;&lt;/audio&gt;
+                            //     &lt;p&gt;点击&lt;a href="${blobUrl}" download="${name}.wav"&gt;这里下载音频&lt;/a&gt;。&lt;/p&gt;
+                            // `;
+                        });
+                    });
+                    downloadButton.disabled = false;
+                    aRecordedChunksArr = [];
+                };
+
+                // 开始录制
+                mediaRecorder.start();
+                startButton.disabled = true;
+                stopButton.disabled = false;
+            } catch (error) {
+                console.error('Error accessing screen recording:', error);
+            }
+        });
+
+        // 停止录制按钮点击事件
+        stopButton.addEventListener('click', () => {
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+                mediaRecorder.stop();
+                startButton.disabled = false;
+                stopButton.disabled = true;
+            }
+        });
+
+
+
+
+
+        
+        // Convert AudioBuffer to a Blob using WAVE representation
+        function bufferToWave(abuffer, len) {
+            var numOfChan = abuffer.numberOfChannels,
+            length = len * numOfChan * 2 + 44,
+            buffer = new ArrayBuffer(length),
+            view = new DataView(buffer),
+            channels = [], i, sample,
+            offset = 0,
+            pos = 0;
+
+            // write WAVE header
+            // "RIFF"
+            setUint32(0x46464952);
+            // file length - 8                      
+            setUint32(length - 8);
+            // "WAVE"                     
+            setUint32(0x45564157);
+            // "fmt " chunk
+            setUint32(0x20746d66);  
+            // length = 16                       
+            setUint32(16);  
+            // PCM (uncompressed)                               
+            setUint16(1); 
+            setUint16(numOfChan);
+            setUint32(abuffer.sampleRate);
+            // avg. bytes/sec
+            setUint32(abuffer.sampleRate * 2 * numOfChan);
+            // block-align
+            setUint16(numOfChan * 2);
+            // 16-bit (hardcoded in this demo)
+            setUint16(16);                           
+            // "data" - chunk
+            setUint32(0x61746164); 
+            // chunk length                   
+            setUint32(length - pos - 4);                   
+
+            // write interleaved data
+            for(i = 0; i < abuffer.numberOfChannels; i++)
+                channels.push(abuffer.getChannelData(i));
+
+            while(pos < length) {
+                // interleave channels
+                for(i = 0; i < numOfChan; i++) {
+                    // clamp
+                    sample = Math.max(-1, Math.min(1, channels[i][offset])); 
+                    // scale to 16-bit signed int
+                    sample = (0.5 + sample < 0 ? sample * 32768 : sample * 32767)|0; 
+                    // write 16-bit sample
+                    view.setInt16(pos, sample, true);          
+                    pos += 2;
+                }
+                // next source sample
+                offset++                                     
+            }
+
+            // create Blob
+            return new Blob([buffer], {type: "audio/wav"});
+
+            function setUint16(data) {
+                view.setUint16(pos, data, true);
+                pos += 2;
+            }
+
+            function setUint32(data) {
+                view.setUint32(pos, data, true);
+                pos += 4;
+            }
+        }
+
+    </script>
+</body>
+
+</html>
