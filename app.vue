@@ -43,11 +43,8 @@ useHead({
     }, { // hashwasm.xxhash64
         src: 'https://cdn.jsdelivr.net/npm/hash-wasm@4/dist/xxhash64.umd.min.js',
     }, { // initSqlJs
-        src: 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.12.0/sql-wasm.js',
+        src: 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.13.0/sql-wasm.js',
     },
-    // { // Dexie
-    //     src: 'https://unpkg.com/dexie@latest/dist/dexie.js',
-    // },
     // {
     //     type: 'module',
     //     src: 'https://cdn.bootcdn.net/ajax/libs/ffmpeg/0.12.6/esm/classes.js',
