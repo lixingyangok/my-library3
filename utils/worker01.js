@@ -2,7 +2,7 @@
  * @Author: Merlin
  * @Date: 2024-02-03 11:38:12
  * @LastEditors: Merlin
- * @LastEditTime: 2025-05-05 17:23:35
+ * @LastEditTime: 2025-05-06 12:42:37
  * @Description: 
  */
 import { useDexie } from "./dxDB";
@@ -21,6 +21,63 @@ self.addEventListener('message', async (ev) => {
 
 const fnLib = {
     async updateSqlite(data){
+        const {dbType, uint8Arr, importing} = data;
+        if (!dbType || !uint8Arr) {
+            return console.error('缺少必要参数');
+        }
+        const t01 = Date.now();
+        console.log('Web worker: 开始保存到 indexedDB...');
+        const rowID = await scheduler.postTask(()=>{
+            return doPutOneRow(dbType, uint8Arr); 
+        }, {
+            priority: 'background',
+        });
+        console.log('Web worker: 完成保存，耗时总计 ms', Date.now() - t01);
+        postMessage({
+            command: 'saved',
+            data: {importing},
+        });
+    },
+}
+
+async function doPutOneRow(
+    dbType,
+    uint8Arr,
+) {
+    const dxDB = await useDexie();
+    const t01 = Date.now();
+    const aRows = await dxDB.sqlite.where('type').equals(dbType).toArray();
+    aRows.sort((aa, bb)=>{
+        return aa.updatedAt.getTime() - bb.updatedAt.getTime();
+    }).forEach(cur=>{
+        cur.uint8Arr = null; // 清空
+    });
+    const createdAt = new Date();
+    const time = createdAt.toLocaleString();
+    const oRow = { 
+        // id, // 没有 id 将执行新增 
+        // createdAt, // 新增行时专用 
+        type: dbType,
+        uint8Arr,
+        time, // 是 updatedAt 字符形态，用于肉眼阅读 
+        updatedAt: createdAt,
+    }
+    // ↓ 有多条记录，覆盖最“旧” 的一行 
+    if (aRows.length > 1){
+        oRow.id = aRows[0].id;
+    }else{
+        oRow.createdAt = createdAt;
+    }
+    const iRowID = await dxDB.sqlite.put(oRow);
+    console.log(`Web worker: Affected row [${iRowID}]`);
+    console.log('Web worker: 查询旧行耗时 ms', createdAt - t01, aRows);
+    console.log(`Web worker: 保存 ${dbType} 耗时 ms`, Date.now() - createdAt);
+    return iRowID;
+}
+
+
+/* 
+async updateSqlite(data){
         const {dbType, uint8Arr, importing} = data;
         if (!dbType || !uint8Arr) {
             return console.error('缺少必要参数');
@@ -69,6 +126,6 @@ const fnLib = {
             data: {importing},
         });
     },
-}
+*/
 
 
