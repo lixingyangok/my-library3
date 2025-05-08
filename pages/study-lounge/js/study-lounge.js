@@ -225,12 +225,13 @@ export function mainPart(){
 		oData.oMediaInLocal = store('media') || {};
 		const {hash, pathFull} = oData.oMediaInLocal;
 		if (!hash) throw '没有hash';
+		const t01 = Date.now(); 
 		const {
 			file: oMediaFile,
 			belong: handleMediaIn,
 		} = await path2handle(pathFull);
 		oData.handleMediaIn = handleMediaIn;
-		console.log("媒体所在1", pathFull);
+		console.log("取得媒体文件耗时 ms", Date.now() - t01, `● ${pathFull}`);
 		console.log("媒体所在2", handleMediaIn);
 		if (oMediaFile){
 			oData.oMediaFile = oMediaFile;
@@ -342,8 +343,11 @@ export function mainPart(){
 	// ▼接收子组件波形数据
 	function bufferReceiver(oMediaBuffer){
 		console.log('收到了波形');
+		if (oMediaBuffer.name != oData.oMediaFile.name){
+			console.warn(`波形与本地不匹配，执行跳过;\n收到：${oMediaBuffer.name}\n本地：${oData.oMediaFile.name}`);
+			return;
+		}
 		ElMessage.success('波形已经加载');
-		// TODO 偶有收到的波形不属于当前媒体文件
 		oData.oMediaBuffer = oMediaBuffer;
 		const {id, duration=0} = oData.oMediaInfo;
 		const iDurDifference = duration && Math.abs(oMediaBuffer.duration - duration);

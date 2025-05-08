@@ -101,6 +101,7 @@ export default function(){
     // ▲外部方法 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
     // ▼私有方法 ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
     async function initFn(oMediaFile){
+        const name = oMediaFile.name; // 一定要“提前” 预备出来  
         oDom.mediaSrc = URL.createObjectURL(oMediaFile);
         oData.oMediaBuffer = {}; // 清空旧的
         // oDom.oViewport.scrollTo(0, 0); // 横向滚动条归位
@@ -122,6 +123,7 @@ export default function(){
             console.log(sTips);
             return ElMessage.error(sTips);
         }
+        oMediaBuffer.name = name; 
         oData.oMediaBuffer = Object.freeze(oMediaBuffer);
         setCanvasWidthAndDraw();
         moveToFirstLine();
