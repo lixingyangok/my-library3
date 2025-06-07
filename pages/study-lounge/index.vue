@@ -296,8 +296,10 @@
                         'padding-top': `calc(${iShowStart} * var(--height))`,
                     }"
                 >
-                    <li v-for="(cur) of aLineForShow" :key="cur.ii" class="one-line"
+                    <li v-for="(cur) of aLineForShow"
+                        :key="cur.ii" 
                         @click="goLine(cur.ii, null, true)"
+                        class="one-line"
                         :class="{
                             cur: iCurLineIdx == cur.ii,
                             'key-line': (cur.ii + 1) % 10 == 0,

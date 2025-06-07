@@ -17,7 +17,11 @@
         <hr/>
         <label class="label-btn" style="border: solid 1px #aaa" >
             导入 Uint8Array
-            <input v-show="0" multiple type="file" @change="importUinit8Array" />
+            <input v-show="0"
+                multiple
+                type="file"
+                @change="importUinit8Array"
+            />
         </label>
         <button @click="exportUint8Arr">
             导出数据库: Uint8Array
