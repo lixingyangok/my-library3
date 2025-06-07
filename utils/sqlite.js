@@ -2,7 +2,7 @@
  * @Author: Merlin
  * @Date: 2024-01-08 09:35:15
  * @LastEditors: Merlin
- * @LastEditTime: 2025-05-05 21:55:32
+ * @LastEditTime: 2025-06-07 17:19:33
  * @Description: 
  */
 import { useDexie } from "./dxDB";
@@ -22,16 +22,18 @@ const getSQL = (()=>{
     let theSQL;
     return ()=>{
         theSQL ||= window.initSqlJs({ 
-            locateFile: ()=> `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.12.0/sql-wasm.wasm`,
+            locateFile: ()=> `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.13.0/sql-wasm.wasm`,
         });
         return theSQL;
     };
 })();
 
 export const useSqlite = (() => {
-    if (!import.meta.client) return ()=>{};
+    if (!import.meta.client) return () => null;
     const oResult = {};
-    return (dbType = 'main')=>{
+    return (
+        dbType = 'main', // 默认库 
+    )=>{
         if (!import.meta.client) return;
         if (['main', 'cache'].includes(dbType) === false){
             return console.error('库名不正确');
@@ -48,11 +50,11 @@ if (import.meta.client){
     myWorker = new Worker(oURL.href, {
         type: 'module',
     });
-    window.myWorker = myWorker;
-    myWorker.onmessage = function (event) {
+    window.myWinWorker = myWorker;
+    window.myWinWorker.onmessage = function (event) {
         const {command, data} = event.data;
         if (command === 'saved'){
-            console.log('保存完成')
+            console.log('Worker 反馈：保存完成')
             if (data.importing){
                 alert('导入完成');
                 location.reload();
@@ -63,6 +65,7 @@ if (import.meta.client){
 
 
 async function createOneDB(dbType){
+    console.log('createOneDB() excuted for:', dbType);
     let iLastTime = Date.now();
     const [SQL, dxDB] = await Promise.all([
         getSQL(),
@@ -173,7 +176,9 @@ const commonDatabaseFn = {
             content: this.export(),
         }]);
         return;
-        const res = await dxDB.sqlite.orderBy('updatedAt').filter(({type}) => type === this.dbType).last();
+        const res = await dxDB.sqlite.orderBy('updatedAt').filter(({type}) => {
+            return type === this.dbType;
+        }).last();
         const {blob} = res || {};
         if (!blob) return console.warn('无法导出');
         const iMB = toCut ? 5 : 999; // 999MB一般无法达到
