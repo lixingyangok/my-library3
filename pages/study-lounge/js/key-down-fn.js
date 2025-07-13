@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2021-02-19 16:35:07
  * @LastEditors: Merlin
- * @LastEditTime: 2025-05-04 14:14:41
+ * @LastEditTime: 2025-07-08 22:38:10
  * @Description: 
  */
 import { getCurrentInstance } from 'vue';
@@ -236,9 +236,11 @@ export function fnAllKeydownFn() {
         const { oMediaBuffer, aLineArr, iCurLineIdx } = This;
         const iCurLineNew = iCurLineIdx + iDirection;
         if (iCurLineNew < 0) {
-            return ElMessage.warning('没有上一行');
+            ElMessage.warning('没有上一行');
+            return;
         }else if (!oMediaBuffer.duration && !aLineArr.length){
-            return ElMessage.warning('暂无波形数据，请等待');
+            ElMessage.warning('暂无波形数据，请等待');
+            return;
         }
         const oNewLine = (() => {
             if (aLineArr[iCurLineNew]) return false; //有数据，不新增
@@ -257,7 +259,7 @@ export function fnAllKeydownFn() {
             This.iCurLineIdx = iCurLineNew;
             return;
         };
-        goLine(iCurLineNew, oNewLine, true);
+        return goLine(iCurLineNew, oNewLine, true);
     }
     // ▼跳至某行
     async function goLine(iAimLine, oNewLine, toRecord) {

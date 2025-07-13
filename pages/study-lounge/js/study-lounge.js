@@ -499,7 +499,11 @@ export function mainPart(){
 	async function visitSibling(oMedia){
 		oData.iCurLineIdx = 0;
 		oData.aLineArr = [{text: ''}];
-		store('media', oMedia);
+		const oldRedord = store('oRecent')?.[oMedia.pathFull];
+		store('media', {
+			...(oldRedord || {}),
+			...oMedia,
+		});
 		await proxy.$nextTick();
 		init();
 	}
@@ -819,9 +823,16 @@ export function mainPart(){
 		console.log("oMediaBuffer", oData.oMediaBuffer);  
 		let iSeconds = Math.floor(oData.oMediaBuffer.duration);
 		while(iSeconds--){
-			const res = await oInstance.proxy.previousAndNext(1, true);
-			if (res === null) break;
-			await Sleep(5);
+			let res = oInstance.proxy.previousAndNext(1, true);
+			if (res){
+				await res;
+			}else if(res === null){
+				break;
+			}
+			await Promise.allSettled([
+				window.scheduler.yield(),
+				Sleep(10),
+			]);
 		}
 	}
 	const fnLib = {
