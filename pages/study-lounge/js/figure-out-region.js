@@ -2,7 +2,7 @@
  * @Author: 李星阳
  * @Date: 2020-08-16 18:35:35
  * @LastEditors: Merlin
- * @LastEditTime: 2024-05-01 20:09:49
+ * @LastEditTime: 2025-07-13 22:33:05
  * @Description: 这是智能断句的模块
  */
 import {getPeaks, fixTime} from '@/common/js/pure-fn.js';
@@ -57,7 +57,7 @@ function getWaveArr(oMediaBuffer, iPerSecPx, fEndSec, fRightDuration) {
         iPerSecPx * fEndSec,
         iPerSecPx * fRightDuration // 取当前位置往右x秒
     );
-    let {iWaveHeight = 0.5} = store.get('oRecent')?.[store('media')?.pathFull] || {};
+    let {iWaveHeight = 0.5} = store('media') || {};
     // 👆 从 lg 里取值不是最佳方案，先这样用着，再优化
     // ▼或许应优化为 idx+=2 节省一半的遍历次数，
     // const myArr = aPeaks.reduce((result, cur, idx, arr) => {

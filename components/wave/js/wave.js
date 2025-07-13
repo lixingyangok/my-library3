@@ -20,7 +20,8 @@ export default function(){
         oPointer: null,
         mediaSrc: null,
     });
-    const {iWaveHeight = 0.4} = store('oRecent')?.[store('media')?.pathFull] || {};
+    const {iWaveHeight = 0.5} = store('media') || {};
+    console.log('iWaveHeight:', iWaveHeight);
     const oData = reactive({
         oMediaBuffer: {}, // 媒体buffer，疑似需要向上提交以便显示时长等信息
         playing: false,
@@ -353,15 +354,17 @@ export default function(){
 		else iHeight -= iStep;
 		if (iHeight < min) iHeight = min;
 		if (iHeight > max) iHeight = max;
-		oData.iHeight = iHeight.toFixed(2) * 1;
-        // toUpdateTempInfo()
-        console.log("changing oRecent", );
-        store.transact('oRecent', (oldData) => {
-            const old = store('media') || {};
-            oldData[old.pathFull] = {
-                ...old,
-                iWaveHeight: iHeight, // 可能取不到值
-            };
+		iHeight = iHeight.toFixed(2) * 1;
+		oData.iHeight = iHeight;
+        console.log("Changing iWaveHeight to: iWaveHeight", iHeight); 
+        const oNewData = {
+            ...(store('media') || {}),
+            iWaveHeight: iHeight,
+        };
+        // ↓ 在两处保存 
+        store('media', oNewData);
+        store.transact('oRecent', (oStoreData) => {
+            oStoreData[oNewData.pathFull] = oNewData;
         });
 		toDraw();
 	}
